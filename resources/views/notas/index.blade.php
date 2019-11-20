@@ -7,7 +7,7 @@
                 <h2>Notas</h2>
             </div>
             <div class="pull-right">
-                <a class="btn btn-success" href="{{ route('notas.create') }}">Nova nota</a>
+                <a class="btn btn-success" href="{{ route('notas.emitir') }}">Nova nota</a>
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Nota;
 use Illuminate\Http\Request;
-//use NFePHP\Common\Certificate;
+use NFePHP\Common\Certificate;
 use NFePHP\NFSeDSF\Tools;
 use NFePHP\NFSeDSF\Rps;
 use NFePHP\NFSeDSF\Common\Soap\SoapCurl;
@@ -32,7 +32,7 @@ class NotaController extends Controller
 
         $this->configJson = json_encode($this->config);
 
-        $content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
+        //$content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'associacao';
         //$this->cert = Certificate::readPfx($content, $password);
@@ -59,7 +59,7 @@ class NotaController extends Controller
      */
     public function emitir()
     {
-        return view('notas.preemitir');
+        return view('notas.emitir');
     }
 
     /**

@@ -13,11 +13,13 @@ class CreateItensnotaTable extends Migration
      */
     public function up()
     {
-        Schema::create('st_central.itens_nota', function (Blueprint $table) {
+        //Schema::create('st_central.itens_nota', function (Blueprint $table) {
+        Schema::create('itens_nota', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->BigInteger('id_nota');
 
-            $table->foreign('id_nota')->references('id')->on('st_central.notas');
+            //$table->foreign('id_nota')->references('id')->on('st_central.notas');
+            $table->foreign('id_nota')->references('id')->on('notas');
 
 
             $table->timestamps();

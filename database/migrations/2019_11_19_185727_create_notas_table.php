@@ -13,7 +13,8 @@ class CreateNotasTable extends Migration
      */
     public function up()
     {
-        Schema::create('st_central.notas', function (Blueprint $table) {
+        //Schema::create('st_central.notas', function (Blueprint $table) {
+        Schema::create('notas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->timestamps();
 

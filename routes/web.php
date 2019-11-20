@@ -16,4 +16,7 @@ Route::get('/', function () {
 });
 
 
- Route::resource('notas','NotaController');
+
+ Route::get('notas','NotaController@index')->name('notas.index');
+ Route::get('notas/emitir','NotaController@emitir')->name('notas.emitir');
+ Route::post('notas/enviar','NotaController@enviar')->name('notas.enviar');

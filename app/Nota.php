@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Nota extends Model
 {
 
-	protected $table = 'st_central.notas';
+	//protected $table = 'st_central.notas';
+	protected $table = 'notas';
 	const CREATED_AT = 'creation_date';
     const UPDATED_AT = 'last_update';
 
