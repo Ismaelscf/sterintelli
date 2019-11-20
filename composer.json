@@ -11,7 +11,7 @@
         {
             "type": "package",
             "package": {
-                "name": "sped-nfse-dsf/slz",
+                "name": "sped-nfse-dsf",
                 "version": "master",
                 "source": {
                     "url": "https://github.com/stefersonferreira/sped-nfse-dsf.git",
@@ -28,9 +28,7 @@
         "laravel/tinker": "^1.0",
         "laravel/ui": "^1.1",
         "nfephp-org/sped-nfe": "^5.0",
-        "sped-nfse-dsf/slz": "master",
-        "yajra/laravel-datatables-oracle": "^9.7",
-        "yajra/laravel-oci8": "^6.0"
+        "sped-nfse-dsf": "master"
     },
     "require-dev": {
         "facade/ignition": "^1.4",

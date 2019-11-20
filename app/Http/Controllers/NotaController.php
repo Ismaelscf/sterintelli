@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Nota;
 use Illuminate\Http\Request;
 use NFePHP\Common\Certificate;
-use NFePHP\NFSeDSF\Tools;
 use NFePHP\NFSeDSF\Rps;
 use NFePHP\NFSeDSF\Common\Soap\SoapCurl;
+use NFePHP\NFSeDSF\Tools;
 use stdClass;
 
 class NotaController extends Controller
@@ -72,9 +72,85 @@ class NotaController extends Controller
     {
   
         //Nota::create($request->all());
+
+
+
+        try {
+            
+            $tools = new Tools($this->configJson, $this->cert);
+ 
+            $arps = [];
+            
+
+
+            $std = new \stdClass();
+            $std->inscricaomunicipalprestador = '10517900';
+            $std->razaosocialprestador = 'EMPRESA MODELO';
+            $std->tiporps = 'RPS';
+            $std->serierps = 'NF';
+            $std->numerorps = 84;
+            $std->dataemissaorps = '2009-11-21T15:30:00';
+            $std->situacaorps = 'N';
+            //$std->serierpssubstituido = '';
+            //$std->numerorpssubstituido = '0';
+            //$std->numeronfsesubstituida = '0';
+            //$std->dataemissaonfsesubstituida = '1900-01-01';
+            $std->serieprestacao = '99';
+            $std->inscricaomunicipaltomador = '0000000';
+            $std->cpfcnpjtomador = '00000000191';
+            $std->razaosocialtomador = 'EMPRESA DE TESTES';
+            $std->tipologradourotomador = 'Rua';
+            $std->logradourotomador = 'SETE DE SETEMBRO';
+            $std->numeroenderecotomador = '335';
+            $std->complementoenderecotomador = '';
+            $std->tipobairrotomador = 'Bairro';
+            $std->bairrotomador = 'Centro';
+            $std->cidadetomador = '0001219';
+            $std->cidadetomadordescricao = 'TERESINA';
+            $std->ceptomador = '64001210';
+            $std->emailtomador = 'res@bol.com.br';
+            $std->codigoatividade = '412040000';
+            $std->aliquotaatividade = 5.00;
+            $std->tiporecolhimento = 'A';
+            $std->municipioprestacao = '0001219';
+            $std->municipioprestacaodescricao = 'TERESINA';
+            $std->operacao = 'A';
+            $std->tributacao = 'T';
+            $std->valorpis = 0.00;
+            $std->valorcofins = 0.00;
+            $std->valorinss = 0.00;
+            $std->valorir = 0.00;
+            $std->valorcsll = 0.00;
+            $std->aliquotapis = 0.0000;
+            $std->aliquotacofins = 0.0000;
+            $std->aliquotainss = 0.0000;
+            $std->aliquotair = 0.0000;
+            $std->aliquotacsll = 0.0000;
+            $std->descricaorps = "MES/ANO DE REFERENCIA DA PRESTACAO DE SERVICO:12-2009 .VENCIMENTO =08/01/2010 VALOR LIQUIDO A PAGAR  R$3669,38SERVICO DE PORTARIA -RPS enviado em teste";
+
+            $std->itens[0] = new stdClass();
+            $std->itens[0]->discriminacaoservico = "Descricao do Servico ...";
+            $std->itens[0]->quantidade = 1;
+            $std->itens[0]->valorunitario = 100.0000;
+            $std->itens[0]->valortotal = 100.00;
+            $std->itens[0]->tributavel = 'S';
+
+            $rps = new Rps($std);
+            
+            $arps[] = $rps;    
+            $lote = '123456';
+           
+            $response = $tools->enviarSincrono($arps, $lote);
+
+            //echo FakePretty::prettyPrint($response, '');
+
+
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
    
-        return redirect()->route('notas.index')
-                        ->with('success','Nota criada com sucesso.');
+        return  $response;//redirect()->route('notas.index')
+                        //->with('success','Nota criada com sucesso.');
     }
 
     /**
