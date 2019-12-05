@@ -28,7 +28,8 @@
         "laravel/tinker": "^1.0",
         "laravel/ui": "^1.1",
         "nfephp-org/sped-nfe": "^5.0",
-        "sped-nfse-dsf": "master"
+        "sped-nfse-dsf": "master",
+        "tecnickcom/tcpdf": "^6.3"
     },
     "require-dev": {
         "facade/ignition": "^1.4",
