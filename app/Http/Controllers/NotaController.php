@@ -32,10 +32,11 @@ class NotaController extends Controller
 
         $this->configJson = json_encode($this->config);
 
-        //$content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
+        
+        $content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'associacao';
-        //$this->cert = Certificate::readPfx($content, $password);
+        $this->cert = Certificate::readPfx($content, $password);
     }
 
     /**
@@ -59,7 +60,14 @@ class NotaController extends Controller
      */
     public function emitir()
     {
-        return view('notas.emitir');
+        $cnpjprestador = '01469892000137';
+        $inscricaomunicipalprestador = '7048009';
+        $razaosocialprestador = 'BRITO e SOARES LTDA';
+        $token = '3579F09B4CC37151D3327197B13F9583';
+
+        return view('notas.pre-emitir', compact('cnpjprestador', 'inscricaomunicipalprestador',
+            'razaosocialprestador', 'token'));  
+
     }
 
     /**
@@ -75,65 +83,65 @@ class NotaController extends Controller
 
 
 
-        try {
+        //try {
             
             $tools = new Tools($this->configJson, $this->cert);
  
             $arps = [];
             
-
-
             $std = new \stdClass();
-            $std->inscricaomunicipalprestador = '10517900';
-            $std->razaosocialprestador = 'EMPRESA MODELO';
+            $std->inscricaomunicipalprestador = $request->has('inscricaomunicipalprestador')? $request->inscricaomunicipalprestador : "";
+            $std->razaosocialprestador = $request->has('razaosocialprestador')? $request->razaosocialprestador : "";
+
+            //dados do RPS
             $std->tiporps = 'RPS';
             $std->serierps = 'NF';
-            $std->numerorps = 84;
+            $std->numerorps = 90;
             $std->dataemissaorps = '2009-11-21T15:30:00';
             $std->situacaorps = 'N';
-            //$std->serierpssubstituido = '';
-            //$std->numerorpssubstituido = '0';
-            //$std->numeronfsesubstituida = '0';
-            //$std->dataemissaonfsesubstituida = '1900-01-01';
             $std->serieprestacao = '99';
-            $std->inscricaomunicipaltomador = '0000000';
-            $std->cpfcnpjtomador = '00000000191';
-            $std->razaosocialtomador = 'EMPRESA DE TESTES';
-            $std->tipologradourotomador = 'Rua';
-            $std->logradourotomador = 'SETE DE SETEMBRO';
-            $std->numeroenderecotomador = '335';
-            $std->complementoenderecotomador = '';
-            $std->tipobairrotomador = 'Bairro';
-            $std->bairrotomador = 'Centro';
-            $std->cidadetomador = '0001219';
-            $std->cidadetomadordescricao = 'TERESINA';
-            $std->ceptomador = '64001210';
-            $std->emailtomador = 'res@bol.com.br';
-            $std->codigoatividade = '412040000';
-            $std->aliquotaatividade = 5.00;
-            $std->tiporecolhimento = 'A';
-            $std->municipioprestacao = '0001219';
-            $std->municipioprestacaodescricao = 'TERESINA';
-            $std->operacao = 'A';
-            $std->tributacao = 'T';
-            $std->valorpis = 0.00;
-            $std->valorcofins = 0.00;
-            $std->valorinss = 0.00;
-            $std->valorir = 0.00;
-            $std->valorcsll = 0.00;
-            $std->aliquotapis = 0.0000;
-            $std->aliquotacofins = 0.0000;
-            $std->aliquotainss = 0.0000;
-            $std->aliquotair = 0.0000;
-            $std->aliquotacsll = 0.0000;
-            $std->descricaorps = "MES/ANO DE REFERENCIA DA PRESTACAO DE SERVICO:12-2009 .VENCIMENTO =08/01/2010 VALOR LIQUIDO A PAGAR  R$3669,38SERVICO DE PORTARIA -RPS enviado em teste";
+
+            //DADOS DO TOMADOR
+            $std->inscricaomunicipaltomador = $request->has('inscricaomunicipaltomador')? $request->inscricaomunicipaltomador : "";
+            $std->cpfcnpjtomador = $request->has('cpfcnpjtomador')? $request->cpfcnpjtomador : "0000000";
+            $std->razaosocialtomador = $request->has('razaosocialtomador')? $request->razaosocialtomador : "";
+            $std->tipologradourotomador = $request->has('tipologradourotomador')? $request->tipologradourotomador : "";
+            $std->logradourotomador = $request->has('logradourotomador')? $request->logradourotomador : "";
+            $std->numeroenderecotomador = $request->has('numeroenderecotomador')? $request->numeroenderecotomador : "";
+            $std->complementoenderecotomador = $request->has('complementoenderecotomador')? $request->complementoenderecotomador : "";
+            $std->tipobairrotomador = $request->has('tipobairrotomador')? $request->tipobairrotomador : "";
+            $std->bairrotomador = $request->has('bairrotomador')? $request->bairrotomador : "";
+            $std->cidadetomador = $request->has('cidadetomador')? $request->cidadetomador : "";
+            $std->cidadetomadordescricao = $request->has('cidadetomadordescricao')? $request->cidadetomadordescricao : "";
+            $std->ceptomador = $request->has('ceptomador')? $request->ceptomador : "";
+            $std->emailtomador = $request->has('emailtomador')? $request->emailtomador : "";
+
+
+            $std->codigoatividade = $request->has('codigoatividade')? $request->codigoatividade : "";
+            $std->aliquotaatividade =$request->has('aliquotaatividade')? $request->aliquotaatividade : "";
+            $std->tiporecolhimento = $request->has('tiporecolhimento')? $request->tiporecolhimento : "";
+            $std->municipioprestacao = $request->has('municipioprestacao')? $request->municipioprestacao : "";
+            $std->municipioprestacaodescricao = $request->has('municipioprestacaodescricao')? $request->municipioprestacaodescricao : "";
+            $std->operacao = $request->has('operacao')? $request->operacao : "";
+            $std->tributacao = $request->has('tributacao')? $request->tributacao : "";
+            $std->valorpis = $request->has('valorpis')? $request->valorpis : 0.00;
+            $std->valorcofins =$request->has('valorcofins')? $request->valorcofins : 0.00;
+            $std->valorinss =$request->has('valorinss')? $request->valorinss : 0.00;
+            $std->valorir =$request->has('valorir')? $request->valorir : 0.00;
+            $std->valorcsll = $request->has('aliquotapis')? $request->aliquotapis : 0.00;
+            $std->aliquotapis = $request->has('aliquotapis')? $request->aliquotapis : 0.00;
+            $std->aliquotacofins = $request->has('aliquotacofins')? $request->aliquotacofins : 0.00;
+            $std->aliquotainss = $request->has('aliquotainss')? $request->aliquotainss : 0.00;
+            $std->aliquotair = $request->has('aliquotair')? $request->aliquotair : 0.00;
+            $std->aliquotacsll = $request->has('aliquotacsll')? $request->aliquotacsll :0.00;
+            $std->descricaorps = $request->has('descricaorps')? $request->descricaorps : "";
 
             $std->itens[0] = new stdClass();
-            $std->itens[0]->discriminacaoservico = "Descricao do Servico ...";
-            $std->itens[0]->quantidade = 1;
-            $std->itens[0]->valorunitario = 100.0000;
-            $std->itens[0]->valortotal = 100.00;
-            $std->itens[0]->tributavel = 'S';
+            $std->itens[0]->discriminacaoservico = $request->has('descricaorps')? $request->descricaorps : "";
+            $std->itens[0]->quantidade = $request->has('quantidade')? $request->quantidade : 1;
+            $std->itens[0]->valorunitario = $request->has('valorunitario')? $request->valorunitario : 0.00;
+            $std->itens[0]->valortotal = $request->has('valortotal')? $request->valortotal : 0.00;
+            $std->itens[0]->tributavel = $request->has('tributavel')? $request->tributavel : "S";;
 
             $rps = new Rps($std);
             
@@ -145,9 +153,9 @@ class NotaController extends Controller
             //echo FakePretty::prettyPrint($response, '');
 
 
-        } catch (\Exception $e) {
+       /* } catch (\Exception $e) {
             echo $e->getMessage();
-        }
+        }*/
    
         return  $response;//redirect()->route('notas.index')
                         //->with('success','Nota criada com sucesso.');

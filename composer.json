@@ -7,20 +7,6 @@
         "laravel"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "sped-nfse-dsf",
-                "version": "master",
-                "source": {
-                    "url": "https://github.com/stefersonferreira/sped-nfse-dsf.git",
-                    "type": "git",
-                    "reference":"master"
-                }
-            }
-        }
-    ],
     "require": {
         "php": "^7.2",
         "fideloper/proxy": "^4.0",
@@ -28,7 +14,7 @@
         "laravel/tinker": "^1.0",
         "laravel/ui": "^1.1",
         "nfephp-org/sped-nfe": "^5.0",
-        "sped-nfse-dsf": "master",
+        "nfephp-org/sped-nfse-dsf": "dev-master",
         "tecnickcom/tcpdf": "^6.3"
     },
     "require-dev": {
