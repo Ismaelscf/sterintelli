@@ -77,8 +77,8 @@
                         <div class="col-md-6">
                             <div class="rendered-form">
                                 <div class="fb-text form-group field-cnpjtomador">
-                                    <label for="cnpjtomador" class="fb-text-label">CNPJ do Tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="cnpjtomador" id="cnpjtomador" required="required" aria-required="true">
+                                    <label for="cpfcnpjtomador" class="fb-text-label">CPF/CNPJ do Tomador<span class="fb-required">*</span></label>
+                                    <input type="text" class="form-control" name="cpfcnpjtomador" id="cpfcnpjtomador" required="required" aria-required="true">
                                 </div>
 
                                 <div class="fb-select form-group field-tipologradourotomador">
@@ -138,6 +138,10 @@
                                 <label for="ceptomador" class="fb-text-label">CEP<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true">
                             </div>
+                            <div class="fb-text form-group field-emailtomador">
+                                    <label for="inscricaomunicipaltomador" class="fb-text-label">Inscrição municipal do tomador<span class="fb-required">*</span></label>
+                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true">
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -158,7 +162,13 @@
                                     <div class="fb-select form-group field-codigoatividade">
                                         <label for="codigoatividade" class="fb-select-label">Código de Atividade<span class="fb-required">*</span></label>
                                         <select class="form-control" name="codigoatividade" id="codigoatividade" required="required" aria-required="true">
-                                            <option value="412040000" selected="true" id="codigoatividade-0">412040000</option>
+                                            <option value="412040000" selected="true">412040000</option>
+                                        </select>
+                                    </div>
+                                    <div class="fb-select form-group field-codigoservico">
+                                        <label for="codigoservico" class="fb-select-label">Código do Serviço<span class="fb-required">*</span></label>
+                                        <select class="form-control" name="codigoservico" id="codigoservico" required="required" aria-required="true">
+                                            <option value="1002" selected="true">1002</option>
                                         </select>
                                     </div>
 
@@ -268,7 +278,7 @@
                         <div class="col-md-12">
                             <div class="rendered-form">
                                 <div class="fb-textarea form-group field-discriminacaoservico">
-                                    <label for="discriminacaoservico" class="fb-textarea-label">Discriminaçaõ do serviço<span class="fb-required">*</span></label>
+                                    <label for="discriminacaoservico" class="fb-textarea-label">Discriminação do serviço<span class="fb-required">*</span></label>
                                     <textarea type="textarea" class="form-control" name="discriminacaoservico" id="discriminacaoservico" required="required" aria-required="true">(SERVIÇOS DE ESTERILIZAÇÃO DE MATERIAIS MEDICO-HOSPITALARES)</textarea>
                                 </div>
                             </div>

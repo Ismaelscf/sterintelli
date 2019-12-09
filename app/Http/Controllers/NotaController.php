@@ -102,7 +102,7 @@ class NotaController extends Controller
             $std->serieprestacao = '99';
 
             //DADOS DO TOMADOR
-            $std->inscricaomunicipaltomador = $request->has('inscricaomunicipaltomador')? $request->inscricaomunicipaltomador : "";
+            $std->inscricaomunicipaltomador = $request->has('inscricaomunicipaltomador')? $request->inscricaomunicipaltomador : "123";
             $std->cpfcnpjtomador = $request->has('cpfcnpjtomador')? $request->cpfcnpjtomador : "0000000";
             $std->razaosocialtomador = $request->has('razaosocialtomador')? $request->razaosocialtomador : "";
             $std->tipologradourotomador = $request->has('tipologradourotomador')? $request->tipologradourotomador : "";
@@ -118,6 +118,7 @@ class NotaController extends Controller
 
 
             $std->codigoatividade = $request->has('codigoatividade')? $request->codigoatividade : "";
+            $std->codigoservico  = $request->has('codigoservico')? $request->codigoservico : "";
             $std->aliquotaatividade =$request->has('aliquotaatividade')? $request->aliquotaatividade : "";
             $std->tiporecolhimento = $request->has('tiporecolhimento')? $request->tiporecolhimento : "";
             $std->municipioprestacao = $request->has('municipioprestacao')? $request->municipioprestacao : "";
@@ -143,8 +144,9 @@ class NotaController extends Controller
             $std->itens[0]->valortotal = $request->has('valortotal')? $request->valortotal : 0.00;
             $std->itens[0]->tributavel = $request->has('tributavel')? $request->tributavel : "S";;
 
+
             $rps = new Rps($std);
-            
+
             $arps[] = $rps;    
             $lote = '123456';
            
