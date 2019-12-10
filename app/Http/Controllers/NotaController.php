@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 
 use App\Nota;
-use App\Controllers\Report;
+use App\Report;
+use App\Config;
 use Illuminate\Http\Request;
 use NFePHP\Common\Certificate;
 use NFePHP\NFSeDSF\Rps;
@@ -284,7 +285,8 @@ class NotaController extends Controller
   // Cabeçalho
   //--------------------------------------
   $y = $pdf->GetY();
-  $pdf->Image(BACKEND . 'images/ctba.jpg', 25, $y+2, 26, 26);
+  //$pdf->Image(BACKEND . 'images/ctba.jpg', 25, $y+2, 26, 26);
+  $pdf->Image( 'images/ctba.jpg', 25, $y+2, 26, 26);
   $pdf->Box(135, '', '', 0, 'TLBR', 'C', 30);
   $pdf->SetFont('helvetica', 'B', 12);
   $pdf->Text(60, $y+2, 'PREFEITURA MUNICIPAL DE SÃO LUÍS', false, false, true, 0, 1);
@@ -294,14 +296,14 @@ class NotaController extends Controller
   $pdf->Text(52, $pdf->GetY()+1, 'NOTA FISCAL DE SERVIÇOS ELETRÔNICA - NFS-e', false, false, true, 0, 1);
   $pdf->SetFont('helvetica', '', 8);
   $pdf->Text(62, $pdf->GetY()+1,
-    "RPS nº $nota->numerorps, Série $nota->serierps, emitido em " . ymdDmy($nota->dataemissaorps) . ' às ' . ymdH($nota->dataemissaorps)
+    "RPS nº $nota->numerorps, Série $nota->serierps, emitido em " . $nota->dataemissaorps . ' às ' . $nota->dataemissaorps
   );
 
   $pdf->SetY($y);
   $pdf->SetX($col2);
   $pdf->Box(0, 'Número da nota', sprintf('%06d', $nota->numerorps), 1, 'TBR', 'C', 10, ['helvetica', 'B', 10]);
   $pdf->SetX($col2);
-  $pdf->Box(0, 'Data e hora da emissão', ymdDmyH($nota->dataemissaorps), 1, 'TBR', 'C', 10, ['helvetica', 'B', 9]);
+  $pdf->Box(0, 'Data e hora da emissão', $nota->dataemissaorps, 1, 'TBR', 'C', 10, ['helvetica', 'B', 9]);
   $pdf->SetX($col2);
   //$pdf->Box(0, 'Código de verificação', $nota->verificacao, 1, 'TBR', 'C', 10, ['helvetica', 'B', 10]);
 
@@ -353,15 +355,17 @@ class NotaController extends Controller
   //$endereco = "$p->logradouro, $p->numero $p->complemento - $p->bairro - $p->cep";
   //$pdf->Image(UPLOAD_PATH . $filial->logo, 25, $yP+2, 26, 26);
   $pdf->SetY($yP+10);
-  $pdf->Columns([0 => 52, 5 => 100, 10 => 120, 15 => 150], [
-    ['h' => 5, 0 => ['Razão social:', $nota->razaosocialprestador]], 
-    ['h' => 5, 0 => ['CPF/CNPJ:', $nota->cpfcnpjtomador], 10 => ['Inscrição Municipal:', $nota->inscricaomunicipalprestador]],
-    //['h' => 5, 0 => ['Endereço:', $endereco], 15 => ['Fone:', $p->telefone]],
-    ['h' => 5, 0 => ['Endereço:', 'teste'], 15 => ['Fone:','teste']],
-    // bug: na ultima linha o 'h' sempre dispara text overflow ...
-    //[          0 => ['Município:', $emitMun->nome], 5 => ['UF:', $emitUF->sigla], 10 => ['Email:' , $p->email]]
-    [          0 => ['Município:', 'São Luis'], 5 => ['UF:', 'MA'], 10 => ['Email:' , 'teste@t4ste']]
-  ], ['helvetica', 'B', 8], null, 5);
+  $pdf->Columns(
+    [0 => 52, 5 => 100, 10 => 120, 15 => 150], 
+    [
+      ['h' => 5, 0 => ['Razão social:', $nota->razaosocialprestador]], 
+      ['h' => 5, 0 => ['CPF/CNPJ:', $nota->cpfcnpjtomador], 10 => ['Inscrição Municipal:', $nota->inscricaomunicipalprestador]],
+      //['h' => 5, 0 => ['Endereço:', $endereco], 15 => ['Fone:', $p->telefone]],
+      ['h' => 5, 0 => ['Endereço:', 'teste'], 15 => ['Fone:','teste']],
+      // bug: na ultima linha o 'h' sempre dispara text overflow ...
+      ['h' => 5, 0 => ['Município:', ' SÃO LUIS '], 5 => ['UF:', 'MA'], 10 => ['Email:' , $nota->emailtomador]]
+    ], 
+    ['helvetica', 'B', 8], null, 5);
 
   //--------------------------------------
   // Tomador
