@@ -18,6 +18,14 @@ class CreateNotasTable extends Migration
             $table->bigIncrements('id');
             $table->timestamps();
 
+            $table->string('cnpj')->nullable();
+            $table->string('razao')->nullable();
+            $table->date('dtInicial');
+            $table->date('dtFinal');
+            $table->integer('qtdade');
+            $table->float('vTotServ');
+            $table->float('vTotDeduc');
+
             $table->string('inscricaomunicipalprestador');
             $table->string('razaosocialprestador');
             

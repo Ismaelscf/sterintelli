@@ -4,6 +4,10 @@
 
  <input type="hidden"   id="tiporps" name="tiporps"  value= "RPS">
  <input type="hidden"   id="situacaorps" name="situacaorps"  value= "N">
+ <input type="hidden"   id="dtInicial" name="dtInicial"  value= "{{$dtInicial}}">
+ <input type="hidden"   id="dtFinal" name="dtFinal"  value= "{{$dtFinal}}}">
+ 
+ <input type="hidden"   id="qtdade" name="qtdade"  value= "1">
 <div class="container">
     <div class="container-fluid">
         <div class="row">
@@ -67,7 +71,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             
                             
                             <div class="fb-text form-group field-razao">
@@ -76,7 +80,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="numerorps" class="fb-text-label">No nota<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="1">
@@ -88,10 +92,22 @@
                                 <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2009-11-21T15:30:00">
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-1">
                             <div class="fb-text form-group field-token">
                                 <label for="serieprestacao" class="fb-text-label">Série<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="fb-text form-group field-token">
+                                <label for="vTotServ" class="fb-text-label">Total Nota<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="vTotServ" id="vTotServ" required="required" aria-required="true" value="100">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="fb-text form-group field-token">
+                                <label for="vTotDeduc" class="fb-text-label">Total Deduções<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="vTotDeduc" id="vTotDeduc" required="required" aria-required="true" value="0">
                             </div>
                         </div>
                     </div>
@@ -106,14 +122,28 @@
                 <div class="card-header">Dados do tomador</div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="rendered-form">
+                        <div class="col-md-3">
                                 <div class="fb-text form-group field-cnpjtomador">
                                     <label for="cpfcnpjtomador" class="fb-text-label">CPF/CNPJ do Tomador<span class="fb-required">*</span></label>
                                     <input type="text" class="form-control" name="cpfcnpjtomador" id="cpfcnpjtomador" required="required" aria-required="true" value="00000000000191">
                                 </div>
-
-                                <div class="fb-select form-group field-tipologradourotomador">
+                        </div>
+                        <div class="col-md-3">
+                                <div class="fb-text form-group field-inscricaomunicipaltomador">
+                                    <label for="inscricaomunicipaltomador" class="fb-text-label">Inscrição municipal do tomador<span class="fb-required">*</span></label>
+                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true" value="123456">
+                                </div>
+                        </div>
+                        <div class="col-md-6">
+                                 <div class="fb-text form-group field-razaotomador">
+                                <label for="razaotomador" class="fb-text-label">Razão social do Tomador<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="EMPRESA teste">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="fb-select form-group field-tipologradourotomador">
                                     <label for="tipologradourotomador" class="fb-select-label">Tipo de logradouro do tomador</label>
                                     <select class="form-control" name="tipologradourotomador" id="tipologradourotomador">
                                         <option value="rua" selected="true" id="tipologradourotomador-0">Rua</option>
@@ -121,12 +151,29 @@
                                         <option value="travessar" id="tipologradourotomador-2">Travessa</option>
                                     </select>
                                 </div>
-
+                        </div>
+                        <div class="col-md-6">
+                            <div class="fb-text form-group field-logradourotomador">
+                                <label for="logradourotomador" class="fb-text-label">Logradouro do tomador</label>
+                                <input type="text" class="form-control" name="logradourotomador" id="logradourotomador">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
                                 <div class="fb-text form-group field-numeroenderecotomador">
                                     <label for="numeroenderecotomador" class="fb-text-label">Número</label>
                                     <input type="text" class="form-control" name="numeroenderecotomador" id="numeroenderecotomador">
                                 </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="fb-textarea form-group field-complementoenderecotomador">
+                                <label for="complementoenderecotomador" class="fb-textarea-label">Complemento</label>
+                                <input type="text" class="form-control" class="form-control" name="complementoenderecotomador" id="complementoenderecotomador">
+                            </div>
+                        </div>
 
+                        <div class="col-md-4">
                                 <div class="fb-select form-group field-tipobairrotomador">
                                     <label for="tipobairrotomador" class="fb-select-label">Tipo bairro tomador</label>
                                     <select class="form-control" name="tipobairrotomador" id="tipobairrotomador">
@@ -134,7 +181,23 @@
                                         <option value="conjunto" id="tipobairrotomador-1">Conjunto</option>
                                     </select>
                                 </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="fb-text form-group field-bairrotomador">
+                                <label for="bairrotomador" class="fb-text-label">Bairro</label>
+                                <input type="text" class="form-control" name="bairrotomador" id="bairrotomador">
+                            </div>                            
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="fb-text form-group field-ceptomador">
+                                <label for="ceptomador" class="fb-text-label">CEP<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true" value="65000000">
+                            </div>
+                        </div>
 
+                        <div class="col-md-4">
                                 <div class="fb-select form-group field-cidadetomador">
                                     <label for="cidadetomador" class="fb-select-label">Cidade do tomador</label>
                                     <select class="form-control" name="cidadetomador" id="cidadetomador">
@@ -142,7 +205,8 @@
                                         <option value="0001219" id="cidadetomador-1">Teresina</option>
                                     </select>
                                 </div>
-
+                        </div>
+                        <div class="col-md-4">
                                 <div class="fb-text form-group field-emailtomador">
                                     <label for="emailtomador" class="fb-text-label">E-mail tomador<span class="fb-required">*</span></label>
                                     <input type="text" class="form-control" name="emailtomador" id="emailtomador" required="required" aria-required="true" value="rese@uol.com">
@@ -150,31 +214,8 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="fb-text form-group field-razaotomador">
-                                <label for="razaotomador" class="fb-text-label">Razão social do Tomador<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="EMPRESA teste">
-                            </div>
-                            <div class="fb-text form-group field-logradourotomador">
-                                <label for="logradourotomador" class="fb-text-label">Logradouro do tomador</label>
-                                <input type="text" class="form-control" name="logradourotomador" id="logradourotomador">
-                            </div>
-                            <div class="fb-textarea form-group field-complementoenderecotomador">
-                                <label for="complementoenderecotomador" class="fb-textarea-label">Complemento</label>
-                                <input type="text" class="form-control" class="form-control" name="complementoenderecotomador" id="complementoenderecotomador">
-                            </div>
-                            <div class="fb-text form-group field-bairrotomador">
-                                <label for="bairrotomador" class="fb-text-label">Bairro</label>
-                                <input type="text" class="form-control" name="bairrotomador" id="bairrotomador">
-                            </div>
-                            <div class="fb-text form-group field-ceptomador">
-                                <label for="ceptomador" class="fb-text-label">CEP<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true" value="65000000">
-                            </div>
-                            <div class="fb-text form-group field-emailtomador">
-                                    <label for="inscricaomunicipaltomador" class="fb-text-label">Inscrição municipal do tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true" value="123456">
-                                </div>
-                        </div>
+                            
+                            
                     </div>
                 </div>
             </div>

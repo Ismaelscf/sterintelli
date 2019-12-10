@@ -13,6 +13,13 @@ class Nota extends Model
     const UPDATED_AT = 'last_update';
 
     protected $fillable = [
+    	'cnpj',
+    	'razao',
+	    'dtInicial',
+        'dtFinal',
+        'qtdade',
+        'vTotServ',
+        'vTotDeduc',
         'inscricaomunicipalprestador',
 		'razaosocialprestador',
 		'tiporps',

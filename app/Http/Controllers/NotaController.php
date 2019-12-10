@@ -35,8 +35,8 @@ class NotaController extends Controller
         $this->configJson = json_encode($this->config);
 
         
-        //$content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
-        $content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
+        $content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
+        //$content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'associacao';
         $this->cert = Certificate::readPfx($content, $password);
@@ -67,9 +67,12 @@ class NotaController extends Controller
         $inscricaomunicipalprestador = '7048009';
         $razaosocialprestador = 'BRITO e SOARES LTDA';
         $token = '3579F09B4CC37151D3327197B13F9583';
+        $dtInicial = date('Y-m-d H:i:s');
+        $dtFinal = date('Y-m-d H:i:s');
+
 
         return view('notas.pre-emitir', compact('cnpjprestador', 'inscricaomunicipalprestador',
-            'razaosocialprestador', 'token'));  
+            'razaosocialprestador', 'token', 'dtInicial', 'dtFinal'));  
 
     }
 
@@ -98,6 +101,13 @@ class NotaController extends Controller
             $arps = [];
             
             $std = new \stdClass();
+            $std->dtInicial = $request->has('dtInicial')? $request->dtInicial : "";
+            $std->dtFinal = $request->has('dtFinal')? $request->dtFinal : "";
+            $std->qtdade = $request->has('qtdade')? $request->qtdade : 1;
+            $std->vTotServ = $request->has('vTotServ')? $request->vTotServ : 0.00;
+            $std->vTotDeduc = $request->has('vTotDeduc')? $request->vTotDeduc : 0.00;
+
+
             $std->inscricaomunicipalprestador = $request->has('inscricaomunicipalprestador')? $request->inscricaomunicipalprestador : "";
             $std->razaosocialprestador = $request->has('razaosocialprestador')? $request->razaosocialprestador : "";
 
