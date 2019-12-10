@@ -1,6 +1,9 @@
 <?php
 
-require_once 'tcpdf_config.php';
+namespace App\Http\Controllers;
+
+
+use App\Controllers\tcpdf_config;
 
 set_time_limit(60);
 

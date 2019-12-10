@@ -20,3 +20,10 @@ Route::get('/', function () {
  Route::get('notas','NotaController@index')->name('notas.index');
  Route::get('notas/emitir','NotaController@emitir')->name('notas.emitir');
  Route::post('notas/enviar','NotaController@enviar')->name('notas.enviar');
+ Route::post('notas/destroy','NotaController@destroy')->name('notas.destroy');
+ Route::post('notas/show','NotaController@enviar')->name('notas.show');
+ Route::post('notas/edit','NotaController@enviar')->name('notas.edit');
+
+
+
+ Route::get('notas/danfse','NotaController@danfse')->name('notas.danfse');

@@ -20,27 +20,30 @@
    
     <table class="table table-bordered">
         <tr>
-            <th>No</th>
+            <th>ID</th>
             <th>Numero</th>
             <th>Razão Social Tomador</th>
-            <th width="280px">Ação</th>
+            <th>Data</th>
+            <th width="300px">Ação</th>
         </tr>
         @foreach ($notas as $nota)
         <tr>
             <td>{{ $nota->id }}</td>
-            <td>{{ $nota->numero }}</td>
+            <td>{{ $nota->serierps}} - {{ $nota->numerorps }}</td>
             <td>{{ $nota->razaosocialtomador }}</td>
+            <td>{{ $nota->dataemissaorps }}</td>
             <td>
                 <form action="{{ route('notas.destroy',$nota->id) }}" method="POST">
    
-                    <a class="btn btn-info" href="{{ route('notas.show',$nota->id) }}">Show</a>
+   <a class="btn btn-info" href="{{ route('notas.danfse',$nota) }}">print</a>
+                    <a class="btn btn-info" href="{{ route('notas.show',$nota->id) }}">Detalhar</a>
     
-                    <a class="btn btn-primary" href="{{ route('notas.edit',$nota->id) }}">Edit</a>
+                    <a class="btn btn-primary" href="{{ route('notas.edit',$nota->id) }}">Editar</a>
    
                     @csrf
                     @method('DELETE')
       
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
                 </form>
             </td>
         </tr>

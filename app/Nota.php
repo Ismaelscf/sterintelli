@@ -35,6 +35,7 @@ class Nota extends Model
 		'ceptomador',
 		'emailtomador',
 		'codigoatividade',
+		'codigoservico',
 		'aliquotaatividade',
 		'tiporecolhimento',
 		'municipioprestacao',
@@ -50,7 +51,6 @@ class Nota extends Model
 		'aliquotacofins',
 		'aliquotainss',
 		'aliquotair',
-		'aliquotacsll',
-		'descricaorps'
+		'aliquotacsll', 'descricaorps', 'last_update', 'creation_date'
     ];
 }

@@ -1,6 +1,9 @@
 @extends('layout.app') @section('content')
  <form action="{{ url('notas/enviar') }}" method="POST">
    @csrf 
+
+ <input type="hidden"   id="tiporps" name="tiporps"  value= "RPS">
+ <input type="hidden"   id="situacaorps" name="situacaorps"  value= "N">
 <div class="container">
     <div class="container-fluid">
         <div class="row">
@@ -60,7 +63,36 @@
                                 <label for="token" class="fb-text-label">Token de Envio<span class="fb-required">*</span></label>
                                 <input type="password" class="form-control" name="token" id="token" required="required" aria-required="true" value="{{$token}}">
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
                             
+                            
+                            <div class="fb-text form-group field-razao">
+                                <label for="serierps" class="fb-text-label">Desc. No Nota<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="serierps" id="serierps" required="required" aria-required="true" value="NF">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="fb-text form-group field-token">
+                                <label for="numerorps" class="fb-text-label">No nota<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="1">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fb-text form-group field-token">
+                                <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2009-11-21T15:30:00">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fb-text form-group field-token">
+                                <label for="serieprestacao" class="fb-text-label">Série<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,7 +110,7 @@
                             <div class="rendered-form">
                                 <div class="fb-text form-group field-cnpjtomador">
                                     <label for="cpfcnpjtomador" class="fb-text-label">CPF/CNPJ do Tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="cpfcnpjtomador" id="cpfcnpjtomador" required="required" aria-required="true">
+                                    <input type="text" class="form-control" name="cpfcnpjtomador" id="cpfcnpjtomador" required="required" aria-required="true" value="00000000000191">
                                 </div>
 
                                 <div class="fb-select form-group field-tipologradourotomador">
@@ -113,14 +145,14 @@
 
                                 <div class="fb-text form-group field-emailtomador">
                                     <label for="emailtomador" class="fb-text-label">E-mail tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="emailtomador" id="emailtomador" required="required" aria-required="true">
+                                    <input type="text" class="form-control" name="emailtomador" id="emailtomador" required="required" aria-required="true" value="rese@uol.com">
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="fb-text form-group field-razaotomador">
                                 <label for="razaotomador" class="fb-text-label">Razão social do Tomador<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="EMPRESA teste">
                             </div>
                             <div class="fb-text form-group field-logradourotomador">
                                 <label for="logradourotomador" class="fb-text-label">Logradouro do tomador</label>
@@ -136,11 +168,11 @@
                             </div>
                             <div class="fb-text form-group field-ceptomador">
                                 <label for="ceptomador" class="fb-text-label">CEP<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true" value="65000000">
                             </div>
                             <div class="fb-text form-group field-emailtomador">
                                     <label for="inscricaomunicipaltomador" class="fb-text-label">Inscrição municipal do tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true">
+                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true" value="123456">
                                 </div>
                         </div>
                     </div>
@@ -215,7 +247,7 @@
                         <div class="col-md-6">
                             <div class="fb-text form-group field-aliquotaatividade">
                                 <label for="aliquotaatividade" class="fb-text-label">Aliquota da atividade<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="aliquotaatividade" id="aliquotaatividade" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="aliquotaatividade" id="aliquotaatividade" required="required" aria-required="true" value="5">
                             </div>
                             <div class="fb-select form-group field-municipioprestacao">
                                 <label for="municipioprestacao" class="fb-select-label">Municipio de prestacao<span class="fb-required">*</span></label>
@@ -294,13 +326,13 @@
                         <div class="col-md-3">
                             <div class="fb-text form-group field-valorunitario">
                                 <label for="valorunitario" class="fb-text-label">Valor unitário<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="valorunitario" id="valorunitario" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="valorunitario" id="valorunitario" required="required" aria-required="true" value="100">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="fb-text form-group field-valortotal">
                                 <label for="valortotal" class="fb-text-label">Valor total<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="valortotal" id="valortotal" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="valortotal" id="valortotal" required="required" aria-required="true" value="100">
                             </div>
                         </div>
                         <div class="col-md-3">

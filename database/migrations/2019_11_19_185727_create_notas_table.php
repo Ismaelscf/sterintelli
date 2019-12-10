@@ -31,22 +31,23 @@ class CreateNotasTable extends Migration
             $table->string('inscricaomunicipaltomador');
             $table->string('cpfcnpjtomador');
             $table->string('razaosocialtomador');
-            $table->string('tipologradourotomador');
-            $table->string('logradourotomador');
-            $table->string('numeroenderecotomador');
-            $table->string('complementoenderecotomador');
-            $table->string('tipobairrotomador');
-            $table->string('bairrotomador');
-            $table->string('cidadetomador');
-            $table->string('cidadetomadordescricao');
+            $table->string('tipologradourotomador')->nullable();
+            $table->string('logradourotomador')->nullable();
+            $table->string('numeroenderecotomador')->nullable();
+            $table->string('complementoenderecotomador')->nullable();
+            $table->string('tipobairrotomador')->nullable();
+            $table->string('bairrotomador')->nullable();
+            $table->string('cidadetomador')->nullable();
+            $table->string('cidadetomadordescricao')->nullable();
             $table->string('ceptomador');
             $table->string('emailtomador');
             
+            $table->string('codigoservico');
             $table->string('codigoatividade');
             $table->float('aliquotaatividade', 14, 2);
             $table->string('tiporecolhimento');
             $table->string('municipioprestacao');
-            $table->string('municipioprestacaodescricao');
+            $table->string('municipioprestacaodescricao')->nullable();
             $table->char('operacao', 2);
             $table->char('tributacao', 2);
             $table->float('valorpis', 14, 2);
@@ -59,7 +60,9 @@ class CreateNotasTable extends Migration
             $table->float('aliquotainss', 14, 2);
             $table->float('aliquotair', 14, 2);
             $table->float('aliquotacsll', 14, 2);
-            $table->text('descricaorps');
+            $table->text('descricaorps')->nullable();
+            $table->dateTime("last_update");
+            $table->dateTime("creation_date");
         });
     }
 
