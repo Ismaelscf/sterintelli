@@ -256,17 +256,18 @@ class NotaController extends Controller
 */
 
   $pdf = new Report(new Config('NFSe'));
-  $pdf->SetMargins(20, 12, 20);
+  $pdf->SetMargins(10.5, 3, 20);
   $pdf->setPrintHeader(false);
   $pdf->setPrintFooter(false);
   $pdf->SetAutoPageBreak(False, 0);
   $pdf->AddPage();
-  $pdf->SetCellPaddings(2, 0, 2, 0);
+  $pdf->SetCellPaddings(0, 0, 0, 0);
+  $pdf->SetLineStyle(array('width' => 0.3));
   
   //--------------------------------------
   // Recibo
   //--------------------------------------
-  $y = $pdf->GetY();
+  /*$y = $pdf->GetY();
   $pdf->Box(135, '',
     "Recebemos de $nota->razaosocialprestador os serviços \nconstantes da NOTA FISCAL DE SERVIÇOS ELETRÔNICA indicada ao lado",
     0, 'TBR', 'L', 0, ['helvetica', '', 7], 'T'
@@ -279,35 +280,31 @@ class NotaController extends Controller
   $pdf->SetY($y);
   $pdf->SetX($col2);
   $pdf->Box(0, '', "NFS-e\nNº " . sprintf('%06d', $nota->numerorps), 1, 'TB', 'C', $y1-$y, ['helvetica', 'B', 10], 'M');
-  $pdf->Ln(10);
+  $pdf->Ln(10);*/
 
   //--------------------------------------
   // Cabeçalho
   //--------------------------------------
   $y = $pdf->GetY();
-  //$pdf->Image(BACKEND . 'images/ctba.jpg', 25, $y+2, 26, 26);
-  $pdf->Image( 'images/ctba.jpg', 25, $y+2, 26, 26);
-  $pdf->Box(135, '', '', 0, 'TLBR', 'C', 30);
-  $pdf->SetFont('helvetica', 'B', 12);
-  $pdf->Text(60, $y+2, 'PREFEITURA MUNICIPAL DE SÃO LUÍS', false, false, true, 0, 1);
-  $pdf->SetFont('helvetica', 'B', 10);
-  $pdf->Text(65, $pdf->GetY()+1, 'SECRETARIA MUNICIPAL DA FAZENDA', false, false, true, 0, 1);
-  $pdf->SetFont('helvetica', 'B', 11);
-  $pdf->Text(52, $pdf->GetY()+1, 'NOTA FISCAL DE SERVIÇOS ELETRÔNICA - NFS-e', false, false, true, 0, 1);
-  $pdf->SetFont('helvetica', '', 8);
-  $pdf->Text(62, $pdf->GetY()+1,
-    "RPS nº $nota->numerorps, Série $nota->serierps, emitido em " . $nota->dataemissaorps . ' às ' . $nota->dataemissaorps
-  );
-
+  $pdf->Image( 'images/logo_slz.png', 11.5, $y+3, 18, 25);
+  $pdf->Box(114.5, '', '', 0, 'TLBR', 'C', 32);
+  $col2 = $pdf->GetX();
+  $pdf->SetFont('helvetica', 'B', 13);
+  $pdf->Text(48, $y+3, 'PREFEITURA DE SÃO LUÍS', false, false, true, 0, 1);
+  $pdf->SetFont('helvetica', 'B', 9.8);
+  $pdf->Text(44.5, $pdf->GetY()+4, 'SECRETARIA MUNICIPAL DE FAZENDA', false, false, true, 0, 1);
+  $pdf->SetFont('helvetica', 'B', 9.9);
+  $pdf->Text(35.5, $pdf->GetY()+4, 'NOTA FISCAL DE SERVIÇOS ELETRÔNICA - NFSe', false, false, true, 0, 1);
+  
+  
+  $y1 = $pdf->GetY();
   $pdf->SetY($y);
   $pdf->SetX($col2);
-  $pdf->Box(0, 'Número da nota', sprintf('%06d', $nota->numerorps), 1, 'TBR', 'C', 10, ['helvetica', 'B', 10]);
+  $pdf->Box(75, 'Número da Nota', sprintf('%06d', $nota->numerorps), 1, 'TBR', 'L', 10, ['helvetica', 'B', 10], 'B', false, ['helvetica', '', 9]);
   $pdf->SetX($col2);
-  $pdf->Box(0, 'Data e hora da emissão', $nota->dataemissaorps, 1, 'TBR', 'C', 10, ['helvetica', 'B', 9]);
+  $pdf->Box(75, 'Data e Hora da Emissão', '18/09/2019 17:39:00', 1, 'TBR', 'L', 10, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 9]);
   $pdf->SetX($col2);
-  //$pdf->Box(0, 'Código de verificação', $nota->verificacao, 1, 'TBR', 'C', 10, ['helvetica', 'B', 10]);
-
-  $pdf->Box(0, 'Código de verificação', '123', 1, 'TBR', 'C', 10, ['helvetica', 'B', 10]);
+  $pdf->Box(75, 'Código de Verificação', '3DEA.A950.BB27.7D10.A770.55B1.219B.7E32', 1, 'TBR', 'L', 12, ['helvetica', 'B', 5], 'B', false, ['helvetica', '', 9]);
 
   //--------------------------------------
   // Grupos
@@ -316,37 +313,80 @@ class NotaController extends Controller
   $pdf->fontText = ['helvetica', '', 8];
 
   $yP = $pdf->GetY();
-  $pdf->Box(0, '', "\nPRESTADOR DE SERVIÇOS", 1, 'BLR', 'C', 30, ['helvetica', 'B', 9], 'T');
+  $pdf->Box(189.5, '', "PRESTADOR DE SERVIÇOS", 1, 'BLR', 'C', 22, ['helvetica', 'B', 9], 'T');
   $yT = $pdf->GetY();
-  $pdf->Box(0, '', "\nTOMADOR DE SERVIÇOS", 1, 'BLR', 'C', 30, ['helvetica', 'B', 9], 'T');
+  $pdf->Image( 'images/logo_1.png', 12, $yP+3, 18, 18);
+
+  $pdf->Box(189.5, '', "TOMADOR DE SERVIÇOS", 1, 'BLR', 'C', 22, ['helvetica', 'B', 9], 'T');
   $yD = $pdf->GetY();
-  $pdf->Box(0, '', "\nDISCRIMINAÇÃO DOS SERVIÇOS", 1, 'BLR', 'C', 70, ['helvetica', 'B', 9], 'T');
-  //$pdf->Box(0, '', 'VALOR TOTAL DA NOTA = R$ ' . numberFormat($nota->total), 1, 'BLR', 'C', 6, ['helvetica', 'B', 9]);
-  $pdf->Box(0, '', 'VALOR TOTAL DA NOTA = R$ ' . '1000', 1, 'BLR', 'C', 6, ['helvetica', 'B', 9]);
-  $pdf->Box(0, 'Código de atividade', '1401 - ajdksf akjsfdhkah', 1, 'BLR', 'L');
-  $pdf->Box(38, 'Valor total das deduções', '0.00', 0, 'BLR', 'C', 8);
-  //$pdf->Box(38, 'Base de cálculo (R$)', numberFormat($nota->total), 0, 'BLR', 'C', 8);
-  $pdf->Box(38, 'Base de cálculo (R$)', '1000', 0, 'BLR', 'C', 8);
-  $pdf->Box(18, 'Alíquota (%)', '0.00', 0, 'BLR', 'C', 8);
-  $pdf->Box(38, 'Valor do ISS (R$)', '0.00', 0, 'BLR', 'C', 8);
-  $pdf->Box(0, 'Crédito p/ abatimento do IPTU', '0',
-    1, 'BLR', 'C', 8
-  );
+  $pdf->Box(189.5, '', "DISCRIMINAÇÃO DOS SERVIÇOS", 1, 'BLR', 'C', 26, ['helvetica', 'B', 9], 'T');
+
+
+  //Titulo Itens
+  //---------------
+  $pdf->Box(21, '', "Tipo do Item", 0, 'BLR', 'L', 5, ['helvetica', 'B', 7], 'T');
+  $pdf->SetX(31.5);
+  $pdf->Box(100, '', "Item", 0, 'BLR', 'L', 5, ['helvetica', 'B', 7], 'T');
+  $pdf->SetX(131.5);
+  $pdf->Box(21, '', "Quantidade", 0, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
+  $pdf->SetX(152.5);
+  $pdf->Box(21, '', "Valor Unitário (R$)", 0, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
+  $pdf->SetX(173.5);
+  $pdf->Box(26.5, '', "Valor Total (R$)", 1, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
+
+
+  // Itens
+  //---------------
+  $pdf->Box(21, '', "TRIBUTÁVEL", 0, 'BLR', 'L', 85, ['helvetica', '', 6], 'T');
+  $pdf->SetX(31.5);
+  $pdf->Box(100, '', "REVISAO DOS 50.000 KM (1,00HR)", 0, 'BLR', 'L', 85, ['helvetica', '', 6], 'T');
+  $pdf->SetX(131.5);
+  $pdf->Box(21, '', "10", 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+  $pdf->SetX(152.5);
+  $pdf->Box(21, '', "151,10", 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+  $pdf->SetX(173.5);
+  $pdf->Box(26.5, '', "1510,10", 1, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+
+
+  $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
+
+  $y = $pdf->GetY();
+  $pdf->SetY($y-10);
+  $pdf->SetX(11.5);
+
+  $pdf->Box(36, 'PIS (0,0000%):', 'R$ 0,00', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->SetX(49);
+  $pdf->Box(36, 'COFINS (0,0000%):', 'R$ 0,00', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->SetX(87);
+  $pdf->Box(36, 'INSS (0,0000%):', 'R$ 0,00', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->SetX(124);
+  $pdf->Box(36, 'IR (0,0000%):', 'R$ 0,00', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->SetX(161);
+  $pdf->Box(36, 'CSLL (0,0000%):', 'R$ 0,00', 1, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+
+
+  $pdf->Box(189.5, '', 'VALOR TOTAL DA NOTA = R$ ' . '1000', 1, 'BLR', 'C', 7, ['helvetica', 'B', 10]);
+
+
+  $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
+
+  $y = $pdf->GetY();
+  $pdf->SetY($y-10);
+  $pdf->SetX(11.5);
+
+  $pdf->Box(36, 'Valor Total Composição:', 'R$ 0,00', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $pdf->SetX(49);
+  $pdf->Box(36, 'Valor Total Deduções:', 'R$ 0,00', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $pdf->SetX(87);
+  $pdf->Box(36, 'Base Cálculo:', 'R$ 151,11', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $pdf->SetX(124);
+  $pdf->Box(36, 'Alíquota:', '5,00%', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+   $pdf->SetX(161);
+  $pdf->Box(36, 'Valor ISS:', 'R$ 7,56', 1, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+
   $yO = $pdf->GetY();
-  $pdf->Box(0, '', "\nOUTRAS INFORMAÇÕES", 1, 'BLR', 'C', 40, ['helvetica', 'B', 9], 'T');
-  $pdf->SetFont('helvetica', '', 7);
-  $pdf->SetY($yO+10);
-  $pdf->MultiCell(0, 25, 
-    'Esta NFS-e foi emitida com respaldo na Lei 73/2009. O crédito gerado estará disponível somente após o recolhimento ' .
-    'do Simples Nacional, exceto para os casos previstos no 5º do Art. 10 da Lei 73/2009. Documento emitido por ME ou EPP ' .
-    'optante pelo Simples Nacional. Não gera direito a crédito fiscal de IPI. ' .
-    $nota->textTrib . ' ' . $nota->infoCompl ."\n",
-    0, 'J', false, 1
-  );
-  $pdf->MultiCell(0, 0, 
-    'Para verificar a autenticidade desta NFS-e acesse: https://stm.semfaz.saoluis.ma.gov.br/credenciamento/jsp/validacaonota/index.jsf',
-    0, 'C', false, 1
-  );
+  $pdf->Box(189.5, '', "\nOUTRAS INFORMAÇÕES", 1, 'BLR', 'C', 50, ['helvetica', 'B', 9], 'T');
+  
 
   //--------------------------------------
   // Prestador
@@ -354,37 +394,57 @@ class NotaController extends Controller
   //$p = $emitente;
   //$endereco = "$p->logradouro, $p->numero $p->complemento - $p->bairro - $p->cep";
   //$pdf->Image(UPLOAD_PATH . $filial->logo, 25, $yP+2, 26, 26);
-  $pdf->SetY($yP+10);
+  $pdf->SetY($yP+3);
   $pdf->Columns(
-    [0 => 52, 5 => 100, 10 => 120, 15 => 150], 
+    [0 => 32, 5 => 100, 10 => 120, 15 => 150], 
     [
-      ['h' => 5, 0 => ['Razão social:', $nota->razaosocialprestador]], 
-      ['h' => 5, 0 => ['CPF/CNPJ:', $nota->cpfcnpjtomador], 10 => ['Inscrição Municipal:', $nota->inscricaomunicipalprestador]],
-      //['h' => 5, 0 => ['Endereço:', $endereco], 15 => ['Fone:', $p->telefone]],
-      ['h' => 5, 0 => ['Endereço:', 'teste'], 15 => ['Fone:','teste']],
+      [ 0 => ['Nome / Razão Social:', 'TOYOLEX AUTOS S/A']], 
+      [ 0 => ['CPF / CNPJ:', '07.234.453/0013-65'], 10 => ['Inscrição Municipal:', '27970001']],
+      [ 0 => ['Endereço:', 'DOS HOLANDESES, QUADRA 31 LOTE 20 - BAIRRO CALHAU - CEP: 65071380']],
       // bug: na ultima linha o 'h' sempre dispara text overflow ...
-      ['h' => 5, 0 => ['Município:', ' SÃO LUIS '], 5 => ['UF:', 'MA'], 10 => ['Email:' , $nota->emailtomador]]
+      [ 0 => ['Município:', ' SÃO LUIS '], 5 => ['UF:', 'MA'], 10 => ['Email:' , $nota->emailtomador], 15 => ['Telefone:' , $nota->emailtomador]]
     ], 
-    ['helvetica', 'B', 8], null, 5);
+    ['helvetica', '', 8], ['helvetica', 'B', 7], 5);
+
+
 
   //--------------------------------------
   // Tomador
   //--------------------------------------
  // $p = $tomador;
   //$endereco = "$p->logradouro, $p->numero $p->complemento - $p->bairro - $p->cep";
-  $pdf->SetY($yT+10);
-  $pdf->Columns([0 => 25, 5 => 100, 10 => 120, 15 => 150], [
-    [0 => ['Razão social:', $nota->razaosocialtomador]], 
-    [0 => ['CPF/CNPJ:', $nota->cpfcnpjtomador], 10 => ['Inscrição Municipal:', $nota->inscricaomunicipaltomador]],
-    [0 => ['Endereço:', $nota->tipologradourotomador], 15 => ['Fone:', '-']],
-    [0 => ['Município:', $nota->municipioprestacaodescricao], 5 => ['UF:', 'MA'], 10 => ['Email:' , $nota->emailtomador]]
-  ], ['helvetica', 'B', 8]);
+  $pdf->SetY($yT+3);
+  $pdf->Columns([0 => 11, 5 => 85, 10 => 105, 15 => 165], [
+    [0 => ['Nome / Razão Social:', 'STEFERSON LIMA COSTA FERREIRA']], 
+    [0 => ['CPF / CNPJ:', '822.569.693-04'], 10 => ['Inscrição Municipal:', $nota->inscricaomunicipaltomador]],
+    [0 => ['Endereço:', 'R DOS SABIAS ED PONTA NEGRA, APT 203 - BAIRRO RENASCENCA II - CEP: 65075760']],
+    [0 => ['Município:', 'SÃO LUÍS'], 5 => ['UF:', 'MA'], 10 => ['Email:' , 'steferson.fereira@gmail.com'], 15 => ['Telefone:' , $nota->emailtomador]]
+  ], ['helvetica', '', 8], ['helvetica', 'B', 7]);
 
   //--------------------------------------
   // Descriminação
   //--------------------------------------
-  $pdf->SetY($yD+10);
-  $pdf->Box(0, '', $nota->descricaorps, 1, 0, 'L', 70, ['helvetica', '', 8], 'T');
+  $pdf->SetY($yD+5);
+  $pdf->Box(0, '', 'Descrição:O.S.: 341852 VENDEDOR: JACILENE RIBEIRO DA CONDICAO DE PAGAMENTO: MASTERCARD 2X PLACA:OXX2605 CHASSI:9BRBDWHE0F0231532 KM:54458 TRIB APROX R$ 20,32 FED 0,00 EST 7,30 MUN FONTE: IBPT 5A16F8', 1, 0, 'L', 70, ['helvetica', '', 5], 'T');
+
+  //--------------------------------------
+  // Outras Informaçoes
+  //--------------------------------------
+  $pdf->SetY($yO+8);
+  $pdf->Columns(
+    [0 => 11, 5 => 87, 10 => 150], 
+    [
+      ['h' => 4, 0 => ['Descrição NBS:', '']],
+      ['h' => 4, 0 => ['Local de Incidência Imposto:', 'Estabelecimento do Prestador'], 5 => ['Tributação:', 'TRIBUTÁVEL'], 10 => ['Mês de','09/2019']],
+      ['h' => 4, 0 => ['Local de Prestação do Serv.:', 'SAO LUIS / MA']],
+      ['h' => 4, 0 => ['Recolhimento:', 'PRÓPRIO']],
+      ['h' => 4, 0 => ['Atividade:', '452000100 - SERVICOS DE MANUTENCAO E REPARACAO MECANICA DE VEICULOS AUTOMOTORES']],
+      ['h' => 12, 0 => ['Serviço:', '1401 - LUBRIFICACAO, LIMPEZA, LUSTRACAO, REVISAO, CARGA E RECARGA, CONSERTO, RESTAURACAO, BLINDAGEM,']],
+      ['h' => 5, 0 => ['RPS/SÉRIE:', '209996/99 (18/09/2019)']],  
+    ], 
+    ['helvetica', '', 7], ['helvetica', '', 7], 5);
+
+
 
   // $txtPdf = $pdf->Output('nfse.pdf', 'S');
   // file_put_contents(UPLOAD_PATH . $target, $txtPdf);

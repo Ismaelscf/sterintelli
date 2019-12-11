@@ -2,7 +2,7 @@
 
 namespace App;
 
-require (__DIR__.'\tcpdf_config.php');
+require (__DIR__.'/tcpdf_config.php');
 
 use TCPDF;
 
@@ -74,7 +74,7 @@ class Report extends TCPDF {
     $this->_destroy(false);
   }  
 
-  public function Box ($w, $caption, $text, $ln=0, $border=1, $align='L', $h=null, $font=null, $valign='B', $fill=false)
+  public function Box ($w, $caption, $text, $ln=0, $border=1, $align='L', $h=null, $font=null, $valign='B', $fill=false, $fontCaption=null, $captionAlign='L')
   {
     $x = $this->GetX();
     if ($text === null)
@@ -85,9 +85,13 @@ class Report extends TCPDF {
       $text = "\n$text";
 
     $this->SetFont(...$this->fontCaption);
-    $this->SetCellPaddings(2, 0, 2, 1);
+    $this->SetCellPaddings(0.5, 0, 2, 1);
     if ($caption) {
-      $this->MultiCell($w, $h, $caption, 0, 'L', $fill, 0, '', '', true, false, false, true, $h, 'T', false);
+
+      if (!$fontCaption)
+           $fontCaption = $this->fontText;
+      $this->SetFont(...$fontCaption);
+      $this->MultiCell($w, $h, $caption, 0, $captionAlign, $fill, 0, '', '', true, false, false, true, $h, 'T', false);
       $this->SetX($x);
     }
     if (!$font)
@@ -109,8 +113,6 @@ class Report extends TCPDF {
       $fontText = $this->fontText;
 
     // imprimir captions
-
-
     foreach ($positions as $keyP => $pos) {
       foreach ($rows as $keyR => $row) {
         foreach ($row as $keyI => $item) {
@@ -163,8 +165,6 @@ class Report extends TCPDF {
           if (in_array($keyI, ['h', 'fontCaption', 'fontText'], true))
             continue;
 
-
-
           if (array_key_exists('fontText',$row))
             $font = $row['fontText'];
           else
@@ -191,8 +191,10 @@ class Report extends TCPDF {
                 $w = $positions[$nextKey] - $this->GetX() - 3;
                 $xOF = $positions[$nextKey] - $this->GetStringWidth('...') - 1;
               }
-              if ($this->GetStringWidth($text) > $w)
+              
+              if ($this->GetStringWidth($text) > $w){
                 $overflow = true;
+              }
             } else
               $w = 0;
 
@@ -202,12 +204,15 @@ class Report extends TCPDF {
               $h1 = $h;
 
             $this->MultiCell($w, $h1, $text, 0, 'L', false, 0, '', '', true, false, false, true, $h1, 'T', false);
-            if ($overflow)
-              $this->Text($xOF, $this->GetY(), '...');
+
+            //COMENTADO PARA AVALIAR DEPOIS.
+            //if ($overflow)
+              //$this->Text($xOF, $this->GetY(), '...');
           }
         }
       }
       $first = false;
     }
+
   }
 }
