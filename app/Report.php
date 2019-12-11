@@ -1,29 +1,32 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App;
 
+require (__DIR__.'\tcpdf_config.php');
 
-use App\Controllers\tcpdf_config;
-
-set_time_limit(60);
+use TCPDF;
 
 //
 // Configura de cabeçalho e rodapé baseado nas informações da filial
 //
 class Config {
   public function __construct ($name='Relátorio', $filialId=null, $subject=null, $fast=1, $orientation=PDF_PAGE_ORIENTATION) {
-    if ($filial) {
+    /*if ($filial) {
       $filial = pdoGet('filial', $filialId);
       $emitente = pdoGet('parceiro', $filial->parceiro_id);
       $municipio = pdoGet('municipio', $emitente->municipio_id);
       $uf = pdoGet('uf', $municipio->uf_id);
-    }
+    }*/
     $this->name = $name;
     $this->subject = $subject ? $subject : $name;
     $this->orientation = $orientation;
     $this->keywords = 'report';
-    $this->logo = UPLOAD_PATH.$filial->logo;
+    //$this->logo = UPLOAD_PATH.$filial->logo;
+    $this->logo = '';
     $this->logoWidth = '15';
+    $this->title = '-';
+    $this->subtitle = '-';
+
   }
 }
 
@@ -106,30 +109,46 @@ class Report extends TCPDF {
       $fontText = $this->fontText;
 
     // imprimir captions
+
+
     foreach ($positions as $keyP => $pos) {
       foreach ($rows as $keyR => $row) {
         foreach ($row as $keyI => $item) {
+
           if (in_array($keyI, ['h', 'fontCaption', 'fontText'], true))
             continue;
 
-          $font = $row['fontCaption'];
-          if (!$font)
+          if (array_key_exists('fontCaption',$row))
+            $font = $row['fontCaption'];
+          else
             $font = $fontCaption;
           $this->SetFont(...$font);
 
           if ($keyP == $keyI) {
+
             [$caption, $text] = $item;
-            if ($ys[$keyR])
+
+
+            if (array_key_exists($keyR,$ys))
               $this->SetY($ys[$keyR]);
             else
               $ys[$keyR] = $this->GetY();
+
             $this->SetX($pos);
-            $h1 = $row['h'];
-            if (!$h1)
+
+            if (array_key_exists('h',$row))
+              $h1 = $row['h'];
+            else
               $h1 = $h;
+
             $this->MultiCell(0, $h1, $caption, 0, 'L', false, 1, '', '', true, false, false, true, $h1, 'T', false);
             $w = $this->GetStringWidth($caption);
-            $posFirst[$keyP] = max($posFirst[$keyP], $w);
+
+            if (array_key_exists($keyP, $posFirst))
+                $posFirst[$keyP] = max($posFirst[$keyP], $w);
+            else
+                $posFirst[$keyP] = $w;
+
             $posCaption[$caption] = $w;
           }
         }
@@ -144,9 +163,13 @@ class Report extends TCPDF {
           if (in_array($keyI, ['h', 'fontCaption', 'fontText'], true))
             continue;
 
-          $font = $row['fontText'];
-          if (!$font)
+
+
+          if (array_key_exists('fontText',$row))
+            $font = $row['fontText'];
+          else
             $font = $fontText;
+
           $this->SetFont(...$font);
   
           if ($keyP == $keyI) {
@@ -173,8 +196,9 @@ class Report extends TCPDF {
             } else
               $w = 0;
 
-            $h1 = $row['h'];
-            if (!$h1)
+            if (array_key_exists('h',$row))
+              $h1 = $row['h'];
+            else
               $h1 = $h;
 
             $this->MultiCell($w, $h1, $text, 0, 'L', false, 0, '', '', true, false, false, true, $h1, 'T', false);
