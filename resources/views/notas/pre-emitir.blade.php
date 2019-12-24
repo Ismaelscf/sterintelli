@@ -75,26 +75,26 @@
                             
                             
                             <div class="fb-text form-group field-razao">
-                                <label for="serierps" class="fb-text-label">Desc. No Nota<span class="fb-required">*</span></label>
+                                <label for="serierps" class="fb-text-label">Série RPS<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="serierps" id="serierps" required="required" aria-required="true" value="NF">
                             </div>
                         </div>
 
                         <div class="col-md-2">
                             <div class="fb-text form-group field-token">
-                                <label for="numerorps" class="fb-text-label">No nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="1">
+                                <label for="numerorps" class="fb-text-label">No RPS<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="2">
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2009-11-21T15:30:00">
+                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2019-12-17T15:30:00">
                             </div>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
-                                <label for="serieprestacao" class="fb-text-label">Série<span class="fb-required">*</span></label>
+                                <label for="serieprestacao" class="fb-text-label">Série prestação<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99">
                             </div>
                         </div>
@@ -201,8 +201,7 @@
                                 <div class="fb-select form-group field-cidadetomador">
                                     <label for="cidadetomador" class="fb-select-label">Cidade do tomador</label>
                                     <select class="form-control" name="cidadetomador" id="cidadetomador">
-                                        <option value="2111300" selected="true" id="cidadetomador-0">São Luis</option>
-                                        <option value="0001219" id="cidadetomador-1">Teresina</option>
+                                       <option value="0000921" selected="true">São Luis</option>
                                     </select>
                                 </div>
                         </div>
@@ -235,13 +234,13 @@
                                     <div class="fb-select form-group field-codigoatividade">
                                         <label for="codigoatividade" class="fb-select-label">Código de Atividade<span class="fb-required">*</span></label>
                                         <select class="form-control" name="codigoatividade" id="codigoatividade" required="required" aria-required="true">
-                                            <option value="412040000" selected="true">412040000</option>
+                                            <option value="812900000" selected="true">812900000</option>
                                         </select>
                                     </div>
                                     <div class="fb-select form-group field-codigoservico">
                                         <label for="codigoservico" class="fb-select-label">Código do Serviço<span class="fb-required">*</span></label>
                                         <select class="form-control" name="codigoservico" id="codigoservico" required="required" aria-required="true">
-                                            <option value="1002" selected="true">1002</option>
+                                            <option value="0709" selected="true">0709</option>
                                         </select>
                                     </div>
 
@@ -293,8 +292,7 @@
                             <div class="fb-select form-group field-municipioprestacao">
                                 <label for="municipioprestacao" class="fb-select-label">Municipio de prestacao<span class="fb-required">*</span></label>
                                 <select class="form-control" name="municipioprestacao" id="municipioprestacao" required="required" aria-required="true">
-                                    <option value="0001219" selected="true" id="municipioprestacao-0">Teresina</option>
-                                    <option value="2111300" id="municipioprestacao-1">São Luis</option>
+                                    <option value="0000921" selected="true">São Luis</option>
                                 </select>
                             </div>
                             <div class="fb-select form-group field-tributacao">

@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 
 use App\Nota;
 use App\Report;
@@ -86,7 +84,9 @@ class NotaController extends Controller
     public function enviar(Request $request)
     {
   
-        Nota::create($request->all());
+        //Nota::beginTransaction();
+
+        //Nota::create($request->all());
 
         try {
 
@@ -94,7 +94,9 @@ class NotaController extends Controller
             $soap->disableCertValidation(true);
             
             $tools = new Tools($this->configJson, $this->cert);
+            $soap->timeout(120);
             $tools->loadSoapClass($soap);
+
 
  
             $arps = [];
@@ -166,16 +168,19 @@ class NotaController extends Controller
             $arps[] = $rps;    
             $lote = '123456';
            
-            $response = $tools->enviarSincrono($arps, $lote);
+            $response = $tools->enviar($arps, $lote);
 
-            $json = json_encode($xml);
+            $json = json_encode($response);
+            print_r("<xmp>".$json."</xmp>");
 
 
         } catch (\Exception $e) {
+            //Nota::rollBack();
             echo $e->getMessage();
         }
    
-        return  $json;//redirect()->route('notas.index')
+        //Nota::commit();
+        return  $response;//redirect()->route('notas.index')
                         //->with('success','Nota criada com sucesso.');
     }
 
