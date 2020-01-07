@@ -88,7 +88,7 @@ class NotaController extends Controller
 
         //Nota::create($request->all());
 
-        try {
+        //try {
 
             $soap = new SoapCurl();
             $soap->disableCertValidation(true);
@@ -171,10 +171,10 @@ class NotaController extends Controller
             $response = $tools->enviar($arps, $lote);
 
 
-        } catch (\Exception $e) {
+       // } catch (\Exception $e) {
             //Nota::rollBack();
-            echo $e->getMessage();
-        }
+           // echo $e->getMessage();
+        //}
    
         return  $response;//redirect()->route('notas.index')
                         //->with('success','Nota criada com sucesso.');
