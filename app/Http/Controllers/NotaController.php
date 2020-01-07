@@ -36,8 +36,8 @@ class NotaController extends Controller
         $this->configJson = json_encode($this->config);
 
         
-        $content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
-        //$content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
+        //$content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
+        $content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'associacao';
         $this->cert = Certificate::readPfx($content, $password);
@@ -168,14 +168,14 @@ class NotaController extends Controller
            
             $response = $tools->enviarSincrono($arps, $lote);
 
-            $json = json_encode($xml);
+            
 
 
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
    
-        return  $json;//redirect()->route('notas.index')
+        return  $response;//redirect()->route('notas.index')
                         //->with('success','Nota criada com sucesso.');
     }
 
