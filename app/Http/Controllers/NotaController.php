@@ -26,7 +26,7 @@ class NotaController extends Controller
                 'im' => '7048009',
                 'cmun' => '2111300', //ira determinar as urls e outros dados
                 'razao' => 'BRITO e SOARES LTDA',
-                'tpamb' => 2, //1-producao, 2-homologacao
+                'tpamb' => 1, //1-producao, 2-homologacao
                 'token' => '3579F09B4CC37151D3327197B13F9583',
             ];
 
@@ -34,10 +34,10 @@ class NotaController extends Controller
         $this->configJson = json_encode($this->config);
 
         
-        //$content = file_get_contents('C:\dev_stef\certificado\expired_certificate.pfx');
-        $content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
+        $content = file_get_contents('C:\dev_stef\certificado\BRITOSORES2020.pfx');
+        //$content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
-        $password = 'associacao';
+        $password = 'brito2020s';
         $this->cert = Certificate::readPfx($content, $password);
     }
 
@@ -179,6 +179,34 @@ class NotaController extends Controller
         return  $response;//redirect()->route('notas.index')
                         //->with('success','Nota criada com sucesso.');
     }
+
+    public function preConsultarNotas()
+    {
+        return view('notas.pre-consultarnota');
+    }
+
+
+    public function consultarNotas(Request $request)
+    {
+
+        $soap = new SoapCurl();
+        //$soap->disableCertValidation(true);
+
+        $tools = new Tools($this->configJson, $this->cert);
+        $soap->timeout(120);
+        $tools->loadSoapClass($soap);
+
+        $dtIni = $request->has('dtIni')? $request->dtIni : '01/01/20120';
+        $dtFim = $request->has('dtFim')? $request->dtIni : '01/01/20120';
+
+        $response = $tools->consultarNota($dtIni, $dtFim);
+
+        return  $response;
+        //return view('notas.onsultanotas',compact('nota'));
+    }
+
+
+
 
     /**
      * Display the specified resource.
