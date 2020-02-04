@@ -21,14 +21,21 @@ class NotaController extends Controller
 
     public function __construct(stdClass $rps)
     {
-       $this->config = [
+
+      //homolog
+      //$token = '3579F09B4CC37151D3327197B13F9583';
+      
+
+      //prod
+      $token = 'F0D5E8217DC2050AE0028EC24B2D70FE';
+      $this->config = [
                 'cnpj' => '01469892000137',
                 'im' => '7048009',
                 'cmun' => '2111300', //ira determinar as urls e outros dados
                 'razao' => 'BRITO e SOARES LTDA',
                 'tpamb' => 1, //1-producao, 2-homologacao
                 'token' => '2734DB04D2D26922454C5107A750B4FC',
-            ];
+
 
 
         $this->configJson = json_encode($this->config);
@@ -189,15 +196,10 @@ class NotaController extends Controller
     public function consultarNotas(Request $request)
     {
 
-        $soap = new SoapCurl();
-        //$soap->disableCertValidation(true);
-
         $tools = new Tools($this->configJson, $this->cert);
-        $soap->timeout(120);
-        $tools->loadSoapClass($soap);
 
-        $dtIni = $request->has('dtIni')? $request->dtIni : '01/01/2020';
-        $dtFim = $request->has('dtFim')? $request->dtFim : '01/01/2020';
+        $dtIni = $request->has('dtIni')? $request->dtIni : '2019-12-01';
+        $dtFim = $request->has('dtFim')? $request->dtFim : '2019-12-31';
 
         $response = $tools->consultarNota($dtIni, $dtFim);
 
@@ -230,7 +232,7 @@ class NotaController extends Controller
         //$response = $tools->consultarNFSeRps();
 
         return  $response;
-        //return view('notas.onsultanotas',compact('nota'));
+        //return view('notas.consultanotas',compact('nota'));
     }
 
 
