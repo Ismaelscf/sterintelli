@@ -89,7 +89,7 @@
                         <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2020-02-04">
+                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2020-02-04T17:00:00">
                             </div>
                         </div>
                         <div class="col-md-2">
