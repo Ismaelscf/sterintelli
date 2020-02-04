@@ -35,14 +35,14 @@ class NotaController extends Controller
                 'razao' => 'BRITO e SOARES LTDA',
                 'tpamb' => 1, //1-producao, 2-homologacao
                 'token' => '2734DB04D2D26922454C5107A750B4FC',
-
+              ];
 
 
         $this->configJson = json_encode($this->config);
 
         
-        //$content = file_get_contents('C:\dev_stef\certificado\BRITOSORES2020.pfx');
-        $content = file_get_contents('/Users/steferson_1/dev_stef/certificado/BRITOSORES2020.pfx');
+        $content = file_get_contents('C:\dev_stef\certificado\BRITOSORES2020.pfx');
+        //$content = file_get_contents('/Users/steferson_1/dev_stef/certificado/BRITOSORES2020.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'brito2020s';
         $this->cert = Certificate::readPfx($content, $password);

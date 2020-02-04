@@ -83,13 +83,13 @@
                         <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="numerorps" class="fb-text-label">No RPS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="2">
+                                <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="1">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2019-12-17T15:30:00">
+                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="2020-02-04">
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -101,7 +101,7 @@
                         <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="vTotServ" class="fb-text-label">Total Nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="vTotServ" id="vTotServ" required="required" aria-required="true" value="100">
+                                <input type="text" class="form-control" name="vTotServ" id="vTotServ" required="required" aria-required="true" value="1278.34">
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -125,19 +125,19 @@
                         <div class="col-md-3">
                                 <div class="fb-text form-group field-cnpjtomador">
                                     <label for="cpfcnpjtomador" class="fb-text-label">CPF/CNPJ do Tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="cpfcnpjtomador" id="cpfcnpjtomador" required="required" aria-required="true" value="00000000000191">
+                                    <input type="text" class="form-control" name="cpfcnpjtomador" id="cpfcnpjtomador" required="required" aria-required="true" value="14885504000140">
                                 </div>
                         </div>
                         <div class="col-md-3">
                                 <div class="fb-text form-group field-inscricaomunicipaltomador">
                                     <label for="inscricaomunicipaltomador" class="fb-text-label">Inscrição municipal do tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true" value="123456">
+                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true" value="80105002">
                                 </div>
                         </div>
                         <div class="col-md-6">
                                  <div class="fb-text form-group field-razaotomador">
                                 <label for="razaotomador" class="fb-text-label">Razão social do Tomador<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="EMPRESA teste">
+                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="HOME CARE CUIDADOS LTDA">
                             </div>
                         </div>
                     </div>
@@ -155,13 +155,13 @@
                         <div class="col-md-6">
                             <div class="fb-text form-group field-logradourotomador">
                                 <label for="logradourotomador" class="fb-text-label">Logradouro do tomador</label>
-                                <input type="text" class="form-control" name="logradourotomador" id="logradourotomador">
+                                <input type="text" class="form-control" name="logradourotomador" id="logradourotomador" value="DOMINGOS BARBOSA, QUADRA 07">
                             </div>
                         </div>
                         <div class="col-md-2">
                                 <div class="fb-text form-group field-numeroenderecotomador">
                                     <label for="numeroenderecotomador" class="fb-text-label">Número</label>
-                                    <input type="text" class="form-control" name="numeroenderecotomador" id="numeroenderecotomador">
+                                    <input type="text" class="form-control" name="numeroenderecotomador" id="numeroenderecotomador" value="14">
                                 </div>
                         </div>
                     </div>
@@ -185,7 +185,7 @@
                         <div class="col-md-4">
                             <div class="fb-text form-group field-bairrotomador">
                                 <label for="bairrotomador" class="fb-text-label">Bairro</label>
-                                <input type="text" class="form-control" name="bairrotomador" id="bairrotomador">
+                                <input type="text" class="form-control" name="bairrotomador" id="bairrotomador" value="COHAMA">
                             </div>                            
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                         <div class="col-md-4">
                             <div class="fb-text form-group field-ceptomador">
                                 <label for="ceptomador" class="fb-text-label">CEP<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true" value="65000000">
+                                <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true" value="65074080">
                             </div>
                         </div>
 
@@ -208,7 +208,7 @@
                         <div class="col-md-4">
                                 <div class="fb-text form-group field-emailtomador">
                                     <label for="emailtomador" class="fb-text-label">E-mail tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="emailtomador" id="emailtomador" required="required" aria-required="true" value="rese@uol.com">
+                                    <input type="text" class="form-control" name="emailtomador" id="emailtomador" required="required" aria-required="true" value="financeiro@homecarecuidados.com.br">
                                 </div>
                             </div>
                         </div>
@@ -309,7 +309,7 @@
                             </div>
                             <div class="fb-text form-group field-valorir">
                                 <label for="valorir" class="fb-text-label">Valor IR<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="valorir" value="0" id="valorir" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="valorir" value="19.17" id="valorir" required="required" aria-required="true">
                             </div>
                             <div class="fb-text form-group field-aliquotapis">
                                 <label for="aliquotapis" class="fb-text-label">Aliquota PIS<span class="fb-required">*</span></label>
@@ -365,13 +365,13 @@
                         <div class="col-md-3">
                             <div class="fb-text form-group field-valorunitario">
                                 <label for="valorunitario" class="fb-text-label">Valor unitário<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="valorunitario" id="valorunitario" required="required" aria-required="true" value="100">
+                                <input type="text" class="form-control" name="valorunitario" id="valorunitario" required="required" aria-required="true" value="1278.34">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="fb-text form-group field-valortotal">
                                 <label for="valortotal" class="fb-text-label">Valor total<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="valortotal" id="valortotal" required="required" aria-required="true" value="100">
+                                <input type="text" class="form-control" name="valortotal" id="valortotal" required="required" aria-required="true" value="1278.34">
                             </div>
                         </div>
                         <div class="col-md-3">
