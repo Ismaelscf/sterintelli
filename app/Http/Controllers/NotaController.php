@@ -27,15 +27,15 @@ class NotaController extends Controller
                 'cmun' => '2111300', //ira determinar as urls e outros dados
                 'razao' => 'BRITO e SOARES LTDA',
                 'tpamb' => 1, //1-producao, 2-homologacao
-                'token' => '3579F09B4CC37151D3327197B13F9583',
+                'token' => '2734DB04D2D26922454C5107A750B4FC',
             ];
 
 
         $this->configJson = json_encode($this->config);
 
         
-        $content = file_get_contents('C:\dev_stef\certificado\BRITOSORES2020.pfx');
-        //$content = file_get_contents('/Users/steferson_1/dev_stef/certificado/expired_certificate.pfx');
+        //$content = file_get_contents('C:\dev_stef\certificado\BRITOSORES2020.pfx');
+        $content = file_get_contents('/Users/steferson_1/dev_stef/certificado/BRITOSORES2020.pfx');
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'brito2020s';
         $this->cert = Certificate::readPfx($content, $password);
@@ -196,15 +196,61 @@ class NotaController extends Controller
         $soap->timeout(120);
         $tools->loadSoapClass($soap);
 
-        $dtIni = $request->has('dtIni')? $request->dtIni : '01/01/20120';
-        $dtFim = $request->has('dtFim')? $request->dtIni : '01/01/20120';
+        $dtIni = $request->has('dtIni')? $request->dtIni : '01/01/2020';
+        $dtFim = $request->has('dtFim')? $request->dtFim : '01/01/2020';
 
         $response = $tools->consultarNota($dtIni, $dtFim);
+
+        //$response = $tools->consultarNFSeRps();
 
         return  $response;
         //return view('notas.onsultanotas',compact('nota'));
     }
 
+    public function preConsultarNfse()
+    {
+        return view('notas.pre-consultarnfse');
+    }
+
+   public function consultarNfse(Request $request)
+    {
+
+        $notas[0] = ['numero' => 20104, 'codigo' => '3CC9.8C58.1F7F.4D56.EC16.9B46.4165.292F'];
+
+        $soap = new SoapCurl();
+        //$soap->disableCertValidation(true);
+
+        $tools = new Tools($this->configJson, $this->cert);
+        $soap->timeout(120);
+        $tools->loadSoapClass($soap);
+
+      
+        $response = $tools->consultarNFSeRps($notas);
+
+        //$response = $tools->consultarNFSeRps();
+
+        return  $response;
+        //return view('notas.onsultanotas',compact('nota'));
+    }
+
+
+   public function consultarSeqRps(Request $request)
+    {
+
+        $soap = new SoapCurl();
+        //$soap->disableCertValidation(true);
+
+        $tools = new Tools($this->configJson, $this->cert);
+        $soap->timeout(120);
+        $tools->loadSoapClass($soap);
+
+      
+        $response = $tools->consultarSequencialRps();
+        //$response = $tools->consultarNFSeRps();
+
+        return  $response;
+        //return view('notas.onsultanotas',compact('nota'));
+    }
 
 
 

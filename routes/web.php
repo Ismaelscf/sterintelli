@@ -29,6 +29,12 @@ Route::get('notas/preconsultarnotas','NotaController@preConsultarNotas')->name('
 Route::post('notas/consultarnotas','NotaController@consultarNotas')->name('notas.consultarnotas');
 
 
+Route::get('notas/preconsultarnfse','NotaController@preConsultarNfse')->name('notas.pre-consultarnfse');
+Route::get('notas/consultarnfse','NotaController@consultarNfse')->name('notas.consultarnfse');
+
+Route::get('notas/consultarseqrps','NotaController@consultarSeqRps')->name('notas.consultarseqrps');
+
+
 
  Route::post('notas/destroy','NotaController@destroy')->name('notas.destroy');
  Route::get('notas/show','NotaController@enviar')->name('notas.show');
