@@ -34,6 +34,8 @@ Route::get('notas/consultarnfse','NotaController@consultarNfse')->name('notas.co
 
 Route::get('notas/consultarseqrps','NotaController@consultarSeqRps')->name('notas.consultarseqrps');
 
+Route::get('notas/cancelarnota','NotaController@cancelarNota')->name('notas.cancelarnota');
+
 
 
  Route::post('notas/destroy','NotaController@destroy')->name('notas.destroy');

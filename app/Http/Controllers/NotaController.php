@@ -10,6 +10,7 @@ use NFePHP\NFSeDSF\Rps;
 use NFePHP\NFSeDSF\Common\Soap\SoapCurl;
 use NFePHP\NFSeDSF\Tools;
 use stdClass;
+use DOMDocument;
 
 class NotaController extends Controller
 {
@@ -34,7 +35,7 @@ class NotaController extends Controller
                 'cmun' => '2111300', //ira determinar as urls e outros dados
                 'razao' => 'BRITO e SOARES LTDA',
                 'tpamb' => 1, //1-producao, 2-homologacao
-                'token' => '2734DB04D2D26922454C5107A750B4FC',
+                'token' => '2734DB04D2D26922454C5107A750B4FC',];
 
 
 
@@ -203,9 +204,17 @@ class NotaController extends Controller
 
         $response = $tools->consultarNota($dtIni, $dtFim);
 
-        //$response = $tools->consultarNFSeRps();
+        $xml = new DOMDocument();
+        $xml->loadXML($response);
 
-        return  $response;
+        //echo $xml->saveHTML();
+
+        $array = $this->xml_to_array($xml);
+        //var_dump($array);
+
+
+
+        return  $response->b;
         //return view('notas.onsultanotas',compact('nota'));
     }
 
@@ -228,6 +237,30 @@ class NotaController extends Controller
 
       
         $response = $tools->consultarNFSeRps($notas);
+
+        //$response = $tools->consultarNFSeRps();
+
+        return  $response;
+        //return view('notas.consultanotas',compact('nota'));
+    }
+
+    public function cancelarNota(Request $request)
+    {
+
+        
+
+        $soap = new SoapCurl();
+        //$soap->disableCertValidation(true);
+
+        $tools = new Tools($this->configJson, $this->cert);
+        $soap->timeout(120);
+        $tools->loadSoapClass($soap);
+
+        $numero = '20473';
+        $motivo = 'ERRO DE EMISSÃO - DESCRICAO DO SERVICO ERRADA';
+        $codigoverificacao = '05E651C13A2AAF0C836C32C38BBE71BB';
+    
+        $response = $tools->cancelar($numero, $motivo, $codigoverificacao);
 
         //$response = $tools->consultarNFSeRps();
 
@@ -529,5 +562,44 @@ class NotaController extends Controller
   echo $pdf->Output('nfse.pdf', 'I');
 
     }
+
+
+function xml_to_array($root) {
+    $result = array();
+
+    if ($root->hasAttributes()) {
+        $attrs = $root->attributes;
+        foreach ($attrs as $attr) {
+            $result['@attributes'][$attr->name] = $attr->value;
+        }
+    }
+
+    if ($root->hasChildNodes()) {
+        $children = $root->childNodes;
+        if ($children->length == 1) {
+            $child = $children->item(0);
+            if ($child->nodeType == XML_TEXT_NODE) {
+                $result['_value'] = $child->nodeValue;
+                return count($result) == 1
+                    ? $result['_value']
+                    : $result;
+            }
+        }
+        $groups = array();
+        foreach ($children as $child) {
+            if (!isset($result[$child->nodeName])) {
+                $result[$child->nodeName] = $this->xml_to_array($child);
+            } else {
+                if (!isset($groups[$child->nodeName])) {
+                    $result[$child->nodeName] = array($result[$child->nodeName]);
+                    $groups[$child->nodeName] = 1;
+                }
+                $result[$child->nodeName][] = $this->xml_to_array($child);
+            }
+        }
+    }
+
+    return $result;
+}
 
 }
