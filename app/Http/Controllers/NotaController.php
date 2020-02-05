@@ -205,18 +205,9 @@ class NotaController extends Controller
 
         $response = $tools->consultarNota($dtIni, $dtFim);
 
-        $xml = new DOMDocument();
-        $xml->loadXML($response);
+        $retorno = $this->trataRetorno($response);
 
-        //echo $xml->saveHTML();
-
-        $array = $this->xml_to_array($xml);
-        //var_dump($array);
-
-
-
-        return  $response->b;
-        //return view('notas.onsultanotas',compact('nota'));
+        return  $retorno;
     }
 
     public function preConsultarNfse()
@@ -565,42 +556,53 @@ class NotaController extends Controller
     }
 
 
-function xml_to_array($root) {
-    $result = array();
-
-    if ($root->hasAttributes()) {
-        $attrs = $root->attributes;
-        foreach ($attrs as $attr) {
-            $result['@attributes'][$attr->name] = $attr->value;
+  public static function trataRetorno($response, $save = '')
+    {
+        $dados = [];
+        if (empty($response)) {
+            $dados[0] = "Sem resposta";
+            return $dados;
         }
+        var_dump($response); die;
+        $std = json_decode($response);
+        echo $std; die;
+
+
+        $doc = new \DOMDocument('1.0', 'UTF-8');
+        $doc->preserveWhiteSpace = false;
+        $doc->formatOutput = true;
+        $doc->loadXML($std->body);
+
+        $dados[0] = $std->url;
+        $dados[1] = $std->operation;
+        $dados[2] = $std->action;
+        $dados[3] = $std->soapver;
+
+        foreach ($std->parameters as $key => $param) {
+            $html = "[$key] => $param <br>";
+        }
+        $dados[4] = $html;
+        $dados[5] = $std->header;
+        /*$html .= "<br>";
+        $html .= '<h2>namespaces</h2>';
+        $an = \Safe\json_decode(\Safe\json_encode($std->namespaces), true);
+        foreach ($an as $key => $nam) {
+            $html .= "[$key] => $nam <br>";
+        }*/
+        $html = "<br>";
+        $html .= '<h2>body</h2>';
+        $html .= str_replace(
+            ['<', '>'],
+            ['&lt;','&gt;'],
+            str_replace(
+                '<?xml version="1.0"?>',
+                '<?xml version="1.0" encoding="UTF-8"?>',
+                $doc->saveXML()
+            )
+        );
+        $html .= "</pre>";
+
+        $dados[6] = $html;
+        return $dados;
     }
-
-    if ($root->hasChildNodes()) {
-        $children = $root->childNodes;
-        if ($children->length == 1) {
-            $child = $children->item(0);
-            if ($child->nodeType == XML_TEXT_NODE) {
-                $result['_value'] = $child->nodeValue;
-                return count($result) == 1
-                    ? $result['_value']
-                    : $result;
-            }
-        }
-        $groups = array();
-        foreach ($children as $child) {
-            if (!isset($result[$child->nodeName])) {
-                $result[$child->nodeName] = $this->xml_to_array($child);
-            } else {
-                if (!isset($groups[$child->nodeName])) {
-                    $result[$child->nodeName] = array($result[$child->nodeName]);
-                    $groups[$child->nodeName] = 1;
-                }
-                $result[$child->nodeName][] = $this->xml_to_array($child);
-            }
-        }
-    }
-
-    return $result;
-}
-
 }
