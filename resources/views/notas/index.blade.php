@@ -28,17 +28,17 @@
         </tr>
         @foreach ($notas as $nota)
         <tr>
-            <td>{{ $nota->id }}</td>
-            <td>{{ $nota->serierps}} - {{ $nota->numerorps }}</td>
-            <td>{{ $nota->razaosocialtomador }}</td>
-            <td>{{ $nota->dataemissaorps }}</td>
+            <td>{{ $nota['ID'] }}</td>
+            <td>{{ $nota['NOME']}}</td>
+            <td>{{ $nota['NOME_COMPLETO']}}</td> 
+            <td>*</td>
             <td>
-                <form action="{{ route('notas.destroy',$nota->id) }}" method="POST">
+                <form action="" method="POST">
    
-   <a class="btn btn-info" href="{{ route('notas.danfse',$nota) }}">print</a>
-                    <a class="btn btn-info" href="{{ route('notas.show',$nota->id) }}">Detalhar</a>
+   <a class="btn btn-info" href="">print</a>
+                    <a class="btn btn-info" href="">Detalhar</a>
     
-                    <a class="btn btn-primary" href="{{ route('notas.edit',$nota->id) }}">Editar</a>
+                    <a class="btn btn-primary" href="">Editar</a>
    
                     @csrf
                     @method('DELETE')
@@ -50,6 +50,5 @@
         @endforeach
     </table>
   
-    {!! $notas->links() !!}
       
 @endsection

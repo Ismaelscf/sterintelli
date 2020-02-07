@@ -12,16 +12,20 @@ use NFePHP\NFSeDSF\Tools;
 use stdClass;
 use DOMDocument;
 
+use App\Repositories\NotaRepository;
+
 class NotaController extends Controller
 {
     
     protected $config;
     protected $configJson;
     protected $cert;
+    protected $repository;
 
 
     public function __construct(stdClass $rps)
     {
+      $this->repository = new NotaRepository();
 
       //homolog
       //$token = '3579F09B4CC37151D3327197B13F9583';
@@ -57,11 +61,12 @@ class NotaController extends Controller
      */
     public function index()
     {
-     
-        $notas = Nota::latest()->paginate(5);
-  
-        return view('notas.index', compact('notas'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+        $this->repository->buscaNotas();   
+
+        $notas = $this->repository->data;
+
+        return view('notas.index', compact('notas'));
+
     }
 
     /**
@@ -69,7 +74,7 @@ class NotaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function emitir()
+    public function emitir($idcliente, Request $request)
     {
         $cnpjprestador = '01469892000137';
         $inscricaomunicipalprestador = '7048009';
@@ -78,9 +83,13 @@ class NotaController extends Controller
         $dtInicial = date('Y-m-d H:i:s');
         $dtFinal = date('Y-m-d H:i:s');
 
+        $dtIni = $request->query->has('dtini') ? $request->query->all()['dtini'] : null;
+        $dtFim = $request->query->has('dtfim') ? $request->query->all()['dtfim'] : null;
 
-        return view('notas.pre-emitir', compact('cnpjprestador', 'inscricaomunicipalprestador',
-            'razaosocialprestador', 'token', 'dtInicial', 'dtFinal'));  
+        /*buscar os dados do período*/
+        $dadosEmissao = $this->repository->buscaDadosEmissao($idcliente, $dtIni, $dtFim);   
+
+        return view('notas.pre-emitir', compact('dadosEmissao'));  
 
     }
 

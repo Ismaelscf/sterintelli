@@ -20,7 +20,7 @@ Route::get('/', function () {
  Route::get('notas','NotaController@index')->name('notas.index');
 
 //enissao das notas
- Route::get('notas/emitir','NotaController@emitir')->name('notas.emitir');
+ Route::get('notas/emitir/{idcliente}/','NotaController@emitir')->name('notas.emitir');
  Route::post('notas/enviar','NotaController@enviar')->name('notas.enviar');
 
 

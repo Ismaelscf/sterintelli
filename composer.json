@@ -15,7 +15,8 @@
         "laravel/ui": "^1.1",
         "nfephp-org/sped-nfe": "^5.0",
         "nfephp-org/sped-nfse-dsf": "dev-master",
-        "tecnickcom/tcpdf": "^6.3"
+        "tecnickcom/tcpdf": "^6.3",
+        "yajra/laravel-oci8": "^6.0"
     },
     "require-dev": {
         "facade/ignition": "^1.4",
