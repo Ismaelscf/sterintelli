@@ -9,8 +9,10 @@ use NFePHP\Common\Certificate;
 use NFePHP\NFSeDSF\Rps;
 use NFePHP\NFSeDSF\Common\Soap\SoapCurl;
 use NFePHP\NFSeDSF\Tools;
+use NFePHP\NFSeDSF\Common\Standardize;
 use stdClass;
 use DOMDocument;
+use DOMXpath;
 
 use App\Repositories\NotaRepository;
 
@@ -29,17 +31,19 @@ class NotaController extends Controller
 
       //homolog
       //$token = '3579F09B4CC37151D3327197B13F9583';
-      
 
-      //prod
-      $token = 'F0D5E8217DC2050AE0028EC24B2D70FE';
+      //1-producao, 2-homologacao
+      $ambiente = 1;
+      //P-producao, H-homologacao
+      $dadosEmissor = $this->repository->buscaDadosEmissor('P');
+
       $this->config = [
-                'cnpj' => '01469892000137',
-                'im' => '7048009',
+                'cnpj' => $dadosEmissor['CNPJ'],
+                'im' => $dadosEmissor['IM'],
                 'cmun' => '2111300', //ira determinar as urls e outros dados
-                'razao' => 'BRITO e SOARES LTDA',
-                'tpamb' => 1, //1-producao, 2-homologacao
-                'token' => '2734DB04D2D26922454C5107A750B4FC',
+                'razao' => $dadosEmissor['razaosocial'],
+                'tpamb' => $ambiente, //1-producao, 2-homologacao
+                'token' => $dadosEmissor['token'],
               ];
 
 
@@ -61,10 +65,7 @@ class NotaController extends Controller
      */
     public function index()
     {
-        $this->repository->buscaNotas();   
-
-        $notas = $this->repository->data;
-
+        $notas = $this->repository->buscaNotas();   
         return view('notas.index', compact('notas'));
 
     }
@@ -74,22 +75,28 @@ class NotaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function emitir($idcliente, Request $request)
+    public function preEmitir($idcliente, Request $request)
     {
-        $cnpjprestador = '01469892000137';
-        $inscricaomunicipalprestador = '7048009';
-        $razaosocialprestador = 'BRITO e SOARES LTDA';
-        $token = '3579F09B4CC37151D3327197B13F9583';
-        $dtInicial = date('Y-m-d H:i:s');
-        $dtFinal = date('Y-m-d H:i:s');
+        $dtInicial = $request->query->has('dtini') ? 
+                          $request->query->all()['dtini'] : null;
+        $dtFinal = $request->query->has('dtfim') ? 
+                          $request->query->all()['dtfim'] : null;
 
-        $dtIni = $request->query->has('dtini') ? $request->query->all()['dtini'] : null;
-        $dtFim = $request->query->has('dtfim') ? $request->query->all()['dtfim'] : null;
 
+        $dadosEmissor = $this->repository->buscaDadosEmissor('P');
+        
         /*buscar os dados do período*/
-        $dadosEmissao = $this->repository->buscaDadosEmissao($idcliente, $dtIni, $dtFim);   
+        $dadosEmissao = $this->repository->buscaDadosEmissao(
+                                $idcliente, $dtInicial, $dtFinal
+                              );
 
-        return view('notas.pre-emitir', compact('dadosEmissao'));  
+        $numRps = (int)$this->consultarUltimoSeqRps() + 1;
+        $dataNota = date("d/m/Y");
+
+        return view('notas.pre-emitir', 
+                    compact('dadosEmissor', 'dadosEmissao', 
+                      'dtInicial', 'dtFinal', 'numRps',
+                      'dataNota'));  
 
     }
 
@@ -99,7 +106,7 @@ class NotaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function enviar(Request $request)
+    public function posEmitir(Request $request)
     {
   
         //Nota::beginTransaction();
@@ -115,8 +122,6 @@ class NotaController extends Controller
             $soap->timeout(120);
             $tools->loadSoapClass($soap);
 
-
- 
             $arps = [];
             
             $std = new \stdClass();
@@ -270,22 +275,12 @@ class NotaController extends Controller
     }
 
 
-   public function consultarSeqRps(Request $request)
+   public function consultarUltimoSeqRps()
     {
-
-        $soap = new SoapCurl();
-        //$soap->disableCertValidation(true);
-
         $tools = new Tools($this->configJson, $this->cert);
-        $soap->timeout(120);
-        $tools->loadSoapClass($soap);
+        $response = $this->trataRetorno($tools->consultarSequencialRps());
 
-      
-        $response = $tools->consultarSequencialRps();
-        //$response = $tools->consultarNFSeRps();
-
-        return  $response;
-        //return view('notas.onsultanotas',compact('nota'));
+        return  $response['NroUltimoRps'];
     }
 
 
@@ -330,20 +325,6 @@ class NotaController extends Controller
    
         return redirect()->route('notas.index')
                         ->with('success','Nota atualizada com sucesso.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\nota  $nota
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(nota $nota)
-    {
-        $nota->delete();
-  
-        return redirect()->route('notas.index')
-                        ->with('success','Nota excluida.');
     }
 
     public function  danfse (nota $nota){//, $target) {
@@ -565,53 +546,25 @@ class NotaController extends Controller
     }
 
 
-  public static function trataRetorno($response, $save = '')
+  public function trataRetorno($response, $save = '')
     {
-        $dados = [];
-        if (empty($response)) {
-            $dados[0] = "Sem resposta";
-            return $dados;
+
+        $dados = array();
+
+        $response = html_entity_decode($response);
+        $dom = new DOMDocument( '1.0', 'utf-8' );
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->recover = true;
+        $dom->loadXML($response);
+
+
+        foreach($dom->getElementsByTagName('*') as $tag) {
+            $dados[$tag->nodeName] = $tag->nodeValue;
         }
-        var_dump($response); die;
-        $std = json_decode($response);
-        echo $std; die;
 
-
-        $doc = new \DOMDocument('1.0', 'UTF-8');
-        $doc->preserveWhiteSpace = false;
-        $doc->formatOutput = true;
-        $doc->loadXML($std->body);
-
-        $dados[0] = $std->url;
-        $dados[1] = $std->operation;
-        $dados[2] = $std->action;
-        $dados[3] = $std->soapver;
-
-        foreach ($std->parameters as $key => $param) {
-            $html = "[$key] => $param <br>";
-        }
-        $dados[4] = $html;
-        $dados[5] = $std->header;
-        /*$html .= "<br>";
-        $html .= '<h2>namespaces</h2>';
-        $an = \Safe\json_decode(\Safe\json_encode($std->namespaces), true);
-        foreach ($an as $key => $nam) {
-            $html .= "[$key] => $nam <br>";
-        }*/
-        $html = "<br>";
-        $html .= '<h2>body</h2>';
-        $html .= str_replace(
-            ['<', '>'],
-            ['&lt;','&gt;'],
-            str_replace(
-                '<?xml version="1.0"?>',
-                '<?xml version="1.0" encoding="UTF-8"?>',
-                $doc->saveXML()
-            )
-        );
-        $html .= "</pre>";
-
-        $dados[6] = $html;
-        return $dados;
+        return array_unique($dados);
     }
+
+
 }

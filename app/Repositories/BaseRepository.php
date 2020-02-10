@@ -37,8 +37,12 @@ class BaseRepository
     }
 
     public function __destruct() {
-        oci_free_statement($this->stid);
-        oci_close($this->conn);
+        
+        /*if ($this->stid)
+            oci_free_statement($this->stid);
+
+        if ($this->conn)
+            oci_close($this->conn);*/
     }
 
 
