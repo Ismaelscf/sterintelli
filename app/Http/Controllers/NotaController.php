@@ -23,6 +23,7 @@ class NotaController extends Controller
     protected $configJson;
     protected $cert;
     protected $repository;
+    protected $ambiente;
 
 
     public function __construct(stdClass $rps)
@@ -33,21 +34,18 @@ class NotaController extends Controller
       //$token = '3579F09B4CC37151D3327197B13F9583';
 
       //1-producao, 2-homologacao
-      $ambiente = 1;
+      $this->ambiente = 2;
       //P-producao, H-homologacao
-      $dadosEmissor = $this->repository->buscaDadosEmissor('P');
+      $dadosEmissor = $this->repository->buscaDadosEmissor($this->ambiente);
 
       $this->config = [
                 'cnpj' => $dadosEmissor['CNPJ'],
                 'im' => $dadosEmissor['IM'],
                 'cmun' => '2111300', //ira determinar as urls e outros dados
-                'razao' => $dadosEmissor['razaosocial'],
-                'tpamb' => $ambiente, //1-producao, 2-homologacao
-                'token' => $dadosEmissor['token'],
+                'razao' => $dadosEmissor['RAZAOSOCIAL'],
+                'tpamb' => $this->ambiente, //1-producao, 2-homologacao
+                'token' => $dadosEmissor['TOKEN'],
               ];
-
-
-
         $this->configJson = json_encode($this->config);
 
         
@@ -56,6 +54,8 @@ class NotaController extends Controller
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'brito2020s';
         $this->cert = Certificate::readPfx($content, $password);
+
+        date_default_timezone_set('America/Bahia');
     }
 
     /**
@@ -82,8 +82,7 @@ class NotaController extends Controller
         $dtFinal = $request->query->has('dtfim') ? 
                           $request->query->all()['dtfim'] : null;
 
-
-        $dadosEmissor = $this->repository->buscaDadosEmissor('P');
+        $dadosEmissor = $this->repository->buscaDadosEmissor($this->ambiente);
         
         /*buscar os dados do período*/
         $dadosEmissao = $this->repository->buscaDadosEmissao(
@@ -92,11 +91,12 @@ class NotaController extends Controller
 
         $numRps = (int)$this->consultarUltimoSeqRps() + 1;
         $dataNota = date("d/m/Y");
+        $horaNota = date("H:i:s");
 
         return view('notas.pre-emitir', 
                     compact('dadosEmissor', 'dadosEmissao', 
                       'dtInicial', 'dtFinal', 'numRps',
-                      'dataNota'));  
+                      'dataNota', 'horaNota'));  
 
     }
 
@@ -128,23 +128,28 @@ class NotaController extends Controller
             $std->dtInicial = $request->has('dtInicial')? $request->dtInicial : "";
             $std->dtFinal = $request->has('dtFinal')? $request->dtFinal : "";
             $std->qtdade = $request->has('qtdade')? $request->qtdade : 1;
-            $std->vTotServ = $request->has('vTotServ')? $request->vTotServ : 0.00;
-            $std->vTotDeduc = $request->has('vTotDeduc')? $request->vTotDeduc : 0.00;
+            $std->vTotServ = $this->formataValor($request->has('vTotServ')? $request->vTotServ : 0.00);
+            $std->vTotDeduc = $this->formataValor($request->has('vTotDeduc')? $request->vTotDeduc : 0.00);
 
 
             $std->inscricaomunicipalprestador = $request->has('inscricaomunicipalprestador')? $request->inscricaomunicipalprestador : "";
             $std->razaosocialprestador = $request->has('razaosocialprestador')? $request->razaosocialprestador : "";
 
+            $dataEmissao = $request->has('dataemissaorps')? $request->dataemissaorps :'2020-01-01';
+            $horaEmissao = $request->has('horaemissaorps')? $request->horaemissaorps :'00:00:00';
+
+            $dataEmissao = $this->formataData($dataEmissao, $horaEmissao);
+
             //dados do RPS
             $std->tiporps = $request->has('tiporps')? $request->tiporps : "RPS";
             $std->serierps = $request->has('serierps')? $request->serierps : "NF";
             $std->numerorps = $request->has('numerorps')? $request->numerorps : 1;
-            $std->dataemissaorps = $request->has('dataemissaorps')? $request->dataemissaorps :'2019-12-01T15:30:00';
+            $std->dataemissaorps = $dataEmissao;
             $std->situacaorps = $request->has('situacaorps')? $request->situacaorps :'N';
             $std->serieprestacao = $request->has('serieprestacao')? $request->serieprestacao :'99';
 
             //DADOS DO TOMADOR
-            $std->inscricaomunicipaltomador = $request->has('inscricaomunicipaltomador')? $request->inscricaomunicipaltomador : "123";
+            $std->inscricaomunicipaltomador = $request->has('inscricaomunicipaltomador')? $request->inscricaomunicipaltomador : "000000";
             $std->cpfcnpjtomador = $request->has('cpfcnpjtomador')? $request->cpfcnpjtomador : "0000000";
             $std->razaosocialtomador = $request->has('razaosocialtomador')? $request->razaosocialtomador : "";
             $std->tipologradourotomador = $request->has('tipologradourotomador')? $request->tipologradourotomador : "";
@@ -166,23 +171,23 @@ class NotaController extends Controller
             $std->municipioprestacaodescricao = $request->has('municipioprestacaodescricao')? $request->municipioprestacaodescricao : "";
             $std->operacao = $request->has('operacao')? $request->operacao : "";
             $std->tributacao = $request->has('tributacao')? $request->tributacao : "";
-            $std->valorpis = $request->has('valorpis')? $request->valorpis : 0.00;
-            $std->valorcofins =$request->has('valorcofins')? $request->valorcofins : 0.00;
-            $std->valorinss =$request->has('valorinss')? $request->valorinss : 0.00;
-            $std->valorir =$request->has('valorir')? $request->valorir : 0.00;
-            $std->valorcsll = $request->has('aliquotapis')? $request->aliquotapis : 0.00;
-            $std->aliquotapis = $request->has('aliquotapis')? $request->aliquotapis : 0.00;
-            $std->aliquotacofins = $request->has('aliquotacofins')? $request->aliquotacofins : 0.00;
-            $std->aliquotainss = $request->has('aliquotainss')? $request->aliquotainss : 0.00;
-            $std->aliquotair = $request->has('aliquotair')? $request->aliquotair : 0.00;
-            $std->aliquotacsll = $request->has('aliquotacsll')? $request->aliquotacsll :0.00;
+            $std->valorpis = $this->formataValor($request->has('valorpis')? $request->valorpis : 0.00);
+            $std->valorcofins = $this->formataValor($request->has('valorcofins')? $request->valorcofins : 0.00);
+            $std->valorinss = $this->formataValor($request->has('valorinss')? $request->valorinss : 0.00);
+            $std->valorir = $this->formataValor($request->has('valorir')? $request->valorir : 0.00);
+            $std->valorcsll = $this->formataValor($request->has('aliquotapis')? $request->aliquotapis : 0.00);
+            $std->aliquotapis = $this->formataValor($request->has('aliquotapis')? $request->aliquotapis : 0.00);
+            $std->aliquotacofins = $this->formataValor($request->has('aliquotacofins')? $request->aliquotacofins : 0.00);
+            $std->aliquotainss = $this->formataValor($request->has('aliquotainss')? $request->aliquotainss : 0.00);
+            $std->aliquotair = $this->formataValor($request->has('aliquotair')? $request->aliquotair : 0.00);
+            $std->aliquotacsll = $this->formataValor($request->has('aliquotacsll')? $request->aliquotacsll :0.00);
             $std->descricaorps = $request->has('descricaorps')? $request->descricaorps : "";
 
             $std->itens[0] = new stdClass();
             $std->itens[0]->discriminacaoservico = $request->has('descricaorps')? $request->descricaorps : "";
             $std->itens[0]->quantidade = $request->has('quantidade')? $request->quantidade : 1;
-            $std->itens[0]->valorunitario = $request->has('valorunitario')? $request->valorunitario : 0.00;
-            $std->itens[0]->valortotal = $request->has('valortotal')? $request->valortotal : 0.00;
+            $std->itens[0]->valorunitario = $this->formataValor($request->has('valorunitario')? $request->valorunitario : 0.00);
+            $std->itens[0]->valortotal =  $this->formataValor($request->has('valortotal')? $request->valortotal : 0.00);
             $std->itens[0]->tributavel = $request->has('tributavel')? $request->tributavel : "S";
 
 
@@ -190,7 +195,6 @@ class NotaController extends Controller
 
             $arps[] = $rps;    
             $lote = '123456';
-           
             $response = $tools->enviar($arps, $lote);
 
 
@@ -209,7 +213,7 @@ class NotaController extends Controller
     }
 
 
-    public function consultarNotas(Request $request)
+    public function posConsultarNotas(Request $request)
     {
 
         $tools = new Tools($this->configJson, $this->cert);
@@ -220,6 +224,7 @@ class NotaController extends Controller
         $response = $tools->consultarNota($dtIni, $dtFim);
 
         $retorno = $this->trataRetorno($response);
+
 
         return  $retorno;
     }
@@ -560,6 +565,7 @@ class NotaController extends Controller
 
 
         foreach($dom->getElementsByTagName('*') as $tag) {
+          echo '<br><br>'.$tag->nodeName.' - '.$tag->nodeValue;
             $dados[$tag->nodeName] = $tag->nodeValue;
         }
 
@@ -567,4 +573,17 @@ class NotaController extends Controller
     }
 
 
+    function formataData($data, $hora) {
+      $array = explode('/', $data);
+      $dataFinal =  $array[2].'-'.$array[1].'-'.$array[0].'T'.$hora;
+      return $dataFinal;
+    }
+
+    function formataValor($valor) {
+
+      $valor = str_replace('.', '', $valor);
+      $valor = str_replace(',', '.', $valor);
+            
+      return number_format($valor, 2, '.', '');
+    } 
 }

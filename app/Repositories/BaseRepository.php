@@ -16,9 +16,12 @@ class BaseRepository
             $e = oci_error();
             trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
         }
+        $std = oci_parse($this->conn, "alter session set NLS_NUMERIC_CHARACTERS=',.'");
+        oci_execute($std);
     }
 
     public function executaSql($sql){
+
 
         $this->result = oci_parse($this->conn, $sql);
         if (!$this->result) {
@@ -37,12 +40,13 @@ class BaseRepository
     }
 
     public function __destruct() {
-        
-        /*if ($this->stid)
+        /*
+        if ($this->stid)
             oci_free_statement($this->stid);
 
         if ($this->conn)
-            oci_close($this->conn);*/
+            oci_close($this->conn);
+            */ 
     }
 
 

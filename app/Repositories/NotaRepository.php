@@ -15,21 +15,23 @@ class NotaRepository extends BaseRepository
     public function buscaDadosEmissao($id, $dtIni, $dtFim){
 
 
-    	$sql = "SELECT cnpj CNPJ_TOMADOR, 
+    	$sql = " SELECT 
+
+    				   cnpj CNPJ_TOMADOR, 
     				   uf, 
     				   fantasia FANTASIA_TOMADOR, 
     				   clicod, endereco END_TOMADOR, 
 				       municipio, 
 				       bairro BAIRRO_TOMADOR, 
-				       '650000-000' CEP_TOMADOR,
+				       '65000000' CEP_TOMADOR,
 				       numero NUM_TOMADOR,
 				       im IM_TOMADOR, 
 				       email EMAIL_TOMADOR,
 				       MSGNF,
-				       SUM(TOTAL) AS TOTAL, 
-				       SUM(TOTALD) AS TOTAL_C_DESC, 
-				       SUM(TRANSPORTE) TRANSPORTE, 
-				       NVL(SUM(DESCONTO),0) DESCONT, 
+				       to_char(SUM(TOTAL),'99G999G999D99') AS TOTAL, 
+				       to_char(SUM(TOTALD),'99G999G999D99') AS TOTAL_C_DESC, 
+				       to_char(SUM(TRANSPORTE),'99G999G999D99') TRANSPORTE, 
+				       to_char(NVL(SUM(DESCONTO),0),'99G999G999D99') DESCONT, 
 				       sum(imposto) IMPOSTO,
 				       '0,65' ALQ_PIS, 
 				       0 VAL_PIS,
@@ -40,9 +42,9 @@ class NotaRepository extends BaseRepository
 				       1 ALQ_CSLL ,
 				       0 VAL_CSLL ,
 				       '1,5' ALQ_IR,
-				       ROUND(SUM(TOTALD)*0.015, 2) AS VAL_IR,
+				       to_char(SUM(TOTALD),'99G999G999D99') AS VAL_IR,
 				       5 ALQ_ISS,
-				       ROUND(SUM(TOTALD)*0.05, 2) AS VAL_ISS,
+				       to_char(ROUND(SUM(TOTALD)*0.05, 2),'99G999G999D99') AS VAL_ISS,
 				       1 QUANTIDADE
 				FROM 		VIE_NF
 				WHERE 		DATAESTE >= to_date('".$dtIni."', 'dd/mm/yyyy')
@@ -57,11 +59,11 @@ class NotaRepository extends BaseRepository
     }
 
 
-    public function buscaDadosEmissor($ambiente = 'H'){
+    public function buscaDadosEmissor($ambiente = '2'){
 
     	$sql = "SELECT CNPJ, IM, razaosocial, token, desc_servico 
     			from TAB_NOTA_EMISSOR
-    			where ambiente  = '".$ambiente."'";
+    			where ambiente  = ".$ambiente;
 				       
     	$this->executaSql($sql);
     	return $this->data[0];

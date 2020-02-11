@@ -63,7 +63,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             
                             
                             <div class="fb-text form-group field-razao">
@@ -72,7 +72,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="numerorps" class="fb-text-label">No RPS<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="{{$numRps}}" readonly>
@@ -88,6 +88,12 @@
                             </div>
                         </div>
                         <div class="col-md-3">
+                            <div class="fb-text form-group field-token">
+                                <label for="horaemissaorps" class="fb-text-label">Hora nota<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="horaemissaorps" id="horaemissaorps" required="required" aria-required="true" value="{{$horaNota}}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="serieprestacao" class="fb-text-label">Série prestação<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99" readonly>

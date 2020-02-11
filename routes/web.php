@@ -26,7 +26,7 @@ Route::get('/', function () {
 
 //consulta de notas emitidas e aprovadas
 Route::get('notas/preconsultarnotas','NotaController@preConsultarNotas')->name('notas.pre-consultarnota');
-Route::post('notas/consultarnotas','NotaController@consultarNotas')->name('notas.consultarnotas');
+Route::post('notas/consultarnotas','NotaController@posConsultarNotas')->name('notas.consultarnotas');
 
 
 Route::get('notas/preconsultarnfse','NotaController@preConsultarNfse')->name('notas.pre-consultarnfse');
