@@ -28,9 +28,7 @@ Route::get('/', function () {
 Route::get('notas/preconsultarnotas','NotaController@preConsultarNotas')->name('notas.pre-consultarnota');
 Route::post('notas/consultarnotas','NotaController@posConsultarNotas')->name('notas.consultarnotas');
 
-
-Route::get('notas/preconsultarnfse','NotaController@preConsultarNfse')->name('notas.pre-consultarnfse');
-Route::get('notas/consultarnfse','NotaController@consultarNfse')->name('notas.consultarnfse');
+Route::get('notas/consultarnfse/{numnota}/{codigo}/','NotaController@consultarNfse')->name('notas.consultarnfse');
 
 Route::get('notas/consultarseqrps','NotaController@consultarSeqRps')->name('notas.consultarseqrps');
 

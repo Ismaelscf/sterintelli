@@ -61,7 +61,11 @@ class NotaRepository extends BaseRepository
 
     public function buscaDadosEmissor($ambiente = '2'){
 
-    	$sql = "SELECT CNPJ, IM, razaosocial, token, desc_servico 
+    	$sql = "SELECT 	CNPJ, IM, razaosocial, token, 
+    					desc_servico,  cod_atividade,
+  						desc_atividade, cod_servico  ,
+  						desc_cod_servico, endereco,
+  						email, telefone, cmun,  municipio,  uf
     			from TAB_NOTA_EMISSOR
     			where ambiente  = ".$ambiente;
 				       
