@@ -139,7 +139,7 @@ class NotaController extends Controller
             $dataEmissao = $request->has('dataemissaorps')? $request->dataemissaorps :'2020-01-01';
             $horaEmissao = $request->has('horaemissaorps')? $request->horaemissaorps :'00:00:00';
 
-            $dataEmissao = $this->formataDataEnvio($dataEmissao, $horaEmissao);
+            $dataEmissao = $this->formataDataHoraEnvio($dataEmissao, $horaEmissao);
 
             //dados do RPS
             $std->tiporps = $request->has('tiporps')? $request->tiporps : "RPS";
@@ -195,7 +195,7 @@ class NotaController extends Controller
             $rps = new Rps($std);
 
             $arps[] = $rps;    
-            $lote = '123456';
+            $lote = date('ymdHis');
             $response = $tools->enviar($arps, $lote);
 
 
@@ -219,24 +219,17 @@ class NotaController extends Controller
 
         $tools = new Tools($this->configJson, $this->cert);
 
-        $dtIni = $request->has('dtIni')? $request->dtIni : '2019-12-01';
-        $dtFim = $request->has('dtFim')? $request->dtFim : '2019-12-31';
+        $dtIni = $this->formataDataEnvio($request->dtIni);
+        $dtFim = $this->formataDataEnvio($request->dtFim);
 
-        $notas = $this->trataRetorno($tools->consultarNota($dtIni, $dtFim), 'consultarnotareturn');
-
+        $notas = $this->trataRetorno($tools->consultarNota($dtIni, $dtFim), 'consultarNotaReturn');
+        //var_dump($notas);
+        $notas = $notas->NotasConsultadas->Nota;
         return view('notas.pos-consultarnota', compact('notas'));
-    }
-
-    public function preConsultarNfse()
-    {
-        return view('notas.pre-consultarnfse');
     }
 
    public function consultarNfse($numnota, $codigo)
     {
-
-        /*$notas[0] = ['numero' => 19881, 
-                     'codigo' => '06C384A5880CA5FB1510925AE35F7DE3'];*/
 
         $notas[0] = ['numero' => $numnota, 
                      'codigo' => $codigo];
@@ -343,6 +336,7 @@ class NotaController extends Controller
   $pdf->Box(26.5, '', "Valor Total (R$)", 1, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
 
   $itens = $nota->Itens;
+  $totalNota = 0;
 
   foreach ($itens as $item) {
 
@@ -355,10 +349,11 @@ class NotaController extends Controller
         $pdf->SetX(131.5);
         $pdf->Box(21, '', $item->Quantidade, 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
         $pdf->SetX(152.5);
-        $pdf->Box(21, '', number_format($item->ValorUnitario), 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+        $pdf->Box(21, '', $this->formataCurrency($item->ValorUnitario), 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
         $pdf->SetX(173.5);
-        $pdf->Box(26.5, '', number_format($item->ValorUnitario), 1, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
-          # code...
+        $pdf->Box(26.5, '', $this->formataCurrency($item->ValorTotal), 1, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+        
+        $totalNota += (float)$item->ValorTotal;
   }
 
   $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
@@ -367,18 +362,18 @@ class NotaController extends Controller
   $pdf->SetY($y-10);
   $pdf->SetX(11.5);
 
-  $pdf->Box(36, 'PIS ('.$nota->AliquotaPIS.'%):', 'R$ '.$nota->ValorPIS.'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->Box(36, 'PIS ('.$nota->AliquotaPIS.'%):', 'R$ '.$this->formataCurrency($nota->ValorPIS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
   $pdf->SetX(49);
-  $pdf->Box(36, 'COFINS ('.$nota->AliquotaCOFINS.'%):', 'R$ '.$nota->ValorCOFINS.'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->Box(36, 'COFINS ('.$nota->AliquotaCOFINS.'%):', 'R$ '.$this->formataCurrency($nota->ValorCOFINS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
   $pdf->SetX(87);
-  $pdf->Box(36, 'INSS ('.$nota->AliquotaINSS.'0%):', 'R$ '.$nota->ValorINSS.'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->Box(36, 'INSS ('.$nota->AliquotaINSS.'0%):', 'R$ '.$this->formataCurrency($nota->ValorINSS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
   $pdf->SetX(124);
-  $pdf->Box(36, 'IR ('.$nota->AliquotaIR.'%):', 'R$ '.$nota->ValorIR.'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->Box(36, 'IR ('.$nota->AliquotaIR.'%):', 'R$ '.$this->formataCurrency($nota->ValorIR).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
   $pdf->SetX(161);
-  $pdf->Box(36, 'CSLL ('.$nota->AliquotaCSLL.'%):', 'R$ '.$nota->ValorCSLL.'', 1, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+  $pdf->Box(36, 'CSLL ('.$nota->AliquotaCSLL.'%):', 'R$ '.$this->formataCurrency($nota->ValorCSLL).'', 1, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
 
 
-  $pdf->Box(189.5, '', 'VALOR TOTAL DA NOTA = R$ ' . '.$nota->.', 1, 'BLR', 'C', 7, ['helvetica', 'B', 10]);
+  $pdf->Box(189.5, '', 'VALOR TOTAL DA NOTA = R$ ' . $this->formataCurrency($totalNota), 1, 'BLR', 'C', 7, ['helvetica', 'B', 10]);
 
 
   $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
@@ -387,15 +382,19 @@ class NotaController extends Controller
   $pdf->SetY($y-10);
   $pdf->SetX(11.5);
 
-  $pdf->Box(36, 'Valor Total Composição:', 'R$ '.'0'.'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $devolucao = $this->trataItemVazio($nota->Deducoes);
+  $alqiss = (float)$nota->AliquotaAtividade;
+  $valiss = $totalNota*$alqiss;
+
+  $pdf->Box(36, 'Valor Total Composição:', 'R$ '.$this->formataCurrency($totalNota).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
   $pdf->SetX(49);
-  $pdf->Box(36, 'Valor Total Deduções:', 'R$ '.'0'.'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $pdf->Box(36, 'Valor Total Deduções:', 'R$ '.$this->formataCurrency($devolucao).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
   $pdf->SetX(87);
-  $pdf->Box(36, 'Base Cálculo:', 'R$ '.'0'.'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $pdf->Box(36, 'Base Cálculo:', 'R$ '.$this->formataCurrency($totalNota).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
   $pdf->SetX(124);
   $pdf->Box(36, 'Alíquota:', ''.$nota->AliquotaAtividade.'%', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
    $pdf->SetX(161);
-  $pdf->Box(36, 'Valor ISS:', 'R$ '.'0'.'', 1, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+  $pdf->Box(36, 'Valor ISS:', 'R$ '.$this->formataCurrency($valiss).'', 1, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
 
   $yO = $pdf->GetY();
   $pdf->Box(189.5, '', "\nOUTRAS INFORMAÇÕES", 1, 'BLR', 'C', 50, ['helvetica', 'B', 9], 'T');
@@ -429,14 +428,14 @@ class NotaController extends Controller
   $pdf->SetY($yT+3);
   $pdf->Columns([0 => 11, 5 => 85, 10 => 105, 15 => 165], 
     [
-        [0 => ['Nome / Razão Social:', '']],//$nota->RazaoSocialTomador]], 
-        [0 => ['CPF / CNPJ:', ''],//$nota->CPFCNPJTomador], 
-         10 => ['Inscrição Municipal:', ''], //$nota->InscricaoMunicipalTomador]
+        [0 => ['Nome / Razão Social:', $this->trataItemVazio($nota->RazaoSocialTomador)]], 
+        [0 => ['CPF / CNPJ:', $this->trataItemVazio($nota->CPFCNPJTomador)], 
+         10 => ['Inscrição Municipal:', $this->trataItemVazio($nota->InscricaoMunicipalTomador)]
         ],
-        [0 => ['Endereço:', '']],//$enderecoTomador]],
-        [0 => ['Município:', ''],//$nota->CidadeTomadorDescricao], 
+        [0 => ['Endereço:', $enderecoTomador]],
+        [0 => ['Município:', $this->trataItemVazio($nota->CidadeTomadorDescricao)], 
          5 => ['UF:', ''], 
-         10 => ['Email:' , ''],//$nota->EmailTomador], 
+         10 => ['Email:' , $this->trataItemVazio($nota->EmailTomador)], 
          15 => ['Telefone:' , '']
         ]
     ], 
@@ -480,9 +479,9 @@ class NotaController extends Controller
    public function consultarUltimoSeqRps()
     {
         $tools = new Tools($this->configJson, $this->cert);
-        $response = $this->trataRetorno($tools->consultarSequencialRps(), 'consultarsequencialrpsreturn');
+        $response = $this->trataRetorno($tools->consultarSequencialRps(), 'consultarSequencialRpsReturn');
 
-        return  $response['NroUltimoRps'];
+        return  $response->Cabecalho->NroUltimoRps;
     }
 
 
@@ -498,8 +497,17 @@ class NotaController extends Controller
         $dom->recover = true;
         $dom->loadXML($response);
 
+/*
+        foreach($dom->getElementsByTagName('*') as $tag) {        
+            
+            if ($tag->nodeName != 'S:Envelope')
+              echo " <br> <br>".$tag->nodeName." - ".$tag->nodeValue;
+        }  */ 
+
         $node = $dom->getElementsByTagName($chave)->item(0);
         $node = $dom->saveXML($node);
+
+        //print_r($node);
 
         $node = str_replace("<".$chave.">", "", $node);
         $node = str_replace("</".$chave.">", "", $node);
@@ -526,11 +534,18 @@ class NotaController extends Controller
     }
 
 
-    function formataDataEnvio($data, $hora) {
+    function formataDataHoraEnvio($data, $hora) {
       $array = explode('/', $data);
       $dataFinal =  $array[2].'-'.$array[1].'-'.$array[0].'T'.$hora;
       return $dataFinal;
     }
+
+    function formataDataEnvio($data) {
+      $array = explode('/', $data);
+      $dataFinal =  $array[2].'-'.$array[1].'-'.$array[0];
+      return $dataFinal;
+    }
+
 
     function formataDataRetono($data) {
 
@@ -549,4 +564,22 @@ class NotaController extends Controller
             
       return number_format($valor, 2, '.', '');
     } 
+
+
+    function formataCurrency($valor) {
+      if ( $valor =="")
+        $valor = 0;
+      else
+        $valor = str_replace('.', ',', $valor);
+            
+      return number_format($valor, 2, ',', '.');
+    } 
+
+    function trataItemVazio($valor) {
+      if (empty((array) $valor)) 
+        $valor = "";
+            
+      return $valor;
+    } 
+    
 }
