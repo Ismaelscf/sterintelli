@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Nota;
 use App\Report;
 use App\Config;
 use Illuminate\Http\Request;
@@ -55,8 +54,6 @@ class NotaController extends Controller
         $password = 'brito2020s';
         $this->cert = Certificate::readPfx($content, $password);
 
-        //tratamento para garantir a hora correta
-        date_default_timezone_set('America/Bahia');
     }
 
     /**
@@ -66,8 +63,8 @@ class NotaController extends Controller
      */
     public function index()
     {
-        $notas = $this->repository->buscaNotas();   
-        return view('notas.index', compact('notas'));
+        //$notas = $this->repository->buscaNotas();   
+        return view('notas.index');//, compact('notas'));
 
     }
 
@@ -110,11 +107,7 @@ class NotaController extends Controller
     public function posEmitir(Request $request)
     {
   
-        //Nota::beginTransaction();
-
-        //Nota::create($request->all());
-
-        //try {
+        try {
 
             $soap = new SoapCurl();
             $soap->disableCertValidation(true);
@@ -196,15 +189,18 @@ class NotaController extends Controller
 
             $arps[] = $rps;    
             $lote = date('ymdHis');
-            $response = $tools->enviar($arps, $lote);
+            $response = $this->trataRetorno($tools->enviar($arps, $lote));
 
 
-       // } catch (\Exception $e) {
-            //Nota::rollBack();
-           // echo $e->getMessage();
-        //}
+
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
    
-        return  $response;//redirect()->route('notas.index')
+        return  $response;//
+
+        //modelo de retorno com sucesso
+        //redirect()->route('notas.index')
                         //->with('success','Nota criada com sucesso.');
     }
 
@@ -240,30 +236,21 @@ class NotaController extends Controller
           'consultarNFSeRpsReturn');
 
         $this->danfse($nota);
-
-        //return view('notas.detalhenota', compact('nota'));
     }
 
-    public function cancelarNota(Request $request)
+    //TODO método precisa ser checado pois não está cancelando via 
+    //RPS
+    public function cancelarNota($numnota, $codigo, Request $request)
     {
-
-        $soap = new SoapCurl();
-        //$soap->disableCertValidation(true);
-
         $tools = new Tools($this->configJson, $this->cert);
-        $soap->timeout(120);
-        $tools->loadSoapClass($soap);
 
-        $numero = '20473';
-        $motivo = 'ERRO DE EMISSÃO - DESCRICAO DO SERVICO ERRADA';
-        $codigoverificacao = '05E651C13A2AAF0C836C32C38BBE71BB';
+        $numero = $numnota;
+        $motivo = $request->motivo;
+        $codigoverificacao = $codigo;
     
-        $response = $tools->cancelar($numero, $motivo, $codigoverificacao);
+        $response = $this->trataRetorno($tools->cancelar($numero, $motivo, $codigoverificacao));
 
-        //$response = $tools->consultarNFSeRps();
-
-        return  $response;
-        //return view('notas.consultanotas',compact('nota'));
+        return view('notas.cancelar');
     }
 
 
@@ -406,7 +393,7 @@ class NotaController extends Controller
   //$pdf->Image(UPLOAD_PATH . $filial->logo, 25, $yP+2, 26, 26);
   $pdf->SetY($yP+3);
   $pdf->Columns(
-    [0 => 32, 5 => 100, 10 => 120, 15 => 150], 
+    [0 => 32, 3 => 70, 5 => 100, 10 => 120, 15 => 150], 
     [
       [ 0 => ['Nome / Razão Social:',  $dadosEmissor['RAZAOSOCIAL']]], 
       [ 0 => ['CPF / CNPJ:', $dadosEmissor['CNPJ']], 10 => ['Inscrição Municipal:',$dadosEmissor['IM']]],

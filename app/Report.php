@@ -11,12 +11,7 @@ use TCPDF;
 //
 class Config {
   public function __construct ($name='Relátorio', $filialId=null, $subject=null, $fast=1, $orientation=PDF_PAGE_ORIENTATION) {
-    /*if ($filial) {
-      $filial = pdoGet('filial', $filialId);
-      $emitente = pdoGet('parceiro', $filial->parceiro_id);
-      $municipio = pdoGet('municipio', $emitente->municipio_id);
-      $uf = pdoGet('uf', $municipio->uf_id);
-    }*/
+
     $this->name = $name;
     $this->subject = $subject ? $subject : $name;
     $this->orientation = $orientation;
@@ -100,7 +95,9 @@ class Report extends TCPDF {
     $this->MultiCell($w, $h, $text, $border, $align, $fill, $ln, '', '', true, false, false, true, $h, $valign, false);
   }
 
-  function Columns (Array $positions, Array $rows, Array $fontCaption=null, Array $fontText=null, int $h=5) {
+  function Columns (Array $positions, Array $rows, 
+                    Array $fontCaption=null, Array $fontText=null, 
+                    int $h=5) {
     $posFirst = [];
     $posCaption = [];
     $ys = [];

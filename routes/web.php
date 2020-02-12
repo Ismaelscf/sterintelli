@@ -30,16 +30,14 @@ Route::post('notas/consultarnotas','NotaController@posConsultarNotas')->name('no
 
 Route::get('notas/consultarnfse/{numnota}/{codigo}/','NotaController@consultarNfse')->name('notas.consultarnfse');
 
-Route::get('notas/consultarseqrps','NotaController@consultarSeqRps')->name('notas.consultarseqrps');
 
 Route::get('notas/cancelarnota','NotaController@cancelarNota')->name('notas.cancelarnota');
 
+Route::get('notas/danfse','NotaController@danfse')->name('notas.danfse');
 
 
- Route::post('notas/destroy','NotaController@destroy')->name('notas.destroy');
- Route::get('notas/show','NotaController@enviar')->name('notas.show');
- Route::get('notas/edit','NotaController@enviar')->name('notas.edit');
+//faturamento
 
+Route::get('faturamento/preconsultarfaturamento','FaturamentoController@preConsultarFaturamento')->name('notas.preconsultarfaturamento');
 
-
- Route::get('notas/danfse','NotaController@danfse')->name('notas.danfse');
+Route::post('faturamento/posconsultarfaturamento','FaturamentoController@posConsultarFaturamento')->name('notas.posconsultarfaturamento');

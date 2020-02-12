@@ -10,4 +10,11 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    protected $repository;
+
+    public function __construct(stdClass $rps)
+    {
+      date_default_timezone_set('America/Bahia');
+    }
 }

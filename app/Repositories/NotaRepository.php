@@ -65,7 +65,7 @@ class NotaRepository extends BaseRepository
     					desc_servico,  cod_atividade,
   						desc_atividade, cod_servico  ,
   						desc_cod_servico, endereco,
-  						email, telefone, cmun,  municipio,  uf
+  						'' email, telefone, cmun,  municipio,  uf
     			from TAB_NOTA_EMISSOR
     			where ambiente  = ".$ambiente;
 				       
