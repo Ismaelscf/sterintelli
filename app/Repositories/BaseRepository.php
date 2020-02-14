@@ -5,8 +5,9 @@ namespace App\Repositories;
 class BaseRepository
 {
 	private $conn;
-	public $result;
+	private $result;
     public $data;
+    public $count;
 
 
     public function __construct()
@@ -36,7 +37,7 @@ class BaseRepository
             trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
         }
 
-         oci_fetch_all($this->result, $this->data, null, null, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+         $this->count = oci_fetch_all($this->result, $this->data, null, null, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
 
          $this->data = json_decode(json_encode($this->data));
     }

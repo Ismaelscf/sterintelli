@@ -19,7 +19,6 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.css" rel="stylesheet">
 
 
     <!-- Template -->
@@ -29,17 +28,21 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-    <!--     Fonts and icons     -->
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+
 
     <!-- Material Kit CSS -->
+
     <link href="{{ asset('paper-dashboard/css/bootstrap.min.css')}}" rel="stylesheet" />
     <link href="{{ asset('paper-dashboard/css/paper-dashboard.css?v=2.0.0')}}" rel="stylesheet" />
+
 
     <link href="{{ asset('plugins/datepicker/datepicker3.css') }}" rel="stylesheet">
     <link href="{{ asset('plugins/datatables/datatables.min.css') }}" rel="stylesheet">
     <link href="{{ asset('plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+
+    <!--     Fonts and icons     -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />    
 
 </head>
 <body>
@@ -62,9 +65,9 @@
       </div>
         <div class="sidebar-wrapper">
           <ul class="nav">
-
               <li class="active">
-                  <a data-toggle="collapse" href="#mn_faturamento" class="collapsed" aria-expanded="false">
+                  <a data-toggle="collapse" href="#mn_faturamento" 
+                      class="collapsed" aria-expanded="false">
                       <i class="nc-icon nc-app"></i>
                       <p>Faturamento
                         <b class="caret"></b>
@@ -73,21 +76,20 @@
                   <div class="collapse" id="mn_faturamento">
                       <ul class="nav">
                           <li>
-                              <a href="#">
-                                  <span class="sidebar-mini-icon">PC</span>
-                                  <span class="sidebar-normal">Por Cliente</span>
+                              <a href="/faturamento/preconsultarfaturamento/P/">
+                                  <span class="sidebar-mini-icon">FP</span>
+                                  <span class="sidebar-normal">Por período</span>
                               </a>
-                          </li>
+                          </li>                        
                           <li>
-                              <a href="#">
-                                  <span class="sidebar-mini-icon">PP</span>
-                                  <span class="sidebar-normal">Ppr período</span>
+                              <a href="/faturamento/preconsultarfaturamento/C/">
+                                  <span class="sidebar-mini-icon">FC</span>
+                                  <span class="sidebar-normal">Por Cliente</span>
                               </a>
                           </li>
                       </ul>
                   </div>
               </li>
-
               <li>
                   <a data-toggle="collapse" href="#mn_notas" class="collapsed" aria-expanded="false">
                       <i class="nc-icon nc-single-copy-04"></i>
@@ -99,15 +101,9 @@
                   <div class="collapse" id="mn_notas">
                       <ul class="nav">
                           <li>
-                              <a href="/notas">
+                              <a href="/notas/preconsultarnotas">
                                   <span class="sidebar-mini-icon">CN</span>
                                   <span class="sidebar-normal">Consulta de Notas</span>
-                              </a>
-                          </li>
-                          <li>
-                              <a href="../examples/pages/timeline.html">
-                                  <span class="sidebar-mini-icon">CC</span>
-                                  <span class="sidebar-normal">Cancelamento</span>
                               </a>
                           </li>
                       </ul>

@@ -20,6 +20,7 @@ Emissão de nota fiscal de serviço
 
 @if ($errors->any())
     <div class="alert alert-danger">
+        <button type="button" aria-hidden="true" class="close">×</button>
         <strong>Whoops! </strong>Ocorreram Erros.<br><br>
         <ul>
             @foreach ($errors->all() as $error)
@@ -28,6 +29,19 @@ Emissão de nota fiscal de serviço
         </ul>
     </div>
 @endif    
+
+@if ($msgNotas)
+    <div class="alert alert-warning">
+        <button type="button" aria-hidden="true" class="close">×</button>
+        <ul>
+            @foreach ($msgNotas as $m)
+                <li>{!! $m !!}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif    
+
+
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">

@@ -76,4 +76,20 @@ class NotaRepository extends BaseRepository
     }
 
 
+    public function buscaNotaEmitida($idCliente, $dtIni, $dtFim){
+
+    	$sql = "select numeronota, nvl(numero_nfse, 0) numero_nfse, 
+    				   nvl(codigoverificacao, 0) codigoverificacao, 
+    				   dtanota, valornota
+				from tab_notas_emitidas t
+				where t.codcliente = ".$idCliente."
+				and t.dtainicial = to_date('".$dtIni."', 'dd/mm/yyyy')
+				and t.dtafinal = to_date('".$dtFim."', 'dd/mm/yyyy')";
+				       
+
+    	$this->executaSql($sql);
+    	return $this->data;
+
+    }
+
 }

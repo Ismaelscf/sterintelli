@@ -80,6 +80,34 @@ class NotaController extends Controller
         $dtFinal = $request->query->has('dtfim') ? 
                           $request->query->all()['dtfim'] : null;
 
+
+        $notasPeriodo = $this->repository->buscaNotaEmitida($idcliente, 
+                        $dtInicial, $dtFinal);
+
+        $msgNotas = [];
+        if ($this->repository->count > 0){
+
+          array_push($msgNotas, 'Existem nota(s) emitidas para esse período:' );
+
+          foreach ($notasPeriodo as $nota) {
+
+              $msg =  'NumNota: '. $nota->NUMERONOTA.
+                  ' <br>  Dt. Nota: '.$nota->DTANOTA.'  '.
+                  ' Valor: '. $nota->VALORNOTA;
+
+              if($nota->NUMERO_NFSE)
+                  $msg .=' <br>  NFSE: '. $nota->NUMERO_NFSE.'  '.
+                  '   Código Verificação:'.$nota->CODIGOVERIFICACAO.
+                  ' <br>link: <a href="/notas/consultarnfse/'.$nota->NUMERO_NFSE.'/'.$nota->CODIGOVERIFICACAO.'/"> Acesse</a>';
+
+              else
+                  $msg .= "<br> Sem NFSE cadastrada.";
+
+              array_push($msgNotas, $msg);
+          }
+        }
+          
+
         $dadosEmissor = $this->dadosEmissor;
         
         /*buscar os dados do período*/
@@ -95,7 +123,12 @@ class NotaController extends Controller
         return view('notas.pre-emitir', 
                     compact('dadosEmissor', 'dadosEmissao', 
                       'dtInicial', 'dtFinal', 'numRps',
-                      'dataNota', 'horaNota', 'idcliente'));  
+                      'dataNota', 'horaNota', 'idcliente',
+                      'msgNotas'
+                    ));
+
+
+        //->withErrors($msgNotas);  
 
     }
 
@@ -185,17 +218,69 @@ class NotaController extends Controller
 
             $arps[] = $rps;    
             $lote = date('ymdHis');
-            $response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
+            $ret = '
+
+<?xml version="1.0" ?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+<S:Body>
+
+<ns2:consultarSequencialRpsResponse xmlns:ns2="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/LoteRps.jws"><enviarReturn>
+<?xml version="1.0" encoding="utf-8"?>
+<RetornoEnvioLoteRPS xmlns="http://www.prefeitura.sp.gov.br/nfe" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Cabecalho xmlns="" Versao="1">
+        <Sucesso>true</Sucesso>
+        <InformacoesLote>
+            <NumeroLote>42686544</NumeroLote>
+            <InscricaoPrestador>39617106</InscricaoPrestador>
+            <CPFCNPJRemetente>
+                <CNPJ>99999998000228</CNPJ>
+            </CPFCNPJRemetente>
+            <DataEnvioLote>2015-01-26T15:42:44</DataEnvioLote>
+            <QtdNotasProcessadas>2</QtdNotasProcessadas>
+            <TempoProcessamento>1</TempoProcessamento>
+            <ValorTotalServicos>201</ValorTotalServicos>
+        </InformacoesLote>
+    </Cabecalho>
+    <ChaveNFeRPS xmlns="">
+        <ChaveNFe>
+            <InscricaoPrestador>39617106</InscricaoPrestador>
+            <NumeroNFe>3</NumeroNFe>
+            <CodigoVerificacao>2QFFXUMK</CodigoVerificacao>
+        </ChaveNFe>
+        <ChaveRPS>
+            <InscricaoPrestador>39617106</InscricaoPrestador>
+            <SerieRPS>BB</SerieRPS>
+            <NumeroRPS>4102</NumeroRPS>
+        </ChaveRPS>
+    </ChaveNFeRPS>
+    <ChaveNFeRPS xmlns="">
+        <ChaveNFe>
+            <InscricaoPrestador>39617106</InscricaoPrestador>
+            <NumeroNFe>4</NumeroNFe>
+            <CodigoVerificacao>G9TBE9PR</CodigoVerificacao>
+        </ChaveNFe>
+        <ChaveRPS>
+            <InscricaoPrestador>39617106</InscricaoPrestador>
+            <SerieRPS>BC</SerieRPS>
+            <NumeroRPS>4103</NumeroRPS>
+        </ChaveRPS>
+    </ChaveNFeRPS>
+</RetornoEnvioLoteRPS>
+</enviarReturn></ns2:RetornoEnvioLoteRPS></S:Body></S:Envelope>
+'; 
+            //$response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
+            $response = $this->trataRetorno($ret, 'enviarReturn');
 
 
 
-        } catch (\Exception $e) {
+
+        /*} catch (\Exception $e) {
 
             return redirect()->back()->withErrors([$e->getMessage()]);
         }
-   
-        echo json_encode($response);
-        if($response->Cabecalho->Sucesso == 'N'){
+   */
+        //echo json_encode($response);
+        if($response->Cabecalho->Sucesso == 'N' || $response->Cabecalho->Sucesso == 'false'){
             $erros = [];
             foreach ($response->Cabecalho->Erros as $erro) {
               array_push($erros, $erro);
@@ -487,7 +572,7 @@ class NotaController extends Controller
     {
 
         $response = html_entity_decode($response);
-        //echo $response;
+        //echo $response; die;
 
         $dom = new DOMDocument( '1.0', 'utf-8' );
         $dom->preserveWhiteSpace = false;
@@ -506,13 +591,9 @@ class NotaController extends Controller
         $node = $dom->getElementsByTagName($chave)->item(0);
         $node = $dom->saveXML($node);
 
-        //print_r($node);
-
         $node = str_replace("<".$chave.">", "", $node);
         $node = str_replace("</".$chave.">", "", $node);
         $node = ltrim($node);
-
-        //echo $node;
 
         $sxml = simplexml_load_string($node);
         if (false === $sxml) {
@@ -526,8 +607,6 @@ class NotaController extends Controller
         'attributes',
         json_encode($sxml, JSON_PRETTY_PRINT)
         );
-
-        //echo $json;
 
         return json_decode($json);
     }
