@@ -11,26 +11,41 @@ Consulta de Notas Emitidas
       </div>
       <div class="card-body">
             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
-                <tr>
-                    <th>Numero</th>
-                    <th>Razão Social Tomador</th>
-                    <th>Data</th>
-                    <th>Ação</th>
-                </tr>
-                @foreach ($notas as $nota)
-                
-                <tr>
-                    <td>{{ $nota->NumeroNota }}<br><small>{{ $nota->CodigoVerificao }}</small></td>
-                    <td>{{ $nota->RazaoSocialTomador }}</td>
-                    <td>{{ $nota->DataProcessamento }}</td>
-                    <td>
-                        <form action="" method="POST">
-           
-                            <a href="/notas/consultarnfse/{{ $nota->NumeroNota }}/{{ $nota->CodigoVerificao }}/" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Quantidade</th>
+                        <th>Total</th>
+                        <th>Total c/Transporte</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        @if(isset($lista))
+                            @foreach ($lista as $l)
+                            <tr>
+                                <td>{{ $l->FANTASIA }}</td>
+                                <td>{{ $l->QTD }}</td>
+                                <td>{{ $l->TOTAL }}</td>
+                                <td>{{ $l->TOT_C_TRANSPORTE }}</td>
+                                <td>
+                                    <form action="" method="POST">
+                                                <a href="/notas/preemitir/{{ $l->CLICOD }}?dtini={{$dtIni }}&dtfim={{$dtFim}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+
+                            </tr>
+                        @endif
+                </tbody>
             </table>
     </div>
 </div>
@@ -41,8 +56,9 @@ Consulta de Notas Emitidas
 @section('scripts')
 
 <script>
+    $('#datatable').DataTable();
     $(document).ready( function () {
-        $('#datatable').DataTable();
+
     } );
 
 </script>  

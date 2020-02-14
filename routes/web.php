@@ -20,8 +20,8 @@ Route::get('/', function () {
  Route::get('notas','NotaController@index')->name('notas.index');
 
 //enissao das notas
- Route::get('notas/emitir/{idcliente}/','NotaController@preEmitir')->name('notas.emitir');
- Route::post('notas/enviar','NotaController@posEmitir')->name('notas.enviar');
+ Route::get('notas/preemitir/{idcliente}/','NotaController@preEmitir')->name('notas.preemitir');
+ Route::post('notas/posemitir','NotaController@posEmitir')->name('notas.posemitir');
 
 
 //consulta de notas emitidas e aprovadas
@@ -38,6 +38,9 @@ Route::get('notas/danfse','NotaController@danfse')->name('notas.danfse');
 
 //faturamento
 
-Route::get('faturamento/preconsultarfaturamento','FaturamentoController@preConsultarFaturamento')->name('notas.preconsultarfaturamento');
 
-Route::post('faturamento/posconsultarfaturamento','FaturamentoController@posConsultarFaturamento')->name('notas.posconsultarfaturamento');
+Route::get('faturamento','FaturamentoController@index')->name('faturamento.index');
+
+Route::get('faturamento/preconsultarfaturamento/{tipo}/','FaturamentoController@preConsultarFaturamento')->name('notas.preconsultarfaturamento');
+
+Route::post('faturamento/posconsultarfaturamento/{tipo}/','FaturamentoController@posConsultarFaturamento')->name('notas.posconsultarfaturamento');

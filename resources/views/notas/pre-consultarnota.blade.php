@@ -22,13 +22,13 @@ Consulta de Notas Emitidas
                         <div class="col-md-4">
                             <div class="fb-text form-group field-cnpj">
                                 <label for="dtIni" class="fb-text-label">Incio<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control datepicker" name="dtIni" id="dtIni" required="required" aria-required="true" value="">
+                                <input type="text" class="form-control datepicker" name="dtIni" id="dtIni" required="required" aria-required="true" value="" autocomplete="off">
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="fb-text form-group field-im">
                                 <label for="dtFim" class="fb-text-label">Fim<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control datepicker" name="dtFim" id="dtFim" required="required" aria-required="true" value="">
+                                <input type="text" class="form-control datepicker" name="dtFim" id="dtFim" required="required" aria-required="true" value="" autocomplete="off">
                               
                             </div> 
                         </div>

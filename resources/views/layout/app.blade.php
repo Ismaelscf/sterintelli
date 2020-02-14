@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'SteriIntelli') }}</title>
+    <title>SteriIntelli</title>
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
@@ -37,8 +37,9 @@
     <link href="{{ asset('paper-dashboard/css/bootstrap.min.css')}}" rel="stylesheet" />
     <link href="{{ asset('paper-dashboard/css/paper-dashboard.css?v=2.0.0')}}" rel="stylesheet" />
 
-    <link href="{{ asset('css/plugins/datepicker/datepicker3.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/plugins/datatables/datatables.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('plugins/datepicker/datepicker3.css') }}" rel="stylesheet">
+    <link href="{{ asset('plugins/datatables/datatables.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('plugins/select2/css/select2.min.css') }}" rel="stylesheet">
 
 </head>
 <body>
@@ -182,9 +183,12 @@
     <script src="{{ asset('paper-dashboard/js/plugins/perfect-scrollbar.jquery.min.js')}}" type="text/javascript"></script>
 
     <!--  Plugin for the DateTimePicker, full documentation here: https://eonasdan.github.io/bootstrap-datetimepicker/ -->
-    <script src="{{ asset('js/plugins/datepicker/bootstrap-datepicker.js')}}"></script>
+    <script src="{{ asset('plugins/datepicker/bootstrap-datepicker.js')}}"></script>
     <!--  DataTables.net Plugin, full documentation here: https://datatables.net/    -->
-    <script src="{{ asset('js/plugins/datatables/datatables.min.js')}}"></script>
+    <script src="{{ asset('plugins/datatables/datatables.min.js')}}"></script>
+
+    <!-- Select 2 -->
+    <script src="{{ asset('plugins/select2/js/select2.full.min.js')}}"></script>
 
 
     <!-- Chart JS -->

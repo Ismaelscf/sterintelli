@@ -11,18 +11,21 @@ Consulta de Notas Emitidas
       </div>
       <div class="card-body">
             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                <thead>
                 <tr>
                     <th>Numero</th>
                     <th>Razão Social Tomador</th>
                     <th>Data</th>
                     <th>Ação</th>
                 </tr>
+                </thead>
+                <tbody>
                 @foreach ($notas as $nota)
                 
                 <tr>
                     <td>{{ $nota->NumeroNota }}<br><small>{{ $nota->CodigoVerificao }}</small></td>
                     <td>{{ $nota->RazaoSocialTomador }}</td>
-                    <td>{{ $nota->DataProcessamento }}</td>
+                    <td>{{ date('d/m/Y H:i', strtotime($nota->DataProcessamento)) }}</td>
                     <td>
                         <form action="" method="POST">
            
@@ -31,6 +34,7 @@ Consulta de Notas Emitidas
                     </td>
                 </tr>
                 @endforeach
+                </tbody>
             </table>
     </div>
 </div>
@@ -41,9 +45,8 @@ Consulta de Notas Emitidas
 @section('scripts')
 
 <script>
-    $(document).ready( function () {
-        $('#datatable').DataTable();
-    } );
+
+    $('#datatable').DataTable();    
 
 </script>  
 

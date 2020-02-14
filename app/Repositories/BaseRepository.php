@@ -37,6 +37,8 @@ class BaseRepository
         }
 
          oci_fetch_all($this->result, $this->data, null, null, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+
+         $this->data = json_decode(json_encode($this->data));
     }
 
     public function __destruct() {
@@ -49,6 +51,54 @@ class BaseRepository
             */ 
     }
 
+
+    function consultarClientesCompleto($uf = '')
+    {
+        $sql = "select codigo cod, UPPER(REPLACE(fantasia,'''', ' ' )) nome, 
+                        UPPER(REPLACE(nome,'''', ' ')) razao
+                from clientes 
+                where nome is not null ";
+
+        if($uf  != ''){
+            $sql .= " and UF = '$uf'";
+        }
+
+        $sql .= " and bol_ativo = 'S' order by fantasia";
+
+
+        //echo $sql;
+        $this->executaSQL($sql);
+        return $this->data;
+
+
+    }
+
+    function consultarEstados()
+    {
+        $sql = "select TES_CODIGO cod, TES_DESCRICAO nome 
+                from tab_estados 
+                order by  TES_CODIGO";
+        $this->executaSQL($sql);
+        return $this->data;
+
+    }   
+
+    function consultarMunicipios($uf  = '')
+    {
+        $sql = "select distinct municipio cod, municipio nome
+                from clientes";
+
+        if($uf  != ''){
+            $sql .= " where UF = '$uf'";
+        }
+
+        $sql .= " order by 1";
+
+        $this->executaSQL($sql);
+        return $this->data;
+
+
+    }   
 
 
 }

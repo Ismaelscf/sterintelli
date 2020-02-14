@@ -39,12 +39,12 @@ class NotaController extends Controller
       $this->dadosEmissor = $this->repository->buscaDadosEmissor($this->ambiente);
 
       $this->config = [
-                'cnpj' => $this->dadosEmissor['CNPJ'],
-                'im' => $this->dadosEmissor['IM'],
-                'cmun' => $this->dadosEmissor['CMUN'], //ira determinar as urls e outros dados
-                'razao' => $this->dadosEmissor['RAZAOSOCIAL'],
+                'cnpj' => $this->dadosEmissor->CNPJ,
+                'im' => $this->dadosEmissor->IM,
+                'cmun' => $this->dadosEmissor->CMUN, //ira determinar as urls e outros dados
+                'razao' => $this->dadosEmissor->RAZAOSOCIAL,
                 'tpamb' => $this->ambiente, //1-producao, 2-homologacao
-                'token' => $this->dadosEmissor['TOKEN'],
+                'token' => $this->dadosEmissor->TOKEN,
               ];
         $this->configJson = json_encode($this->config);
         
@@ -87,6 +87,7 @@ class NotaController extends Controller
                                 $idcliente, $dtInicial, $dtFinal
                               );
 
+        
         $numRps = (int)$this->consultarUltimoSeqRps() + 1;
         $dataNota = date("d/m/Y");
         $horaNota = date("H:i:s");
@@ -94,7 +95,7 @@ class NotaController extends Controller
         return view('notas.pre-emitir', 
                     compact('dadosEmissor', 'dadosEmissao', 
                       'dtInicial', 'dtFinal', 'numRps',
-                      'dataNota', 'horaNota'));  
+                      'dataNota', 'horaNota', 'idcliente'));  
 
     }
 
@@ -108,13 +109,8 @@ class NotaController extends Controller
     {
   
         try {
-
-            $soap = new SoapCurl();
-            $soap->disableCertValidation(true);
-            
+      
             $tools = new Tools($this->configJson, $this->cert);
-            $soap->timeout(120);
-            $tools->loadSoapClass($soap);
 
             $arps = [];
             
@@ -127,7 +123,7 @@ class NotaController extends Controller
 
 
             $std->inscricaomunicipalprestador = $request->has('inscricaomunicipalprestador')? $request->inscricaomunicipalprestador : "";
-            $std->razaosocialprestador = $request->has('razaosocialprestador')? $request->razaosocialprestador : "";
+            $std->razaosocialprestador = htmlentities($request->has('razaosocialprestador')? $request->razaosocialprestador : "");
 
             $dataEmissao = $request->has('dataemissaorps')? $request->dataemissaorps :'2020-01-01';
             $horaEmissao = $request->has('horaemissaorps')? $request->horaemissaorps :'00:00:00';
@@ -145,7 +141,7 @@ class NotaController extends Controller
             //DADOS DO TOMADOR
             $std->inscricaomunicipaltomador = $request->has('inscricaomunicipaltomador')? $request->inscricaomunicipaltomador : "000000";
             $std->cpfcnpjtomador = $request->has('cpfcnpjtomador')? $request->cpfcnpjtomador : "0000000";
-            $std->razaosocialtomador = $request->has('razaosocialtomador')? $request->razaosocialtomador : "";
+            $std->razaosocialtomador = htmlentities($request->has('razaosocialtomador')? $request->razaosocialtomador : "");
             $std->tipologradourotomador = $request->has('tipologradourotomador')? $request->tipologradourotomador : "";
             $std->logradourotomador = $request->has('logradourotomador')? $request->logradourotomador : "";
             $std->numeroenderecotomador = $request->has('numeroenderecotomador')? $request->numeroenderecotomador : "";
@@ -189,19 +185,34 @@ class NotaController extends Controller
 
             $arps[] = $rps;    
             $lote = date('ymdHis');
-            $response = $this->trataRetorno($tools->enviar($arps, $lote));
+            $response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
 
 
 
         } catch (\Exception $e) {
-            echo $e->getMessage();
+
+            return redirect()->back()->withErrors([$e->getMessage()]);
         }
    
-        return  $response;//
+        echo json_encode($response);
+        if($response->Cabecalho->Sucesso == 'N'){
+            $erros = [];
+            foreach ($response->Cabecalho->Erros as $erro) {
+              array_push($erros, $erro);
+            }
+            return redirect()->back()->withErrors($erros);
+        }
 
-        //modelo de retorno com sucesso
-        //redirect()->route('notas.index')
-                        //->with('success','Nota criada com sucesso.');
+        //salvar nota
+        $chaves = $response->ChavesNFSeRPS;
+        foreach ($chaves as $chave) {
+          echo $chave->ChaveNFe->NumeroNFe;
+          echo $chave->ChaveNFe->CodigoVerificacao;
+        }
+
+
+        return $response;
+
     }
 
     public function preConsultarNotas()
@@ -395,11 +406,11 @@ class NotaController extends Controller
   $pdf->Columns(
     [0 => 32, 3 => 70, 5 => 100, 10 => 120, 15 => 150], 
     [
-      [ 0 => ['Nome / Razão Social:',  $dadosEmissor['RAZAOSOCIAL']]], 
-      [ 0 => ['CPF / CNPJ:', $dadosEmissor['CNPJ']], 10 => ['Inscrição Municipal:',$dadosEmissor['IM']]],
-      [ 0 => ['Endereço:', $dadosEmissor['ENDERECO']]],
+      [ 0 => ['Nome / Razão Social:',  $dadosEmissor->RAZAOSOCIAL]], 
+      [ 0 => ['CPF / CNPJ:', $dadosEmissor->CNPJ], 10 => ['Inscrição Municipal:',$dadosEmissor->IM]],
+      [ 0 => ['Endereço:', $dadosEmissor->ENDERECO]],
       // bug: na ultima linha o 'h' sempre dispara text overflow ...
-      [ 0 => ['Município:', $dadosEmissor['MUNICIPIO']], 5 => ['UF:', $dadosEmissor['UF']], 10 => ['Email:' , $dadosEmissor['EMAIL']], 15 => ['Telefone:' , $dadosEmissor['TELEFONE']]]
+      [ 0 => ['Município:', $dadosEmissor->MUNICIPIO], 5 => ['UF:', $dadosEmissor->UF], 10 => ['Email:' , $dadosEmissor->EMAIL], 15 => ['Telefone:' , $dadosEmissor->TELEFONE]]
     ], 
     ['helvetica', '', 8], ['helvetica', 'B', 7], 5);
 
@@ -446,8 +457,8 @@ class NotaController extends Controller
       ['h' => 4, 0 => ['Local de Incidência Imposto:', 'Estabelecimento do Prestador'], 5 => ['Tributação:', 'TRIBUTÁVEL'], 10 => ['Mês de','09/2019']],
       ['h' => 4, 0 => ['Local de Prestação do Serv.:', 'SAO LUIS / MA']],
       ['h' => 4, 0 => ['Recolhimento:', 'PRÓPRIO']],
-      ['h' => 4, 0 => ['Atividade:', $dadosEmissor['COD_ATIVIDADE'].' '.$dadosEmissor['DESC_ATIVIDADE']]],
-      ['h' => 12, 0 => ['Serviço:', $dadosEmissor['COD_SERVICO'].' '.$dadosEmissor['DESC_COD_SERVICO']]],
+      ['h' => 4, 0 => ['Atividade:', $dadosEmissor->COD_ATIVIDADE.' '.$dadosEmissor->DESC_ATIVIDADE]],
+      ['h' => 12, 0 => ['Serviço:', $dadosEmissor->COD_SERVICO.' '.$dadosEmissor->DESC_COD_SERVICO]],
       ['h' => 5, 0 => ['RPS/SÉRIE:', $nota->NumeroRPS.'/'.$nota->SerieRPS.'('.$this->formataDataRetono($nota->DataProcessamento).')']],  
     ], 
     ['helvetica', '', 7], ['helvetica', '', 7], 5);
@@ -489,7 +500,8 @@ class NotaController extends Controller
             
             if ($tag->nodeName != 'S:Envelope')
               echo " <br> <br>".$tag->nodeName." - ".$tag->nodeValue;
-        }  */ 
+        }  
+        */
 
         $node = $dom->getElementsByTagName($chave)->item(0);
         $node = $dom->saveXML($node);

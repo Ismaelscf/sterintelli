@@ -25,7 +25,7 @@ class NotaRepository extends BaseRepository
 				       bairro BAIRRO_TOMADOR, 
 				       '65000000' CEP_TOMADOR,
 				       numero NUM_TOMADOR,
-				       im IM_TOMADOR, 
+				       nvl(im, '0000000') IM_TOMADOR, 
 				       email EMAIL_TOMADOR,
 				       MSGNF,
 				       to_char(SUM(TOTAL),'99G999G999D99') AS TOTAL, 
@@ -54,6 +54,7 @@ class NotaRepository extends BaseRepository
 					       	municipio, bairro, numero,
 					       	ie, im, MSGNF, email";
 
+		//echo $sql;
     	$this->executaSql($sql);
     	return $this->data[0];
     }
