@@ -276,8 +276,8 @@ class NotaController extends Controller
     </ChaveNFeRPS>
 </reqenvioloterps></enviarreturn></ns2:enviarresponse></s:body></s:envelope>
 '; 
-            //$response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
-            $response = $this->trataRetorno($ret, 'enviarreturn');
+            $response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
+            //$response = $this->trataRetorno($ret, 'enviarreturn');
 
 
             //echo json_encode($response);
