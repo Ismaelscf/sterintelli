@@ -12,9 +12,10 @@ class FaturamentoRepository extends BaseRepository
 			$sql = "select c.fantasia, sum(n.qtd) qtd, 
 							to_char(SUM(n.totaldesc),'99G999G999D99') as TOTAL,
 							to_char(SUM(n.totald),'99G999G999D99') as TOT_C_TRANSPORTE,
-							n.clicod
+							n.clicod,
+							fn_busca_nfse(n.clicod, to_date('".$dataInicial."', 'dd/mm/yyyy') , to_date('".$dataFinal."', 'dd/mm/yyyy') ) as caminho
 					from vie_nota_detalhe N inner join clientes c on n.clicod = c.codigo
-					where DATAESTE BETWEEN to_date('$dataInicial', 'dd/mm/yyyy') AND to_date('$dataFinal', 'dd/mm/yyyy')";
+					where DATAESTE BETWEEN to_date('".$dataInicial."', 'dd/mm/yyyy') AND to_date('".$dataFinal."', 'dd/mm/yyyy')";
 
 			if ($cliente != "-1")
 				$sql .= " and n.clicod = $cliente";
@@ -32,7 +33,6 @@ class FaturamentoRepository extends BaseRepository
 			
 			//echo $sql;
 			$this->executaSQL($sql);
-			//var_dump($this->data[0]);
 			return $this->data;
 		}
 

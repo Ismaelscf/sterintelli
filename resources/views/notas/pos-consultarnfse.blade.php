@@ -1,19 +1,19 @@
 @extends('layout.app')
  
 @section('titulo')
-Consulta de Notas Emitidas
+Consulta de NFSe Emitidas
 @endsection
 
 @section('content')
 <div class="card">
       <div class="card-header">
-        <h4 class="card-title">Notas no período</h4>
+        <h4 class="card-title">NFSe no período</h4>
       </div>
       <div class="card-body">
             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
                 <thead>
                 <tr>
-                    <th>Numero</th>
+                    <th>Numero<br><small>Cód. Verficação</small></th>
                     <th>Razão Social Tomador</th>
                     <th>Data</th>
                     <th>Ação</th>
@@ -29,7 +29,7 @@ Consulta de Notas Emitidas
                     <td>
                         <form action="" method="POST">
            
-                            <a href="/notas/consultarnfse/{{ $nota->NumeroNota }}/{{ $nota->CodigoVerificao }}/" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
+                            <a href="/notas/imprimirnfse/{{ $nota->NumeroNota }}/{{ $nota->CodigoVerificao }}/" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
                         </form>
                     </td>
                 </tr>

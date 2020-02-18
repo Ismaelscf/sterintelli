@@ -25,19 +25,20 @@ Route::get('/', function () {
 
 
 //consulta de notas emitidas e aprovadas
-Route::get('notas/preconsultarnotas','NotaController@preConsultarNotas')->name('notas.pre-consultarnota');
-Route::post('notas/consultarnotas','NotaController@posConsultarNotas')->name('notas.consultarnotas');
+Route::get('notas/preconsultarnfse','NotaController@preConsultarNfse')->name('notas.preconsultarnfse');
+Route::post('notas/posconsultarnfse','NotaController@posConsultarNfse')->name('notas.posconsultarnfse');
+Route::get('notas/imprimirnfse/{numnota}/{codigo}/','NotaController@imprimirNfse')->name('notas.imprimirNfse');
 
-Route::get('notas/consultarnfse/{numnota}/{codigo}/','NotaController@consultarNfse')->name('notas.consultarnfse');
+
+Route::get('notas/preconsnotasemitidas','NotaController@preConsultarNotasEmitidas')->name('notas.preconsnotasemitidas');
+Route::post('notas/posconsnotasemitidas','NotaController@posConsultarNotasEmitidas')->name('notas.posconsnotasemitidas');
 
 
 Route::get('notas/cancelarnota','NotaController@cancelarNota')->name('notas.cancelarnota');
 
-Route::get('notas/danfse','NotaController@danfse')->name('notas.danfse');
 
 
 //faturamento
-
 
 Route::get('faturamento','FaturamentoController@index')->name('faturamento.index');
 

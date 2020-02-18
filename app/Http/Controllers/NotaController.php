@@ -30,6 +30,8 @@ class NotaController extends Controller
     {
       $this->repository = new NotaRepository();
 
+      parent::__construct();
+
       //homolog
       //$token = '3579F09B4CC37151D3327197B13F9583';
 
@@ -53,6 +55,7 @@ class NotaController extends Controller
         //$content = file_get_contents('C:\dev_stef\certificado\STEFERSON_20191105.p12');
         $password = 'brito2020s';
         $this->cert = Certificate::readPfx($content, $password);
+
 
     }
 
@@ -84,10 +87,10 @@ class NotaController extends Controller
         $notasPeriodo = $this->repository->buscaNotaEmitida($idcliente, 
                         $dtInicial, $dtFinal);
 
-        $msgNotas = [];
+        $msgAlerta = [];
         if ($this->repository->count > 0){
 
-          array_push($msgNotas, 'Existem nota(s) emitidas para esse período:' );
+          array_push($msgAlerta, 'Existem nota(s) emitidas para esse período:' );
 
           foreach ($notasPeriodo as $nota) {
 
@@ -103,7 +106,7 @@ class NotaController extends Controller
               else
                   $msg .= "<br> Sem NFSE cadastrada.";
 
-              array_push($msgNotas, $msg);
+              array_push($msgAlerta, $msg);
           }
         }
           
@@ -124,12 +127,29 @@ class NotaController extends Controller
                     compact('dadosEmissor', 'dadosEmissao', 
                       'dtInicial', 'dtFinal', 'numRps',
                       'dataNota', 'horaNota', 'idcliente',
-                      'msgNotas'
+                      'msgAlerta'
                     ));
 
+    }
 
-        //->withErrors($msgNotas);  
+    public function preConsultarNotasEmitidas()
+    {
+        $clientes = $this->repository->consultarClientesCompleto();
 
+        return view('notas.pre-consnotasemitidas', compact('clientes'));
+    }
+
+
+    public function posConsultarNotasEmitidas(Request $request)
+    {
+
+        $dtIni = $request->dtIni;
+        $dtFim = $request->dtFim;
+
+        $notas = $this->repository->consultarNotasEmitidas($request->dtIni, 
+                $request->dtFim, $request->cmbCliente);
+
+        return view('notas.pos-consnotasemitidas', compact('notas','dtIni','dtFim'));
     }
 
     /**
@@ -142,6 +162,12 @@ class NotaController extends Controller
     {
   
         try {
+
+
+            $buscaNota = $this->repository->verificaNotaEmitida($request->numeronota);
+
+            if ($buscaNota == true)
+                return redirect()->back()->withErrors(['Já existe uma nota com este número']);
       
             $tools = new Tools($this->configJson, $this->cert);
 
@@ -158,7 +184,7 @@ class NotaController extends Controller
             $std->inscricaomunicipalprestador = $request->has('inscricaomunicipalprestador')? $request->inscricaomunicipalprestador : "";
             $std->razaosocialprestador = htmlentities($request->has('razaosocialprestador')? $request->razaosocialprestador : "");
 
-            $dataEmissao = $request->has('dataemissaorps')? $request->dataemissaorps :'2020-01-01';
+            $dataEmissao = $request->has('dataemissaorps')? $request->dataemissaorps :'01/01/2020';
             $horaEmissao = $request->has('horaemissaorps')? $request->horaemissaorps :'00:00:00';
 
             $dataEmissao = $this->formataDataHoraEnvio($dataEmissao, $horaEmissao);
@@ -220,14 +246,9 @@ class NotaController extends Controller
             $lote = date('ymdHis');
             $ret = '
 
-<?xml version="1.0" ?>
-<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
-<S:Body>
-
-<ns2:consultarSequencialRpsResponse xmlns:ns2="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/LoteRps.jws"><enviarReturn>
-<?xml version="1.0" encoding="utf-8"?>
-<RetornoEnvioLoteRPS xmlns="http://www.prefeitura.sp.gov.br/nfe" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Cabecalho xmlns="" Versao="1">
+<s:envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:body><ns2:enviarresponse xmlns:ns2="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/LoteRps.jws"><enviarreturn><!--?xml version="1.0" encoding="UTF-8"?-->
+<reqenvioloterps xmlns:ns1="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/lote" xmlns:tipos="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/tp" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/xsd/RetornoConsultaLote.xsd ">
+  <Cabecalho xmlns="" Versao="1">
         <Sucesso>true</Sucesso>
         <InformacoesLote>
             <NumeroLote>42686544</NumeroLote>
@@ -253,60 +274,65 @@ class NotaController extends Controller
             <NumeroRPS>4102</NumeroRPS>
         </ChaveRPS>
     </ChaveNFeRPS>
-    <ChaveNFeRPS xmlns="">
-        <ChaveNFe>
-            <InscricaoPrestador>39617106</InscricaoPrestador>
-            <NumeroNFe>4</NumeroNFe>
-            <CodigoVerificacao>G9TBE9PR</CodigoVerificacao>
-        </ChaveNFe>
-        <ChaveRPS>
-            <InscricaoPrestador>39617106</InscricaoPrestador>
-            <SerieRPS>BC</SerieRPS>
-            <NumeroRPS>4103</NumeroRPS>
-        </ChaveRPS>
-    </ChaveNFeRPS>
-</RetornoEnvioLoteRPS>
-</enviarReturn></ns2:RetornoEnvioLoteRPS></S:Body></S:Envelope>
+</reqenvioloterps></enviarreturn></ns2:enviarresponse></s:body></s:envelope>
 '; 
             //$response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
-            $response = $this->trataRetorno($ret, 'enviarReturn');
+            $response = $this->trataRetorno($ret, 'enviarreturn');
 
 
+            //echo json_encode($response);
+
+            $retorno = $response->Cabecalho;
+            if($retorno->Sucesso == 'N' || $retorno->Sucesso == 'false'){
+                $erros = [];
+                foreach ($retorno->Erros as $erro) {
+                  array_push($erros, $erro);
+                }
+                return redirect()->back()->withErrors($erros);
+            }
+
+            //salvar nota
+            $chave = $response->ChaveNFeRPS;
+
+            $retornoSalvar = $this->repository->salvaNotaEmitida($request->idcliente,  
+              $request->numeronota, 
+              $this->formataValor($request->vTotServ),
+              $request->dtInicial,
+              $request->dtFinal, 
+              0,
+              $request->dataemissaorps, 5, $chave->ChaveNFe->NumeroNFe, 
+              $chave->ChaveNFe->CodigoVerificacao, json_encode($response));
+
+            if ($retornoSalvar[0] == false){
+                //??
+            }
+
+            //retorna a página inicial
+            $msgInforma = [];
+
+            array_push($msgInforma, 'Nota emitida com sucesso.');
+            array_push($msgInforma, 'NFSe: '.$chave->ChaveNFe->NumeroNFe.
+                ' Código de Verificação:'.$chave->ChaveNFe->CodigoVerificacao);
+            array_push($msgInforma, 'Para imprimir <a href="/nota/imprimirnota/'.$chave->ChaveNFe->NumeroNFe.'/'.$chave->ChaveNFe->CodigoVerificacao.'/" target="_blank">clique aqui</a>');
 
 
-        /*} catch (\Exception $e) {
+        } catch (\Exception $e) {
 
             return redirect()->back()->withErrors([$e->getMessage()]);
         }
-   */
-        //echo json_encode($response);
-        if($response->Cabecalho->Sucesso == 'N' || $response->Cabecalho->Sucesso == 'false'){
-            $erros = [];
-            foreach ($response->Cabecalho->Erros as $erro) {
-              array_push($erros, $erro);
-            }
-            return redirect()->back()->withErrors($erros);
-        }
 
-        //salvar nota
-        $chaves = $response->ChavesNFSeRPS;
-        foreach ($chaves as $chave) {
-          echo $chave->ChaveNFe->NumeroNFe;
-          echo $chave->ChaveNFe->CodigoVerificacao;
-        }
-
-
-        return $response;
+        return view('notas.index', 
+                    compact('msgInforma'));
 
     }
 
-    public function preConsultarNotas()
+    public function preConsultarNfse()
     {
-        return view('notas.pre-consultarnota');
+        return view('notas.pre-consultarnfse');
     }
 
 
-    public function posConsultarNotas(Request $request)
+    public function posConsultarNfse(Request $request)
     {
 
         $tools = new Tools($this->configJson, $this->cert);
@@ -317,10 +343,11 @@ class NotaController extends Controller
         $notas = $this->trataRetorno($tools->consultarNota($dtIni, $dtFim), 'consultarNotaReturn');
         //var_dump($notas);
         $notas = $notas->NotasConsultadas->Nota;
-        return view('notas.pos-consultarnota', compact('notas'));
+
+        return view('notas.pos-consultarnfse', compact('notas'));
     }
 
-   public function consultarNfse($numnota, $codigo)
+   public function imprimirNfse($numnota, $codigo)
     {
 
         $notas[0] = ['numero' => $numnota, 
@@ -330,6 +357,7 @@ class NotaController extends Controller
 
         $nota = $this->trataRetorno($tools->consultarNFSeRps($notas), 
           'consultarNFSeRpsReturn');
+
 
         $this->danfse($nota);
     }
@@ -350,7 +378,7 @@ class NotaController extends Controller
     }
 
 
-    public function  danfse ($nota){//, $target) {
+    public function  danfse($nota){//, $target) {
 
         $cnpj = $nota->Cabecalho->CPFCNPJRemetente;
         $nota = $nota->NotasConsultadas->Nota;
@@ -365,188 +393,283 @@ class NotaController extends Controller
         $pdf->AddPage();
         $pdf->SetCellPaddings(0, 0, 0, 0);
         $pdf->SetLineStyle(array('width' => 0.3));
-  
-  //--------------------------------------
-  // Cabeçalho
-  //--------------------------------------
-  $y = $pdf->GetY();
-  $pdf->Image( 'images/logo_slz.png', 11.5, $y+3, 18, 25);
-  $pdf->Box(114.5, '', '', 0, 'TLBR', 'C', 32);
-  $col2 = $pdf->GetX();
-  $pdf->SetFont('helvetica', 'B', 13);
-  $pdf->Text(48, $y+3, 'PREFEITURA DE SÃO LUÍS', false, false, true, 0, 1);
-  $pdf->SetFont('helvetica', 'B', 9.8);
-  $pdf->Text(44.5, $pdf->GetY()+4, 'SECRETARIA MUNICIPAL DE FAZENDA', false, false, true, 0, 1);
-  $pdf->SetFont('helvetica', 'B', 9.9);
-  $pdf->Text(35.5, $pdf->GetY()+4, 'NOTA FISCAL DE SERVIÇOS ELETRÔNICA - NFSe', false, false, true, 0, 1);
-  
-  
-  $y1 = $pdf->GetY();
-  $pdf->SetY($y);
-  $pdf->SetX($col2); 
-  $pdf->Box(75, 'Número da Nota', sprintf('%06d', $nota->NumeroNota), 1, 'TBR', 'L', 10, ['helvetica', 'B', 10], 'B', false, ['helvetica', '', 9]);
-  $pdf->SetX($col2);
-  $pdf->Box(75, 'Data e Hora da Emissão', $this->formataDataRetono($nota->DataProcessamento), 1, 'TBR', 'L', 10, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 9]);
-  $pdf->SetX($col2);
-  $pdf->Box(75, 'Código de Verificação', $nota->CodigoVerificacao, 1, 'TBR', 'L', 12, ['helvetica', 'B', 5], 'B', false, ['helvetica', '', 9]);
+      
+      //--------------------------------------
+      // Cabeçalho
+      //--------------------------------------
+      $y = $pdf->GetY();
+      $pdf->Image( 'images/logo_slz.png', 11.5, $y+3, 18, 25);
+      $pdf->Box(114.5, '', '', 0, 'TLBR', 'C', 32);
+      $col2 = $pdf->GetX();
+      $pdf->SetFont('helvetica', 'B', 13);
+      $pdf->Text(48, $y+3, 'PREFEITURA DE SÃO LUÍS', false, false, true, 0, 1);
+      $pdf->SetFont('helvetica', 'B', 9.8);
+      $pdf->Text(44.5, $pdf->GetY()+4, 'SECRETARIA MUNICIPAL DE FAZENDA', false, false, true, 0, 1);
+      $pdf->SetFont('helvetica', 'B', 9.9);
+      $pdf->Text(35.5, $pdf->GetY()+4, 'NOTA FISCAL DE SERVIÇOS ELETRÔNICA - NFSe', false, false, true, 0, 1);
+      
+      
+      $y1 = $pdf->GetY();
+      $pdf->SetY($y);
+      $pdf->SetX($col2); 
+      $pdf->Box(75, 'Número da Nota', sprintf('%06d', $nota->NumeroNota), 1, 'TBR', 'L', 10, ['helvetica', 'B', 10], 'B', false, ['helvetica', '', 9]);
+      $pdf->SetX($col2);
+      $pdf->Box(75, 'Data e Hora da Emissão', $this->formataDataRetono($nota->DataProcessamento), 1, 'TBR', 'L', 10, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 9]);
+      $pdf->SetX($col2);
+      $pdf->Box(75, 'Código de Verificação', $nota->CodigoVerificacao, 1, 'TBR', 'L', 12, ['helvetica', 'B', 5], 'B', false, ['helvetica', '', 9]);
 
-  //--------------------------------------
-  // Grupos
-  //--------------------------------------
-  $pdf->fontCaption = ['helvetica', 'B', 6];
-  $pdf->fontText = ['helvetica', '', 8];
+      //--------------------------------------
+      // Grupos
+      //--------------------------------------
+      $pdf->fontCaption = ['helvetica', 'B', 6];
+      $pdf->fontText = ['helvetica', '', 8];
 
-  $yP = $pdf->GetY();
-  $pdf->Box(189.5, '', "PRESTADOR DE SERVIÇOS", 1, 'BLR', 'C', 22, ['helvetica', 'B', 9], 'T');
-  $yT = $pdf->GetY();
-  $pdf->Image( 'images/logo_1.png', 12, $yP+3, 18, 18);
+      $yP = $pdf->GetY();
+      $pdf->Box(189.5, '', "PRESTADOR DE SERVIÇOS", 1, 'BLR', 'C', 22, ['helvetica', 'B', 9], 'T');
+      $yT = $pdf->GetY();
+      $pdf->Image( 'images/logo_1.png', 12, $yP+3, 18, 18);
 
-  $pdf->Box(189.5, '', "TOMADOR DE SERVIÇOS", 1, 'BLR', 'C', 22, ['helvetica', 'B', 9], 'T');
-  $yD = $pdf->GetY();
-  $pdf->Box(189.5, '', "DISCRIMINAÇÃO DOS SERVIÇOS", 1, 'BLR', 'C', 26, ['helvetica', 'B', 9], 'T');
-
-
-  //Titulo Itens
-  //---------------
-  $pdf->Box(21, '', "Tipo do Item", 0, 'BLR', 'L', 5, ['helvetica', 'B', 7], 'T');
-  $pdf->SetX(31.5);
-  $pdf->Box(100, '', "Item", 0, 'BLR', 'L', 5, ['helvetica', 'B', 7], 'T');
-  $pdf->SetX(131.5);
-  $pdf->Box(21, '', "Quantidade", 0, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
-  $pdf->SetX(152.5);
-  $pdf->Box(21, '', "Valor Unitário (R$)", 0, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
-  $pdf->SetX(173.5);
-  $pdf->Box(26.5, '', "Valor Total (R$)", 1, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
-
-  $itens = $nota->Itens;
-  $totalNota = 0;
-
-  foreach ($itens as $item) {
-
-        // Itens
-        //---------------
-        $tributavel = $item->Tributavel == "S"?"TRIBUTÁVEL": "NÃO TRIBUTÁVEL";
-        $pdf->Box(21, '', $tributavel, 0, 'BLR', 'L', 85, ['helvetica', '', 6], 'T');
-        $pdf->SetX(31.5);
-        $pdf->Box(100, '', $item->DiscriminacaoServico, 0, 'BLR', 'L', 85, ['helvetica', '', 6], 'T');
-        $pdf->SetX(131.5);
-        $pdf->Box(21, '', $item->Quantidade, 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
-        $pdf->SetX(152.5);
-        $pdf->Box(21, '', $this->formataCurrency($item->ValorUnitario), 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
-        $pdf->SetX(173.5);
-        $pdf->Box(26.5, '', $this->formataCurrency($item->ValorTotal), 1, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
-        
-        $totalNota += (float)$item->ValorTotal;
-  }
-
-  $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
-
-  $y = $pdf->GetY();
-  $pdf->SetY($y-10);
-  $pdf->SetX(11.5);
-
-  $pdf->Box(36, 'PIS ('.$nota->AliquotaPIS.'%):', 'R$ '.$this->formataCurrency($nota->ValorPIS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
-  $pdf->SetX(49);
-  $pdf->Box(36, 'COFINS ('.$nota->AliquotaCOFINS.'%):', 'R$ '.$this->formataCurrency($nota->ValorCOFINS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
-  $pdf->SetX(87);
-  $pdf->Box(36, 'INSS ('.$nota->AliquotaINSS.'0%):', 'R$ '.$this->formataCurrency($nota->ValorINSS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
-  $pdf->SetX(124);
-  $pdf->Box(36, 'IR ('.$nota->AliquotaIR.'%):', 'R$ '.$this->formataCurrency($nota->ValorIR).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
-  $pdf->SetX(161);
-  $pdf->Box(36, 'CSLL ('.$nota->AliquotaCSLL.'%):', 'R$ '.$this->formataCurrency($nota->ValorCSLL).'', 1, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+      $pdf->Box(189.5, '', "TOMADOR DE SERVIÇOS", 1, 'BLR', 'C', 22, ['helvetica', 'B', 9], 'T');
+      $yD = $pdf->GetY();
+      $pdf->Box(189.5, '', "DISCRIMINAÇÃO DOS SERVIÇOS", 1, 'BLR', 'C', 26, ['helvetica', 'B', 9], 'T');
 
 
-  $pdf->Box(189.5, '', 'VALOR TOTAL DA NOTA = R$ ' . $this->formataCurrency($totalNota), 1, 'BLR', 'C', 7, ['helvetica', 'B', 10]);
+      //Titulo Itens
+      //---------------
+      $pdf->Box(21, '', "Tipo do Item", 0, 'BLR', 'L', 5, ['helvetica', 'B', 7], 'T');
+      $pdf->SetX(31.5);
+      $pdf->Box(100, '', "Item", 0, 'BLR', 'L', 5, ['helvetica', 'B', 7], 'T');
+      $pdf->SetX(131.5);
+      $pdf->Box(21, '', "Quantidade", 0, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
+      $pdf->SetX(152.5);
+      $pdf->Box(21, '', "Valor Unitário (R$)", 0, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
+      $pdf->SetX(173.5);
+      $pdf->Box(26.5, '', "Valor Total (R$)", 1, 'BLR', 'R', 5, ['helvetica', 'B', 7], 'T');
+
+      $itens = $nota->Itens;
+      $totalNota = 0;
+
+      foreach ($itens as $item) {
+
+            // Itens
+            //---------------
+            $tributavel = $item->Tributavel == "S"?"TRIBUTÁVEL": "NÃO TRIBUTÁVEL";
+            $pdf->Box(21, '', $tributavel, 0, 'BLR', 'L', 85, ['helvetica', '', 6], 'T');
+            $pdf->SetX(31.5);
+            $pdf->Box(100, '', $item->DiscriminacaoServico, 0, 'BLR', 'L', 85, ['helvetica', '', 6], 'T');
+            $pdf->SetX(131.5);
+            $pdf->Box(21, '', $item->Quantidade, 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+            $pdf->SetX(152.5);
+            $pdf->Box(21, '', $this->formataCurrency($item->ValorUnitario), 0, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+            $pdf->SetX(173.5);
+            $pdf->Box(26.5, '', $this->formataCurrency($item->ValorTotal), 1, 'BLR', 'R', 85, ['helvetica', '', 6], 'T');
+            
+            $totalNota += (float)$item->ValorTotal;
+      }
+
+      $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
+
+      $y = $pdf->GetY();
+      $pdf->SetY($y-10);
+      $pdf->SetX(11.5);
+
+      $pdf->Box(36, 'PIS ('.$nota->AliquotaPIS.'%):', 'R$ '.$this->formataCurrency($nota->ValorPIS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+      $pdf->SetX(49);
+      $pdf->Box(36, 'COFINS ('.$nota->AliquotaCOFINS.'%):', 'R$ '.$this->formataCurrency($nota->ValorCOFINS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+      $pdf->SetX(87);
+      $pdf->Box(36, 'INSS ('.$nota->AliquotaINSS.'0%):', 'R$ '.$this->formataCurrency($nota->ValorINSS).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+      $pdf->SetX(124);
+      $pdf->Box(36, 'IR ('.$nota->AliquotaIR.'%):', 'R$ '.$this->formataCurrency($nota->ValorIR).'', 0, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
+      $pdf->SetX(161);
+      $pdf->Box(36, 'CSLL ('.$nota->AliquotaCSLL.'%):', 'R$ '.$this->formataCurrency($nota->ValorCSLL).'', 1, 'TLBR', 'C', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 8], 'C');
 
 
-  $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
-
-  $y = $pdf->GetY();
-  $pdf->SetY($y-10);
-  $pdf->SetX(11.5);
-
-  $devolucao = $this->trataItemVazio($nota->Deducoes);
-  $alqiss = (float)$nota->AliquotaAtividade;
-  $valiss = $totalNota*$alqiss;
-
-  $pdf->Box(36, 'Valor Total Composição:', 'R$ '.$this->formataCurrency($totalNota).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
-  $pdf->SetX(49);
-  $pdf->Box(36, 'Valor Total Deduções:', 'R$ '.$this->formataCurrency($devolucao).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
-  $pdf->SetX(87);
-  $pdf->Box(36, 'Base Cálculo:', 'R$ '.$this->formataCurrency($totalNota).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
-  $pdf->SetX(124);
-  $pdf->Box(36, 'Alíquota:', ''.$nota->AliquotaAtividade.'%', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
-   $pdf->SetX(161);
-  $pdf->Box(36, 'Valor ISS:', 'R$ '.$this->formataCurrency($valiss).'', 1, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
-
-  $yO = $pdf->GetY();
-  $pdf->Box(189.5, '', "\nOUTRAS INFORMAÇÕES", 1, 'BLR', 'C', 50, ['helvetica', 'B', 9], 'T');
-  
-
-  //--------------------------------------
-  // Prestador
-  //--------------------------------------
-  //$pdf->Image(UPLOAD_PATH . $filial->logo, 25, $yP+2, 26, 26);
-  $pdf->SetY($yP+3);
-  $pdf->Columns(
-    [0 => 32, 3 => 70, 5 => 100, 10 => 120, 15 => 150], 
-    [
-      [ 0 => ['Nome / Razão Social:',  $dadosEmissor->RAZAOSOCIAL]], 
-      [ 0 => ['CPF / CNPJ:', $dadosEmissor->CNPJ], 10 => ['Inscrição Municipal:',$dadosEmissor->IM]],
-      [ 0 => ['Endereço:', $dadosEmissor->ENDERECO]],
-      // bug: na ultima linha o 'h' sempre dispara text overflow ...
-      [ 0 => ['Município:', $dadosEmissor->MUNICIPIO], 5 => ['UF:', $dadosEmissor->UF], 10 => ['Email:' , $dadosEmissor->EMAIL], 15 => ['Telefone:' , $dadosEmissor->TELEFONE]]
-    ], 
-    ['helvetica', '', 8], ['helvetica', 'B', 7], 5);
+      $pdf->Box(189.5, '', 'VALOR TOTAL DA NOTA = R$ ' . $this->formataCurrency($totalNota), 1, 'BLR', 'C', 7, ['helvetica', 'B', 10]);
 
 
+      $pdf->Box(189.5, '', '', 1, 'TLBR', 'C', 11);
 
-  //--------------------------------------
-  // Tomador
-  //--------------------------------------
- // $p = $tomador;
-  $enderecoTomador = $nota->TipoLogradouroTomador." ". $nota->LogradouroTomador." ".
-              $nota->NumeroEnderecoTomador." - ".$nota->ComplementoEnderecoTomador." ".
-              $nota->BairroTomador;
-  $pdf->SetY($yT+3);
-  $pdf->Columns([0 => 11, 5 => 85, 10 => 105, 15 => 165], 
-    [
-        [0 => ['Nome / Razão Social:', $this->trataItemVazio($nota->RazaoSocialTomador)]], 
-        [0 => ['CPF / CNPJ:', $this->trataItemVazio($nota->CPFCNPJTomador)], 
-         10 => ['Inscrição Municipal:', $this->trataItemVazio($nota->InscricaoMunicipalTomador)]
-        ],
-        [0 => ['Endereço:', $enderecoTomador]],
-        [0 => ['Município:', $this->trataItemVazio($nota->CidadeTomadorDescricao)], 
-         5 => ['UF:', ''], 
-         10 => ['Email:' , $this->trataItemVazio($nota->EmailTomador)], 
-         15 => ['Telefone:' , '']
-        ]
-    ], 
-    ['helvetica', '', 8], 
-    ['helvetica', 'B', 7]);
+      $y = $pdf->GetY();
+      $pdf->SetY($y-10);
+      $pdf->SetX(11.5);
 
-  //--------------------------------------
-  // Descriminação
-  //--------------------------------------
-  $pdf->SetY($yD+5);
-  $pdf->Box(0, '', '', 1, 0, 'L', 70, ['helvetica', '', 5], 'T'); //$nota->DescricaoRPS
+      $devolucao = $this->trataItemVazio($nota->Deducoes);
+      $alqiss = (float)$nota->AliquotaAtividade;
+      $valiss = $totalNota*$alqiss;
 
-  //--------------------------------------
-  // Outras Informaçoes
-  //--------------------------------------
-  $pdf->SetY($yO+8);
-  $pdf->Columns(
-    [0 => 11, 5 => 87, 10 => 150], 
-    [
-      ['h' => 4, 0 => ['Descrição NBS:', '']],
-      ['h' => 4, 0 => ['Local de Incidência Imposto:', 'Estabelecimento do Prestador'], 5 => ['Tributação:', 'TRIBUTÁVEL'], 10 => ['Mês de','09/2019']],
-      ['h' => 4, 0 => ['Local de Prestação do Serv.:', 'SAO LUIS / MA']],
-      ['h' => 4, 0 => ['Recolhimento:', 'PRÓPRIO']],
-      ['h' => 4, 0 => ['Atividade:', $dadosEmissor->COD_ATIVIDADE.' '.$dadosEmissor->DESC_ATIVIDADE]],
-      ['h' => 12, 0 => ['Serviço:', $dadosEmissor->COD_SERVICO.' '.$dadosEmissor->DESC_COD_SERVICO]],
-      ['h' => 5, 0 => ['RPS/SÉRIE:', $nota->NumeroRPS.'/'.$nota->SerieRPS.'('.$this->formataDataRetono($nota->DataProcessamento).')']],  
-    ], 
-    ['helvetica', '', 7], ['helvetica', '', 7], 5);
+      $pdf->Box(36, 'Valor Total Composição:', 'R$ '.$this->formataCurrency($totalNota).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+      $pdf->SetX(49);
+      $pdf->Box(36, 'Valor Total Deduções:', 'R$ '.$this->formataCurrency($devolucao).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+      $pdf->SetX(87);
+      $pdf->Box(36, 'Base Cálculo:', 'R$ '.$this->formataCurrency($totalNota).'', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+      $pdf->SetX(124);
+      $pdf->Box(36, 'Alíquota:', ''.$nota->AliquotaAtividade.'%', 0, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+       $pdf->SetX(161);
+      $pdf->Box(36, 'Valor ISS:', 'R$ '.$this->formataCurrency($valiss).'', 1, 'TLBR', 'R', 9, ['helvetica', 'B', 9], 'B', false, ['helvetica', '', 7]);
+
+      $yO = $pdf->GetY();
+      $pdf->Box(189.5, '', "\nOUTRAS INFORMAÇÕES", 1, 'BLR', 'C', 50, ['helvetica', 'B', 9], 'T');
+      
+
+      //--------------------------------------
+      // Prestador
+      //--------------------------------------
+      //$pdf->Image(UPLOAD_PATH . $filial->logo, 25, $yP+2, 26, 26);
+      $pdf->SetY($yP+3);
+      $pdf->Columns(
+        [0 => 32, 3 => 70, 5 => 100, 10 => 120, 15 => 150], 
+        [
+          [ 0 => ['Nome / Razão Social:',  $dadosEmissor->RAZAOSOCIAL]], 
+          [ 0 => ['CPF / CNPJ:', $dadosEmissor->CNPJ], 10 => ['Inscrição Municipal:',$dadosEmissor->IM]],
+          [ 0 => ['Endereço:', $dadosEmissor->ENDERECO]],
+          // bug: na ultima linha o 'h' sempre dispara text overflow ...
+          [ 0 => ['Município:', $dadosEmissor->MUNICIPIO], 5 => ['UF:', $dadosEmissor->UF], 10 => ['Email:' , $dadosEmissor->EMAIL], 15 => ['Telefone:' , $dadosEmissor->TELEFONE]]
+        ], 
+        ['helvetica', '', 8], ['helvetica', 'B', 7], 5);
+
+
+
+      //--------------------------------------
+      // Tomador
+      //--------------------------------------
+     // $p = $tomador;
+      $enderecoTomador = $nota->TipoLogradouroTomador." ". $nota->LogradouroTomador." ".
+                  $nota->NumeroEnderecoTomador." - ".$nota->ComplementoEnderecoTomador." ".
+                  $nota->BairroTomador;
+      $pdf->SetY($yT+3);
+      $pdf->Columns([0 => 11, 5 => 85, 10 => 105, 15 => 165], 
+        [
+            [0 => ['Nome / Razão Social:', $this->trataItemVazio($nota->RazaoSocialTomador)]], 
+            [0 => ['CPF / CNPJ:', $this->trataItemVazio($nota->CPFCNPJTomador)], 
+             10 => ['Inscrição Municipal:', $this->trataItemVazio($nota->InscricaoMunicipalTomador)]
+            ],
+            [0 => ['Endereço:', $enderecoTomador]],
+            [0 => ['Município:', $this->trataItemVazio($nota->CidadeTomadorDescricao)], 
+             5 => ['UF:', ''], 
+             10 => ['Email:' , $this->trataItemVazio($nota->EmailTomador)], 
+             15 => ['Telefone:' , '']
+            ]
+        ], 
+        ['helvetica', '', 8], 
+        ['helvetica', 'B', 7]);
+
+      //--------------------------------------
+      // Descriminação
+      //--------------------------------------
+      $pdf->SetY($yD+5);
+      $pdf->Box(0, '', '', 1, 0, 'L', 70, ['helvetica', '', 5], 'T'); //$nota->DescricaoRPS
+
+      //--------------------------------------
+      // Outras Informaçoes
+      //--------------------------------------
+      $pdf->SetY($yO+8);
+      $pdf->Columns(
+        [0 => 11, 5 => 87, 10 => 150], 
+        [
+          ['h' => 4, 0 => ['Descrição NBS:', '']],
+          ['h' => 4, 0 => ['Local de Incidência Imposto:', 'Estabelecimento do Prestador'], 5 => ['Tributação:', 'TRIBUTÁVEL'], 10 => ['Mês de','09/2019']],
+          ['h' => 4, 0 => ['Local de Prestação do Serv.:', 'SAO LUIS / MA']],
+          ['h' => 4, 0 => ['Recolhimento:', 'PRÓPRIO']],
+          ['h' => 4, 0 => ['Atividade:', $dadosEmissor->COD_ATIVIDADE.' '.$dadosEmissor->DESC_ATIVIDADE]],
+          ['h' => 12, 0 => ['Serviço:', $dadosEmissor->COD_SERVICO.' '.$dadosEmissor->DESC_COD_SERVICO]],
+          ['h' => 5, 0 => ['RPS/SÉRIE:', $nota->NumeroRPS.'/'.$nota->SerieRPS.'('.$this->formataDataRetono($nota->DataProcessamento).')']],  
+        ], 
+        ['helvetica', '', 7], ['helvetica', '', 7], 5);
+
+
+
+    //concatena o faturamento junto a nota
+
+    $pdf->AddPage();
+
+
+    $dadosNota = $this->repository->buscaDadosNotaNfse($nota->NumeroNota);
+
+    if ($this->repository->count >0){
+
+        $dadosFaturamento = $this->repository->consultaFaturamentoNota( 
+                                    $dadosNota->DTAINICIAL, 
+                                    $dadosNota->DTAFINAL,
+                                    $dadosNota->CODCLIENTE);
+
+        //var_dump($dadosFaturamento);
+
+        $periodo = "Período: ".$dadosNota->DTAINICIAL." - ".$dadosNota->DTAFINAL;
+
+        $html = '
+            <table class="tabela"  cellpadding="10" style="vertical-align: top; 
+               font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px;">
+               <tr>
+                <td style="padding: 12px; display: inline-block; width:60%;">
+                  <p style="margin-bottom: 0.75rem;"><b>'.$dadosFaturamento->FANTASIA.'</b></p>
+                                <p style="margin-top: -0.375rem; margin-bottom: 0;">Razão: '.$dadosFaturamento->NOME.'</p>
+                                <p style="margin-bottom: 10px;">'.$periodo.'</p>
+                                </td>
+                <td>
+                <img src="/images/logo.gif"></td>
+               </tr>
+            </table>
+              <div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 14px;">
+                        <p style="text-align:center;"><br><b>FATURAMENTO CONSOLIDADO</b></p>
+              </div>
+              <table cellpadding="1px" cellspacing="0px" style="vertical-align: top; border: 1px solid; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px;">
+                  <thead >
+                        <tr style="border: 1px solid;">
+                                <th width="70%">Material</th>
+                          <th width="10%">Unitário</th>
+                          <th width="10%">Qtd</th>
+                          <th width="10%">Valor</th>
+                          </tr>
+                       </thead><tbody>';
+
+                $dadosItens = $this->repository->consultaFaturamentoNotaItens(
+                                    $dadosNota->DTAINICIAL, 
+                                    $dadosNota->DTAFINAL,
+                                    $dadosNota->CODCLIENTE);
+                foreach ($dadosItens as $item) {
+                    $html .= '<tr>
+                              <td>&nbsp;'.$item->NOME.'</td>
+                              <td style="text-align: right;">'.$item->VAL_UNITARIO.'</td>
+                              <td style="text-align: center;">'.$item->QTD.'</td>
+                              <td style="text-align: right;">'.$item->TOTAL.'</td>
+                              </tr>';  
+                }   
+
+              $html .= '
+              </tbody>
+
+                    <tfoot>
+                      <tr>
+                             
+                          <th></th>
+                          <th></th>
+                          <th>Total:</th>
+                          <th style="text-align: right;">'.$dadosFaturamento->TOTAL.'</th>
+                      </tr> 
+                      <tr>
+                          <th>&nbsp;Recebido por: ____________________________________</th>
+                          <th></th>
+                          <th>Desconto:</th>
+                          <th style="text-align: right;">'.$dadosFaturamento->DESCONTO.'</th>
+                      </tr>
+                      <tr>
+                          <th></th>
+                          <th></th>
+                          <th>Transporte:</th>
+                          <th style="text-align: right;">'.$dadosFaturamento->TRANSPORTE.'</th>
+                      </tr> 
+                      <tr>
+                          <th>&nbsp;Em: _____ / _____ / _______</th>
+                          <th></th>
+                          <th>Total a Pagar:</th>
+                          <th style="text-align: right;">'.$dadosFaturamento->TOTALD.'</th>
+                      </tr> 
+                    </tfoot>
+                  </table> ';
+
+        // output the HTML content
+        $pdf->writeHTML($html, true, false, true, false, '');
+    }
 
 
 
@@ -572,7 +695,7 @@ class NotaController extends Controller
     {
 
         $response = html_entity_decode($response);
-        //echo $response; die;
+        //echo $response;
 
         $dom = new DOMDocument( '1.0', 'utf-8' );
         $dom->preserveWhiteSpace = false;
@@ -585,8 +708,8 @@ class NotaController extends Controller
             
             if ($tag->nodeName != 'S:Envelope')
               echo " <br> <br>".$tag->nodeName." - ".$tag->nodeValue;
-        }  
-        */
+        }  */
+        
 
         $node = $dom->getElementsByTagName($chave)->item(0);
         $node = $dom->saveXML($node);

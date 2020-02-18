@@ -101,11 +101,18 @@
                   <div class="collapse" id="mn_notas">
                       <ul class="nav">
                           <li>
-                              <a href="/notas/preconsultarnotas">
-                                  <span class="sidebar-mini-icon">CN</span>
-                                  <span class="sidebar-normal">Consulta de Notas</span>
+                              <a href="/notas/preconsultarnfse">
+                                  <span class="sidebar-mini-icon">NE</span>
+                                  <span class="sidebar-normal">NFSe Emitidas</span>
                               </a>
                           </li>
+                          <li>
+                              <a href="/notas/preconsnotasemitidas">
+                                  <span class="sidebar-mini-icon">NC</span>
+                                  <span class="sidebar-normal">Notas Cadastradas</span>
+                              </a>
+                          </li>
+
                       </ul>
                   </div>
               </li>
@@ -149,7 +156,41 @@
       </nav>
       <div class="content">
 
-            @yield('content')
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <button type="button" aria-hidden="true" class="close">×</button>
+                <strong>Whoops! </strong>Ocorreram Erros.<br><br>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif    
+
+        @if (isset($msgAlerta))
+            <div class="alert alert-warning">
+                <button type="button" aria-hidden="true" class="close">×</button>
+                <ul>
+                    @foreach ($msgAlerta as $m)
+                        <li>{!! $m !!}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif    
+
+        @if (isset($msgInforma))
+            <div class="alert alert-success">
+                <button type="button" aria-hidden="true" class="close">×</button>
+                <ul>
+                    @foreach ($msgInforma as $m)
+                        <li>{!! $m !!}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif   
+
+        @yield('content')
 
       </div>
       <footer class="footer footer-black  footer-white ">

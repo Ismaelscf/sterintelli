@@ -24,6 +24,7 @@ class BaseRepository
     public function executaSql($sql){
 
 
+        //echo '<br>'.$sql;
         $this->result = oci_parse($this->conn, $sql);
         if (!$this->result) {
             $e = oci_error($this->conn);

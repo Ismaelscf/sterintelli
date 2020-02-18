@@ -4,13 +4,13 @@ namespace App\Repositories;
 class NotaRepository extends BaseRepository
 {
 
-    public function buscaNotas(){
+    /*public function buscaNotas(){
 
     	$sql = "select id, nome, nome_completo from tab_operadores t  where rownum < 4";
 
     	$this->executaSql($sql);
 
-    }
+    }*/
 
     public function buscaDadosEmissao($id, $dtIni, $dtFim){
 
@@ -76,6 +76,21 @@ class NotaRepository extends BaseRepository
     }
 
 
+    public function verificaNotaEmitida($numeroNota){
+
+    	$sql = "select * from 
+    			tab_notas_emitidas 
+    			where NUMERONOTA = '".$numeroNota."'";
+
+    	$this->executaSql($sql);
+    	
+    	if ($this->count > 0)
+    		return true;
+    	else
+    		return false;
+
+    }
+
     public function buscaNotaEmitida($idCliente, $dtIni, $dtFim){
 
     	$sql = "select numeronota, nvl(numero_nfse, 0) numero_nfse, 
@@ -90,6 +105,112 @@ class NotaRepository extends BaseRepository
     	$this->executaSql($sql);
     	return $this->data;
 
+    }
+
+    public function buscaDadosNotaNfse($numNfse){
+
+    	$sql = "select CODCLIENTE, NUMERONOTA, VALORNOTA, 
+    					to_char(DTAINICIAL, 'dd/mm/yyyy') DTAINICIAL,
+    					to_char(DTAFINAL, 'dd/mm/yyyy') DTAFINAL
+				from tab_notas_emitidas t
+				where t.numero_nfse = ".$numNfse."";
+				       
+    	$this->executaSql($sql);
+    	return $this->data[0];
+
+    }
+
+
+    public function salvaNotaEmitida($idcliente, $numeroNota, 
+          $valorNota, $dtIni, $dtFim, $status,
+          $dataemissaorps, $percIss, $numeroNFe, 
+          $codigoVerificacao, $chaveNfse){
+
+    	try{
+	    	//checar se nota ja existe
+	    	$sql = "insert into tab_notas_emitidas (
+					CODCLIENTE, NUMERONOTA, VALORNOTA, DTAINICIAL, DTAFINAL,
+					DTANOTA,STATUS,PERC_ISS,NUMERO_NFSE,CODIGOVERIFICACAO,
+					CHAVE_NFSE)
+					values
+					(".$idcliente.",'".$numeroNota."',".$valorNota.
+					",to_date('".$dtIni."', 'dd/mm/yyyy'),
+					to_date('".$dtFim."', 'dd/mm/yyyy'),
+					to_date('".$dataemissaorps."', 'dd/mm/yyyy'),".$status.
+					",".$percIss.",".$numeroNFe.",'".
+					$codigoVerificacao."','".str_replace("'", "", $chaveNfse)."')";
+
+			//echo $sql;
+			$this->executaSql($sql);
+
+		return [true,"Inserido com sucesso."];
+
+        } catch (\Exception $e) {
+
+            return [false, $e->getMessage()];
+        }
+	}
+
+
+	public function consultarNotasEmitidas($dtIni, $dtFim, $idCliente){
+
+    	$sql = "select codcliente, nome, numeronota, valornota,
+				       dtaInicial, dtafinal, dtanota, 
+				       dtapago, valpago, dtavencimento
+				from tab_notas_emitidas t
+				inner join clientes c on t.codcliente = c.codigo
+				where t.dtainicial = to_date('".$dtIni."', 'dd/mm/yyyy')
+				and t.dtafinal = to_date('".$dtFim."', 'dd/mm/yyyy')";
+
+		if($idCliente > 0)
+			$sql .= " and t.codcliente = ".$idCliente." ";
+				       
+
+    	$this->executaSql($sql);
+    	return $this->data;
+
+    }
+
+    public function consultaFaturamentoNota($dtIni, $dtFim, $idCliente){
+    	$sql = " SELECT  
+    				c.nome, 
+					FANTASIA, 
+					n.cliente as clicod,
+					to_char(round(sum(TOTALD),2), 'FM999G999G999D90') totald, 
+					to_char(nvl(round(sum(TOTAL) * (n.DESCONTO/100),2), 0), 'FM999G999G999D90') DESCONTO,
+			        to_char(round(sum(TRANSPORTE),2), 'FM999G999G999D90') transporte,
+			        to_char(round(sum(TOTAL),2), 'FM999G999G999D90') total, 
+			        to_char(round(sum(TOTALDESC),2), 'FM999G999G999D90') TOTALDESC
+				FROM NOTA_TOTAL3 n
+				inner join clientes c on n.cliente = c.codigo 
+				where  DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy') 
+					   AND to_date('".$dtFim."', 'dd/mm/yyyy')
+				and n.cliente = $idCliente
+				group by CLIENTE, FANTASIA, n.cliente, nascimento, n.desconto, nome
+					order by fantasia";
+
+
+
+    	$this->executaSql($sql);
+    	return $this->data[0];
+    }
+
+
+    public function consultaFaturamentoNotaItens($dtIni, $dtFim, $idCliente){
+		$sql = " SELECT nome,  
+				to_char(UNITARIO, 'FM999G999G999D90') val_unitario, 
+				sum(QUANTIDADE) qtd, 
+				to_char(sum(TOTAL), 'FM999G999G999D90') total
+				from vie_itens_nota3
+				where DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy')  
+				AND to_date('".$dtFim."', 'dd/mm/yyyy')  
+				and CLIENTE = $idCliente
+				group by 
+				CLIENTE, SERVICO, UNITARIO, UNITARIOD, nome
+				order by nome";
+
+    	$this->executaSql($sql);
+    	return $this->data;
     }
 
 }

@@ -17,31 +17,6 @@ Emissão de nota fiscal de serviço
  
  <input type="hidden"   id="qtdade" name="qtdade"  value= "1">
 <div class="container">
-
-@if ($errors->any())
-    <div class="alert alert-danger">
-        <button type="button" aria-hidden="true" class="close">×</button>
-        <strong>Whoops! </strong>Ocorreram Erros.<br><br>
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif    
-
-@if ($msgNotas)
-    <div class="alert alert-warning">
-        <button type="button" aria-hidden="true" class="close">×</button>
-        <ul>
-            @foreach ($msgNotas as $m)
-                <li>{!! $m !!}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif    
-
-
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
@@ -78,7 +53,7 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-9">
                             <div class="fb-text form-group field-token">
                                 <label for="token" class="fb-text-label">Token de Envio<span class="fb-required">*</span></label>
-                                <input type="password" class="form-control" name="token" id="token" required="required" aria-required="true" value="{{ $dadosEmissor->TOKEN }}">
+                                <input type="password" class="form-control" name="token" id="token" required="required" aria-required="true" value="{{ $dadosEmissor->TOKEN }}" readonly>
                             </div>
                         </div>
                     </div>
@@ -99,7 +74,13 @@ Emissão de nota fiscal de serviço
                                 <input type="text" class="form-control" name="numerorps" id="numerorps" required="required" aria-required="true" value="{{$numRps}}" readonly>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <div class="fb-text form-group field-token">
+                                <label for="serieprestacao" class="fb-text-label">Série prestação<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99" readonly>
+                            </div>
+                        </div>                        
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="{{$dataNota}}" style="background: white">
@@ -108,23 +89,18 @@ Emissão de nota fiscal de serviço
                               </script>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="horaemissaorps" class="fb-text-label">Hora nota<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="horaemissaorps" id="horaemissaorps" required="required" aria-required="true" value="{{$horaNota}}">
                             </div>
                         </div>
+
                         <div class="col-md-2">
                             <div class="fb-text form-group field-token">
-                                <label for="serieprestacao" class="fb-text-label">Série prestação<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99" readonly>
+                                <label for="numeronota" class="fb-text-label">Nº nota<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="numeronota" id="numeronota" required="required" aria-required="true" value="">
                             </div>
-                        </div>
-                        <div class="col-md-2">
-
-                        </div>
-                        <div class="col-md-2">
-                            
                         </div>
                     </div>
                 </div>

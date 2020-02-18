@@ -1,13 +1,13 @@
 @extends('layout.app')
  
 @section('titulo')
-Consulta de Notas Emitidas
+Consulta de Faturamento por Período
 @endsection
 
 @section('content')
 <div class="card">
       <div class="card-header">
-        <h4 class="card-title">Notas no período</h4>
+        <h4 class="card-title">Faturamento no período - {{$dtIni}} - {{$dtFim}}</h4>
       </div>
       <div class="card-body">
             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -30,7 +30,11 @@ Consulta de Notas Emitidas
                                 <td>{{ $l->TOT_C_TRANSPORTE }}</td>
                                 <td>
                                     <form action="" method="POST">
-                                                <a href="/notas/preemitir/{{ $l->CLICOD }}?dtini={{$dtIni }}&dtfim={{$dtFim}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
+                                                <a href="/notas/preemitir/{{ $l->CLICOD }}?dtini={{$dtIni }}&dtfim={{$dtFim}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-send"></i></a>
+                                    @if(isset($l->CAMINHO))
+                                    <form action="" method="POST">
+                                                <a href="/notas/imprimirnfse{{$l->CAMINHO}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
+                                    @endif
                                     </form>
                                 </td>
                             </tr>

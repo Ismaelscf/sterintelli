@@ -1,11 +1,11 @@
 @extends('layout.app') 
 
 @section('titulo')
-Consulta de Notas Emitidas
+Consulta de NFSe Emitidas
 @endsection
 
 @section('content')
- <form action="{{ url('notas/consultarnotas') }}" method="POST">
+ <form action="{{ url('notas/posconsultarnfse') }}" method="POST">
    @csrf 
 <div class="container">
     <div class="row justify-content-center">

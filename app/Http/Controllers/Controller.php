@@ -13,7 +13,7 @@ class Controller extends BaseController
 
     protected $repository;
 
-    public function __construct(stdClass $rps)
+    public function __construct()
     {
       date_default_timezone_set('America/Bahia');
     }
