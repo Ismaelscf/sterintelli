@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -39,6 +40,7 @@
     <link href="{{ asset('plugins/datepicker/datepicker3.css') }}" rel="stylesheet">
     <link href="{{ asset('plugins/datatables/datatables.min.css') }}" rel="stylesheet">
     <link href="{{ asset('plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('plugins/chartist/chartist.min.css') }}" rel="stylesheet">
 
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
@@ -81,12 +83,12 @@
                                   <span class="sidebar-normal">Por período</span>
                               </a>
                           </li>                        
-                          <li>
+                          <!--<li>
                               <a href="/faturamento/preconsultarfaturamento/C/">
                                   <span class="sidebar-mini-icon">FC</span>
                                   <span class="sidebar-normal">Por Cliente</span>
                               </a>
-                          </li>
+                          </li>-->
                       </ul>
                   </div>
               </li>
@@ -143,8 +145,8 @@
             <ul class="navbar-nav">
               
               <li class="nav-item">
-                <a class="nav-link btn-rotate" href="#sair">
-                  <i class="nc-icon nc-settings-gear-65"></i>
+                <a class="nav-link btn-rotate" href="/logout">
+                  <i class="nc-icon nc-user-run"></i>
                   <p>
                     <span class="d-lg-none d-md-block">Sair</span>
                   </p>
@@ -158,7 +160,9 @@
 
         @if ($errors->any())
             <div class="alert alert-danger">
-                <button type="button" aria-hidden="true" class="close">×</button>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
                 <strong>Whoops! </strong>Ocorreram Erros.<br><br>
                 <ul>
                     @foreach ($errors->all() as $error)
@@ -168,9 +172,11 @@
             </div>
         @endif    
 
-        @if (isset($msgAlerta))
+        @if (isset($msgAlerta) && count($msgAlerta) > 0)
             <div class="alert alert-warning">
-                <button type="button" aria-hidden="true" class="close">×</button>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
                 <ul>
                     @foreach ($msgAlerta as $m)
                         <li>{!! $m !!}</li>
@@ -179,9 +185,11 @@
             </div>
         @endif    
 
-        @if (isset($msgInforma))
+        @if (isset($msgInforma) && count($msgInforma) > 0)
             <div class="alert alert-success">
-                <button type="button" aria-hidden="true" class="close">×</button>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
                 <ul>
                     @foreach ($msgInforma as $m)
                         <li>{!! $m !!}</li>
@@ -226,6 +234,8 @@
 
     <!-- Select 2 -->
     <script src="{{ asset('plugins/select2/js/select2.full.min.js')}}"></script>
+
+    <script src="{{ asset('plugins/chartist/chartist.min.js')}}"></script>
 
 
     <!-- Chart JS -->

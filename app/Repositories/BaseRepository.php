@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use stdClass;
+
 class BaseRepository
 {
 	private $conn;
@@ -12,13 +14,14 @@ class BaseRepository
 
     public function __construct()
     {
-    	$this->conn = oci_connect('scott', 'tiger', 'XE');
+    	$this->conn = oci_connect('scott', 'tiger', 'xe', 'AL32UTF8');
         if (!$this->conn) {
             $e = oci_error();
             trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
         }
         $std = oci_parse($this->conn, "alter session set NLS_NUMERIC_CHARACTERS=',.'");
         oci_execute($std);
+
     }
 
     public function executaSql($sql){

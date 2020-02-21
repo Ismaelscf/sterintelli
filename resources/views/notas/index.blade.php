@@ -6,7 +6,7 @@ Sistema de Gestão de Esterilização
 @endsection
 
 @section('content')
-
+{{ csrf_field() }}
 
 <div class="row">
           <div class="col-lg-4 col-md-6 col-sm-6">
@@ -21,8 +21,10 @@ Sistema de Gestão de Esterilização
                   <div class="col-7 col-md-8">
                     <div class="numbers">
                       <p class="card-category">NFSe Emitidas</p>
-                      <p class="card-title">10
+                      <p class="card-title">{{$dados->qtd_notas}}
                         <p>
+                      
+                      
                     </div>
                   </div>
                 </div>
@@ -30,7 +32,7 @@ Sistema de Gestão de Esterilização
               <div class="card-footer ">
                 <hr>
                 <div class="stats">
-                  <!--<i class="fa fa-refresh"></i> Update Now-->
+                  <i class="fa fa-calendar-o"></i> Emitidas no mês {{$dados->mes}}
                 </div>
               </div>
             </div>
@@ -47,7 +49,7 @@ Sistema de Gestão de Esterilização
                   <div class="col-7 col-md-8">
                     <div class="numbers">
                       <p class="card-category">Total $</p>
-                      <p class="card-title">$ 1200,00
+                      <p class="card-title">{{$dados->tot_notas}}
                         <p>
                     </div>
                   </div>
@@ -56,7 +58,7 @@ Sistema de Gestão de Esterilização
               <div class="card-footer ">
                 <hr>
                 <div class="stats">
-                  <!--<i class="fa fa-calendar-o"></i> Last day-->
+                  <i class="fa fa-calendar-o"></i>Emitidas no mês {{$dados->mes}}
                 </div>
               </div>
             </div>
@@ -73,7 +75,7 @@ Sistema de Gestão de Esterilização
                   <div class="col-7 col-md-8">
                     <div class="numbers">
                       <p class="card-category">Clientes com NFSe</p>
-                      <p class="card-title">23
+                      <p class="card-title">{{$dados->qtd_clientes}}
                         <p>
                     </div>
                   </div>
@@ -91,25 +93,25 @@ Sistema de Gestão de Esterilização
         <div class="row">
           <div class="col-lg-6 col-sm-6">
             <div class="card">
-              <div class="card-header">
+              <!--<div class="card-header">
                 <div class="row">
                   <div class="col-sm-7">
                     <div class="numbers pull-left">
-                      $34.657,00
+                     {{$dados->tot_notas}}
                     </div>
                   </div>
                   <div class="col-sm-5">
                     <div class="pull-right">
                      <!-- <span class="badge badge-pill badge-success">
                         +18%
-                      </span>-->
+                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>-->
               <div class="card-body">
                 <h6 class="big-title">Valor emitido por mês</h6>
-                <canvas id="activeUsers" width="826" height="380"></canvas>
+                <div id="grafico1"></div>
               </div>
               <div class="card-footer">
                 <hr>
@@ -119,8 +121,8 @@ Sistema de Gestão de Esterilização
                   </div>
                   <div class="col-sm-5">
                     <div class="pull-right">
-                      <button class="btn btn-success btn-round btn-icon btn-sm">
-                        <i class="nc-icon nc-simple-add"></i>
+                      <!--<button class="btn btn-success btn-round btn-icon btn-sm">
+                        <i class="nc-icon nc-simple-add"></i>-->
                       </button>
                     </div>
                   </div>
@@ -130,25 +132,25 @@ Sistema de Gestão de Esterilização
           </div>
           <div class="col-lg-6 col-sm-6">
             <div class="card">
-              <div class="card-header">
+              <!--<div class="card-header">
                 <div class="row">
                   <div class="col-sm-7">
                     <div class="numbers pull-left">
-                      169
+                      {{$dados->qtd_notas}}
                     </div>
                   </div>
                   <div class="col-sm-5">
                     <div class="pull-right">
                       <!--<span class="badge badge-pill badge-danger">
                         -14%
-                      </span>-->
+                      </span>--
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>-->
               <div class="card-body">
                 <h6 class="big-title">Emissões por mes</h6>
-                <canvas id="emailsCampaignChart" width="826" height="380"></canvas>
+                <div id="grafico2"></div>
               </div>
               <div class="card-footer">
                 <hr>
@@ -158,8 +160,11 @@ Sistema de Gestão de Esterilização
                   </div>
                   <div class="col-sm-5">
                     <div class="pull-right">
-                      <button class="btn btn-danger btn-round btn-icon btn-sm">
-                        <i class="nc-icon nc-button-play"></i>
+                      <!--<button class="btn btn-danger btn-round btn-icon btn-sm">
+                        <i class="nc-icon nc-button-play"></i>-->
+                        
+
+                        </script>
                       </button>
                     </div>
                   </div>
@@ -170,4 +175,44 @@ Sistema de Gestão de Esterilização
         </div>
 
 
+@endsection
+
+@section('scripts')
+<style type="text/css">
+  
+  .ct-horizontal,  .ct-vertical{
+   font-size: 10px !important;
+   white-space:nowrap;
+ }
+</style>
+
+<script type="text/javascript">
+                  
+arr_labels = [];
+arr_qdt = [];
+arr_tot = [];
+@foreach($dados->dados_grafico as $dado)
+  arr_labels.push( '{{$dado->PERIODO}}' );
+  arr_qdt.push( '{{$dado->QTD_NOTAS}}' );
+  arr_tot.push( ('{{$dado->TOT_NOTAS}}').replace(",", ".") );
+
+@endforeach
+
+
+new Chartist.Line('#grafico1', {labels: arr_labels,
+    series: [arr_tot]}, {
+  fullWidth: true,
+  chartPadding: {
+    right: 40
+  }
+});
+
+new Chartist.Line('#grafico2', {labels: arr_labels,
+    series: [arr_qdt]}, {
+  fullWidth: true,
+  chartPadding: {
+    right: 40
+  }
+});
+ </script>
 @endsection

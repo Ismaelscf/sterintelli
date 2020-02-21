@@ -16,13 +16,20 @@ Route::get('/', function () {
 });
 
 
+//autenticação
+Route::get('login', 'AuthController@index')->name('login');
+Route::post('post-login', 'AuthController@postLogin'); 
+Route::get('registration', 'AuthController@registration');
+Route::post('post-registration', 'AuthController@postRegistration'); 
+Route::get('dashboard', 'AuthController@dashboard'); 
+Route::get('logout', 'AuthController@logout');
 
- Route::get('notas','NotaController@index')->name('notas.index');
+
+Route::get('/notas','NotaController@index')->name('notas.index');
 
 //enissao das notas
  Route::get('notas/preemitir/{idcliente}/','NotaController@preEmitir')->name('notas.preemitir');
  Route::post('notas/posemitir','NotaController@posEmitir')->name('notas.posemitir');
-
 
 //consulta de notas emitidas e aprovadas
 Route::get('notas/preconsultarnfse','NotaController@preConsultarNfse')->name('notas.preconsultarnfse');
@@ -37,9 +44,7 @@ Route::post('notas/posconsnotasemitidas','NotaController@posConsultarNotasEmitid
 Route::get('notas/cancelarnota','NotaController@cancelarNota')->name('notas.cancelarnota');
 
 
-
 //faturamento
-
 Route::get('faturamento','FaturamentoController@index')->name('faturamento.index');
 
 Route::get('faturamento/preconsultarfaturamento/{tipo}/','FaturamentoController@preConsultarFaturamento')->name('notas.preconsultarfaturamento');

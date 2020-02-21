@@ -28,6 +28,9 @@ class NotaController extends Controller
 
     public function __construct(stdClass $rps)
     {
+
+      //$this->middleware('auth');
+      
       $this->repository = new NotaRepository();
 
       parent::__construct();
@@ -66,8 +69,9 @@ class NotaController extends Controller
      */
     public function index()
     {
-        //$notas = $this->repository->buscaNotas();   
-        return view('notas.index');//, compact('notas'));
+        $dados = json_decode(json_encode($this->repository->buscaDadosIniciais()));   
+        //var_dump($dados);
+        return view('notas.index', compact('dados'));
 
     }
 
@@ -89,7 +93,7 @@ class NotaController extends Controller
 
         $msgAlerta = [];
         if ($this->repository->count > 0){
-
+            
           array_push($msgAlerta, 'Existem nota(s) emitidas para esse período:' );
 
           foreach ($notasPeriodo as $nota) {
@@ -163,13 +167,15 @@ class NotaController extends Controller
   
         try {
 
-
+        
+            
+        /*
             $buscaNota = $this->repository->verificaNotaEmitida($request->numeronota);
 
             if ($buscaNota == true)
                 return redirect()->back()->withErrors(['Já existe uma nota com este número']);
-      
-            $tools = new Tools($this->configJson, $this->cert);
+        */
+  /*          $tools = new Tools($this->configJson, $this->cert);
 
             $arps = [];
             
@@ -233,7 +239,7 @@ class NotaController extends Controller
             $std->descricaorps = $request->has('descricaorps')? $request->descricaorps : "";
 
             $std->itens[0] = new stdClass();
-            $std->itens[0]->discriminacaoservico = $request->has('descricaorps')? $request->descricaorps : "";
+            $std->itens[0]->discriminacaoservico = $request->has('discriminacaoservico')? $request->discriminacaoservico : "";
             $std->itens[0]->quantidade = $request->has('quantidade')? $request->quantidade : 1;
             $std->itens[0]->valorunitario = $this->formataValor($request->has('valorunitario')? $request->valorunitario : 0.00);
             $std->itens[0]->valortotal =  $this->formataValor($request->has('valortotal')? $request->valortotal : 0.00);
@@ -278,10 +284,19 @@ class NotaController extends Controller
 '; 
             $response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
             //$response = $this->trataRetorno($ret, 'enviarreturn');
+*/
+
+            $lote = date('ymdHis');
+            $response = '{"Cabecalho":{"CodCidade":"921","Sucesso":"true","NumeroLote":"248207723","CPFCNPJRemetente":"01469892000137","DataEnvioLote":"2020-02-20T10:40:47","QtdNotasProcessadas":{},"TempoProcessamento":"1","ValorTotalServicos":"6.44","ValorTotalDeducoes":"0","Versao":"1","Assincrono":"N"},"Alertas":{},"Erros":{},"ChavesNFSeRPS":{"ChaveNFSeRPS":{"ChaveNFe":{"InscricaoPrestador":"7048009","NumeroNFe":"20506","CodigoVerificacao":"FE060BD12C428B08A1DCC2B8E54EC018","RazaoSocialPrestador":"BRITO E SOARES LTDA"},"ChaveRPS":{"InscricaoPrestador":"7048009","SerieRPS":"99","NumeroRPS":"3","DataEmissaoRPS":"20\/02\/2020","RazaoSocialPrestador":"BRITO E SOARES LTDA"}}}}' ;
+            $response = json_decode($response);
 
 
-            //echo json_encode($response);
+            $fp = fopen('nfe_emitidas/'.$request->idcliente.'-'.$lote.'.json', 'w');
+            fwrite($fp, json_encode($response));
+            fclose($fp);
 
+
+            $retorno = "";
             $retorno = $response->Cabecalho;
             if($retorno->Sucesso == 'N' || $retorno->Sucesso == 'false'){
                 $erros = [];
@@ -292,10 +307,12 @@ class NotaController extends Controller
             }
 
             //salvar nota
-            $chave = $response->ChaveNFeRPS;
+            $chave = $response->ChavesNFSeRPS->ChaveNFSeRPS;
+
+
 
             $retornoSalvar = $this->repository->salvaNotaEmitida($request->idcliente,  
-              $request->numeronota, 
+              $chave->ChaveNFe->NumeroNFe, 
               $this->formataValor($request->vTotServ),
               $request->dtInicial,
               $request->dtFinal, 
@@ -304,7 +321,7 @@ class NotaController extends Controller
               $chave->ChaveNFe->CodigoVerificacao, json_encode($response));
 
             if ($retornoSalvar[0] == false){
-                //??
+                return redirect()->back()->withErrors([$retornoSalvar[1]]);
             }
 
             //retorna a página inicial
@@ -315,6 +332,7 @@ class NotaController extends Controller
                 ' Código de Verificação:'.$chave->ChaveNFe->CodigoVerificacao);
             array_push($msgInforma, 'Para imprimir <a href="/nota/imprimirnota/'.$chave->ChaveNFe->NumeroNFe.'/'.$chave->ChaveNFe->CodigoVerificacao.'/" target="_blank">clique aqui</a>');
 
+            dd();
 
         } catch (\Exception $e) {
 
@@ -341,8 +359,11 @@ class NotaController extends Controller
         $dtFim = $this->formataDataEnvio($request->dtFim);
 
         $notas = $this->trataRetorno($tools->consultarNota($dtIni, $dtFim), 'consultarNotaReturn');
-        //var_dump($notas);
-        $notas = $notas->NotasConsultadas->Nota;
+        //dd($notas);
+        if ($this->trataItemVazio($notas->NotasConsultadas) !="")
+            $notas = $notas->NotasConsultadas->Nota; 
+        else
+            $notas = [];
 
         return view('notas.pos-consultarnfse', compact('notas'));
     }
@@ -357,7 +378,6 @@ class NotaController extends Controller
 
         $nota = $this->trataRetorno($tools->consultarNFSeRps($notas), 
           'consultarNFSeRpsReturn');
-
 
         $this->danfse($nota);
     }
@@ -768,12 +788,13 @@ class NotaController extends Controller
 
 
     function formataCurrency($valor) {
+
       if ( $valor =="")
         $valor = 0;
       else
         $valor = str_replace('.', ',', $valor);
-            
-      return number_format($valor, 2, ',', '.');
+    
+      return number_format((float)$valor, 2, ',', '.');
     } 
 
     function trataItemVazio($valor) {

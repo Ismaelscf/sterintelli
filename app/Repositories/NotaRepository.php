@@ -4,13 +4,62 @@ namespace App\Repositories;
 class NotaRepository extends BaseRepository
 {
 
-    /*public function buscaNotas(){
+	public function buscaDadosIniciais(){
 
-    	$sql = "select id, nome, nome_completo from tab_operadores t  where rownum < 4";
+		$dados = [];
 
-    	$this->executaSql($sql);
+		
+		$sql = "select 0 tot_clientes, count(t.numero_nfse) qtd_notas,
+				       sum(t.valornota) tot_notas
+				from tab_notas_emitidas t
+				where t.numero_nfse is not null
+				and to_number(to_char(t.dtanota,'yyyymm')) >= to_number(to_char(SYSDATE, 'yyyymm') )";
 
-    }*/
+		$this->executaSql($sql);
+		if ($this->count > 0){
+	    	$dados['qtd_notas'] = $this->data[0]->QTD_NOTAS;
+	    	$dados['tot_notas'] = $this->data[0]->TOT_NOTAS;
+	    }else{
+    		$dados['qtd_notas'] = 0;
+    		$dados['tot_notas'] = 0;
+	    }
+
+
+		$sql = "select count(t.codcliente) qtd_clientes, 
+					to_char(t.dtanota,'mm/yyyy') mes
+				from tab_notas_emitidas t
+				where t.numero_nfse is not null
+				and to_number(to_char(t.dtanota,'yyyymm')) >= to_number(to_char(SYSDATE, 'yyyymm') )
+				group by to_char(t.dtanota,'mm/yyyy')";
+
+		$this->executaSql($sql);
+		if ($this->count > 0){
+	    	$dados['qtd_clientes'] = $this->data[0]->QTD_CLIENTES;
+	    	$dados['mes'] = $this->data[0]->MES;
+	   }else{
+    		$dados['qtd_clientes'] = 0;
+    		$dados['mes'] = date("m/Y");
+	   }
+
+		$sql = "select count(t.numero_nfse) qtd_notas,
+				       sum(t.valornota) tot_notas,
+				       to_char(t.dtanota,'mm/yyyy') as periodo 
+				from tab_notas_emitidas t 
+				where numero_nfse is not null
+				and to_number(to_char(t.dtanota,'yyyymm')) >= to_number(to_char(SYSDATE-300, 'yyyymm') ) 
+				group by to_char(t.dtanota,'mm/yyyy')";
+
+		$this->executaSql($sql);
+		if ($this->count > 0){
+    		$dados['dados_grafico'] = $this->data;
+    	}else{
+    		$dados['dados_grafico'] = [];
+    	}
+
+
+    	return $dados;
+
+	}
 
     public function buscaDadosEmissao($id, $dtIni, $dtFim){
 
@@ -42,7 +91,7 @@ class NotaRepository extends BaseRepository
 				       1 ALQ_CSLL ,
 				       0 VAL_CSLL ,
 				       '1,5' ALQ_IR,
-				       to_char(SUM(TOTALD),'99G999G999D99') AS VAL_IR,
+				       to_char(ROUND(SUM(TOTALD)*0.015, 2),'99G999G999D99') AS VAL_IR,
 				       5 ALQ_ISS,
 				       to_char(ROUND(SUM(TOTALD)*0.05, 2),'99G999G999D99') AS VAL_ISS,
 				       1 QUANTIDADE
@@ -53,8 +102,8 @@ class NotaRepository extends BaseRepository
 				group by 	cnpj, uf, fantasia, clicod, endereco, 
 					       	municipio, bairro, numero,
 					       	ie, im, MSGNF, email";
-
-		//echo $sql;
+ 
+	
     	$this->executaSql($sql);
     	return $this->data[0];
     }
@@ -140,7 +189,7 @@ class NotaRepository extends BaseRepository
 					",".$percIss.",".$numeroNFe.",'".
 					$codigoVerificacao."','".str_replace("'", "", $chaveNfse)."')";
 
-			//echo $sql;
+			echo $sql;
 			$this->executaSql($sql);
 
 		return [true,"Inserido com sucesso."];
