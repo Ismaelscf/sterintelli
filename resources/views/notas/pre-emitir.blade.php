@@ -80,7 +80,7 @@ Emissão de nota fiscal de serviço
                                 <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99" readonly>
                             </div>
                         </div>                        
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="fb-text form-group field-token">
                                 <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="{{$dataNota}}" style="background: white">
@@ -89,17 +89,10 @@ Emissão de nota fiscal de serviço
                               </script>
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="fb-text form-group field-token">
                                 <label for="horaemissaorps" class="fb-text-label">Hora nota<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="horaemissaorps" id="horaemissaorps" required="required" aria-required="true" value="{{$horaNota}}">
-                            </div>
-                        </div>
-
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-token">
-                                <label for="numeronota" class="fb-text-label">Nº nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="numeronota" id="numeronota" required="required" aria-required="true" value="">
                             </div>
                         </div>
                     </div>
@@ -320,25 +313,36 @@ Emissão de nota fiscal de serviço
                     <div class="row">
                         <div class="col-md-3">
                             <div class="fb-text form-group field-aliquotapis">
-                                <label for="aliquotapis" class="fb-text-label">Aliquota PIS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="aliquotapis" value="{{$dadosEmissao->ALQ_PIS}}" id="aliquotapis" required="required" aria-required="true">
+                                <label for="aliquotapis" class="fb-text-label">Aliquota PIS (%)<span class="fb-required">*</span></label>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <div class="input-group-text"> <input type="checkbox" name="chkPis"></div>
+  </div>
+  <input type="text" class="form-control" name="aliquotapis" value="{{$dadosEmissao->ALQ_PIS}}" id="aliquotapis" required="required" aria-required="true">
+</div>                                
+
                             </div>
                         </div>
                         <div class="col-md-3">
+                            <div class="fb-text form-group field-valorpis">
+                                <label for="valorpis" class="fb-text-label">Valor PIS<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="valorpis" value="{{$dadosEmissao->VAL_PIS}}" id="valorpis" required="required" aria-required="true">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fb-text form-group field-aliquotacofins">
+                                <label for="aliquotacofins" class="fb-text-label">Aliquota COFINS (%)<span class="fb-required">*</span></label>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <div class="input-group-text"> <input type="checkbox" name="chkCofins"></div>
+  </div>
+<input type="text" class="form-control" name="aliquotacofins" value="{{$dadosEmissao->ALQ_CONFINS}}" id="aliquotacofins" required="required" aria-required="true">
+</div>                                        
 
-                                    <div class="fb-text form-group field-valorpis">
-                                        <label for="valorpis" class="fb-text-label">Valor PIS<span class="fb-required">*</span></label>
-                                        <input type="text" class="form-control" name="valorpis" value="{{$dadosEmissao->VAL_PIS}}" id="valorpis" required="required" aria-required="true">
-                                    </div>
+                            </div>
                         </div>
                         <div class="col-md-3">
-                                                                <div class="fb-text form-group field-aliquotacofins">
-                                        <label for="aliquotacofins" class="fb-text-label">Aliquota COFINS<span class="fb-required">*</span></label>
-                                        <input type="text" class="form-control" name="aliquotacofins" value="{{$dadosEmissao->ALQ_CONFINS}}" id="aliquotacofins" required="required" aria-required="true">
-                                    </div>
-                        </div>
-                        <div class="col-md-3">
-                                                        <div class="fb-text form-group field-valorcofins">
+                            <div class="fb-text form-group field-valorcofins">
                                 <label for="valorcofins" class="fb-text-label">Valor COFINS<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="valorcofins" value="{{$dadosEmissao->VAL_CONFINS}}" id="valorcofins" required="required" aria-required="true">
                             </div>
@@ -348,8 +352,14 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-3">
 
                             <div class="fb-text form-group field-aliquotainss">
-                                <label for="aliquotainss" class="fb-text-label">Aliquota INSS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="aliquotainss" value="{{$dadosEmissao->ALQ_INSS}}" id="aliquotainss" required="required" aria-required="true">
+                                <label for="aliquotainss" class="fb-text-label">Aliquota INSS (%)<span class="fb-required">*</span></label>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <div class="input-group-text"> <input type="checkbox" name="chkInss"></div>
+  </div>
+<input type="text" class="form-control" name="aliquotainss" value="{{$dadosEmissao->ALQ_INSS}}" id="aliquotainss" required="required" aria-required="true">
+</div>     
+                                
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -360,8 +370,14 @@ Emissão de nota fiscal de serviço
                         </div>
                         <div class="col-md-3">
                                                                 <div class="fb-text form-group field-aliquotair">
-                                        <label for="aliquotair" class="fb-text-label">Aliquota IR<span class="fb-required">*</span></label>
-                                        <input type="text" class="form-control" name="aliquotair" value="{{$dadosEmissao->ALQ_IR}}" id="aliquotair" required="required" aria-required="true">
+                                        <label for="aliquotair" class="fb-text-label">Aliquota IR (%)<span class="fb-required">*</span></label>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <div class="input-group-text"> <input type="checkbox" name="chkIr" checked></div>
+  </div>
+<input type="text" class="form-control" name="aliquotair" value="{{$dadosEmissao->ALQ_IR}}" id="aliquotair" required="required" aria-required="true">
+</div>                                         
+                                        
                                     </div>
                         </div>
                         <div class="col-md-3">
@@ -375,13 +391,17 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-3">
 
                             <div class="fb-text form-group field-aliquotacsll">
-                                <label for="aliquotacsll" class="fb-text-label">Aliquota CSSL</label>
-                                <input type="text" class="form-control" name="aliquotacsll" value="{{$dadosEmissao->ALQ_CSLL}}" id="aliquotacsll">
+                                <label for="aliquotacsll" class="fb-text-label">Aliquota CSLL (%)</label>
+                                
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <div class="input-group-text"> <input type="checkbox" name="chkCssl" value="checked"></div>
+  </div>
+<input type="text" class="form-control" name="aliquotacsll" value="{{$dadosEmissao->ALQ_CSLL}}" id="aliquotacsll">
+</div>  
                             </div>
                         </div>
                         <div class="col-md-3">
-
-
                                     <div class="fb-text form-group field-valorcsll">
                                         <label for="valorcsll" class="fb-text-label">Valor CSLL<span class="fb-required">*</span></label>
                                         <input type="text" class="form-control" name="valorcsll" value="{{$dadosEmissao->VAL_CSLL}}" id="valorcsll" required="required" aria-required="true">
@@ -395,7 +415,7 @@ Emissão de nota fiscal de serviço
                     <div class="row">
                         <div class="col-md-3">
                             <div class="fb-text form-group field-aliquotaatividade">
-                                <label for="aliquotaatividade" class="fb-text-label">Aliquota da atividade<span class="fb-required">*</span></label>
+                                <label for="aliquotaatividade" class="fb-text-label">Aliquota da atividade (%)<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="aliquotaatividade" id="aliquotaatividade" required="required" aria-required="true" value="{{$dadosEmissao->ALQ_ISS}}">
                             </div>
                         </div>
@@ -423,7 +443,7 @@ Emissão de nota fiscal de serviço
 
                             <div class="fb-textarea form-group field-descricaorps">
                                 <label for="descricaorps" class="fb-textarea-label">Descrição da Nota<span class="fb-required">*</span></label>
-                                <textarea type="textarea" class="form-control" name="descricaorps" rows="3" id="descricaorps" required="required" aria-required="true">{{$dadosEmissao->MSGNF}}</textarea>
+                                <textarea type="textarea" class="form-control" name="descricaorps" rows="3" id="descricaorps" required="required" aria-required="true" maxlength = "1500">{{$dadosEmissao->MSGNF}}</textarea>
                             </div>
                         </div>
                     </div>

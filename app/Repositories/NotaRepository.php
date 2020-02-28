@@ -77,23 +77,23 @@ class NotaRepository extends BaseRepository
 				       nvl(im, '0000000') IM_TOMADOR, 
 				       email EMAIL_TOMADOR,
 				       MSGNF,
-				       to_char(SUM(TOTAL),'99G999G999D99') AS TOTAL, 
-				       to_char(SUM(TOTALD),'99G999G999D99') AS TOTAL_C_DESC, 
-				       to_char(SUM(TRANSPORTE),'99G999G999D99') TRANSPORTE, 
-				       to_char(NVL(SUM(DESCONTO),0),'99G999G999D99') DESCONT, 
+				       to_char(SUM(TOTAL),'99G999G990D99') AS TOTAL, 
+				       to_char(SUM(TOTALD),'99G999G990D99') AS TOTAL_C_DESC, 
+				       to_char(SUM(TRANSPORTE),'99G999G990D99') TRANSPORTE, 
+				       to_char(NVL(SUM(DESCONTO),0),'99G999G990D99') DESCONT, 
 				       sum(imposto) IMPOSTO,
 				       '0,65' ALQ_PIS, 
-				       0 VAL_PIS,
+				       to_char(ROUND(SUM(TOTALD)*0.0065, 2),'99G999G990D99') AS  VAL_PIS,
 				       3 ALQ_CONFINS,
-				       0 VAL_CONFINS, 
+				       to_char(ROUND(SUM(TOTALD)*0.03, 2),'99G999G990D99') as VAL_CONFINS, 
 				       0 ALQ_INSS,
 				       0 VAL_INSS,
 				       1 ALQ_CSLL ,
-				       0 VAL_CSLL ,
+				       to_char(ROUND(SUM(TOTALD)*0.01, 2),'99G999G990D99') VAL_CSLL ,
 				       '1,5' ALQ_IR,
-				       to_char(ROUND(SUM(TOTALD)*0.015, 2),'99G999G999D99') AS VAL_IR,
+				       to_char(ROUND(SUM(TOTALD)*0.015, 2),'99G999G990D99') AS VAL_IR,
 				       5 ALQ_ISS,
-				       to_char(ROUND(SUM(TOTALD)*0.05, 2),'99G999G999D99') AS VAL_ISS,
+				       to_char(ROUND(SUM(TOTALD)*0.05, 2),'99G999G990D99') AS VAL_ISS,
 				       1 QUANTIDADE
 				FROM 		VIE_NF
 				WHERE 		DATAESTE >= to_date('".$dtIni."', 'dd/mm/yyyy')
@@ -189,7 +189,6 @@ class NotaRepository extends BaseRepository
 					",".$percIss.",".$numeroNFe.",'".
 					$codigoVerificacao."','".str_replace("'", "", $chaveNfse)."')";
 
-			echo $sql;
 			$this->executaSql($sql);
 
 		return [true,"Inserido com sucesso."];
@@ -221,45 +220,14 @@ class NotaRepository extends BaseRepository
     }
 
     public function consultaFaturamentoNota($dtIni, $dtFim, $idCliente){
-    	$sql = " SELECT  
-    				c.nome, 
-					FANTASIA, 
-					n.cliente as clicod,
-					to_char(round(sum(TOTALD),2), 'FM999G999G999D90') totald, 
-					to_char(nvl(round(sum(TOTAL) * (n.DESCONTO/100),2), 0), 'FM999G999G999D90') DESCONTO,
-			        to_char(round(sum(TRANSPORTE),2), 'FM999G999G999D90') transporte,
-			        to_char(round(sum(TOTAL),2), 'FM999G999G999D90') total, 
-			        to_char(round(sum(TOTALDESC),2), 'FM999G999G999D90') TOTALDESC
-				FROM NOTA_TOTAL3 n
-				inner join clientes c on n.cliente = c.codigo 
-				where  DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy') 
-					   AND to_date('".$dtFim."', 'dd/mm/yyyy')
-				and n.cliente = $idCliente
-				group by CLIENTE, FANTASIA, n.cliente, nascimento, n.desconto, nome
-					order by fantasia";
-
-
-
-    	$this->executaSql($sql);
-    	return $this->data[0];
+    	
+    	return $this->consultaFaturamento($dtIni, $dtFim, $idCliente);
     }
 
 
     public function consultaFaturamentoNotaItens($dtIni, $dtFim, $idCliente){
-		$sql = " SELECT nome,  
-				to_char(UNITARIO, 'FM999G999G999D90') val_unitario, 
-				sum(QUANTIDADE) qtd, 
-				to_char(sum(TOTAL), 'FM999G999G999D90') total
-				from vie_itens_nota3
-				where DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy')  
-				AND to_date('".$dtFim."', 'dd/mm/yyyy')  
-				and CLIENTE = $idCliente
-				group by 
-				CLIENTE, SERVICO, UNITARIO, UNITARIOD, nome
-				order by nome";
-
-    	$this->executaSql($sql);
-    	return $this->data;
+	    	
+    	return $this->consultaFaturamentoItens($dtIni, $dtFim, $idCliente);
     }
 
 }

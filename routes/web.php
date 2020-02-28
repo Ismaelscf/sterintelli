@@ -47,6 +47,10 @@ Route::get('notas/cancelarnota','NotaController@cancelarNota')->name('notas.canc
 //faturamento
 Route::get('faturamento','FaturamentoController@index')->name('faturamento.index');
 
-Route::get('faturamento/preconsultarfaturamento/{tipo}/','FaturamentoController@preConsultarFaturamento')->name('notas.preconsultarfaturamento');
+Route::get('faturamento/preconsultarfaturamento/{tipo}/','FaturamentoController@preConsultarFaturamento')->name('faturamento.preconsultarfaturamento');
 
-Route::post('faturamento/posconsultarfaturamento/{tipo}/','FaturamentoController@posConsultarFaturamento')->name('notas.posconsultarfaturamento');
+Route::post('faturamento/posconsultarfaturamento/{tipo}/','FaturamentoController@posConsultarFaturamento')->name('faturamento.posconsultarfaturamento');
+
+Route::get('faturamento/detalharfaturamento/{idcliente}/','FaturamentoController@detalharFaturamento')->name('faturamento.detalhefaturamento');
+
+Route::get('faturamento/imprimirfaturamento/{idcliente}/','FaturamentoController@imprimirFaturamento')->name('faturamento.imprimirFaturamento');

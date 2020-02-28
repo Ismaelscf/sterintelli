@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 use App\Report;
 use App\Config;
 use Illuminate\Http\Request;
+
 use NFePHP\Common\Certificate;
 use NFePHP\NFSeDSF\Rps;
 use NFePHP\NFSeDSF\Common\Soap\SoapCurl;
 use NFePHP\NFSeDSF\Tools;
 use NFePHP\NFSeDSF\Common\Standardize;
-use stdClass;
 use DOMDocument;
 use DOMXpath;
+
+use stdClass;
 
 use App\Repositories\NotaRepository;
 
@@ -25,6 +27,8 @@ class NotaController extends Controller
     protected $ambiente;
     protected $dadosEmissor;
 
+    //variável usada para repassar mensagens à view
+    protected $msgInforma = [];
 
     public function __construct(stdClass $rps)
     {
@@ -70,8 +74,9 @@ class NotaController extends Controller
     public function index()
     {
         $dados = json_decode(json_encode($this->repository->buscaDadosIniciais()));   
-        //var_dump($dados);
-        return view('notas.index', compact('dados'));
+        
+        $msgInforma = $this->msgInforma;
+        return view('notas.index', compact('dados', 'msgInforma'));
 
     }
 
@@ -175,7 +180,7 @@ class NotaController extends Controller
             if ($buscaNota == true)
                 return redirect()->back()->withErrors(['Já existe uma nota com este número']);
         */
-  /*          $tools = new Tools($this->configJson, $this->cert);
+            $tools = new Tools($this->configJson, $this->cert);
 
             $arps = [];
             
@@ -226,11 +231,30 @@ class NotaController extends Controller
             $std->municipioprestacaodescricao = $request->has('municipioprestacaodescricao')? $request->municipioprestacaodescricao : "";
             $std->operacao = $request->has('operacao')? $request->operacao : "";
             $std->tributacao = $request->has('tributacao')? $request->tributacao : "";
-            $std->valorpis = $this->formataValor($request->has('valorpis')? $request->valorpis : 0.00);
-            $std->valorcofins = $this->formataValor($request->has('valorcofins')? $request->valorcofins : 0.00);
-            $std->valorinss = $this->formataValor($request->has('valorinss')? $request->valorinss : 0.00);
-            $std->valorir = $this->formataValor($request->has('valorir')? $request->valorir : 0.00);
-            $std->valorcsll = $this->formataValor($request->has('aliquotapis')? $request->aliquotapis : 0.00);
+
+
+            $std->valorpis = 0;
+            $std->valorcofins = 0;
+            $std->valorinss = 0; 
+            $std->valorir = 0;
+            $std->valorcsll = 0;
+
+            if ($request->chkPis == true) 
+                $std->valorpis = $this->formataValor($request->valorpis);
+                
+            if ($request->chkCofins == true)
+                $std->valorcofins = $this->formataValor($request->valorcofins);
+                
+            if ($request->chkInss == true)
+                $std->valorinss = $this->formataValor($request->valorinss);
+
+            if ($request->chkIr == true)
+                $std->valorir = $this->formataValor($request->valorir);
+                          
+            if ($request->chkCsll == true)
+                $std->valorcsll = $this->formataValor($request->valorcsll);   
+
+            
             $std->aliquotapis = $this->formataValor($request->has('aliquotapis')? $request->aliquotapis : 0.00);
             $std->aliquotacofins = $this->formataValor($request->has('aliquotacofins')? $request->aliquotacofins : 0.00);
             $std->aliquotainss = $this->formataValor($request->has('aliquotainss')? $request->aliquotainss : 0.00);
@@ -245,61 +269,37 @@ class NotaController extends Controller
             $std->itens[0]->valortotal =  $this->formataValor($request->has('valortotal')? $request->valortotal : 0.00);
             $std->itens[0]->tributavel = $request->has('tributavel')? $request->tributavel : "S";
 
-
             $rps = new Rps($std);
 
             $arps[] = $rps;    
-            $lote = date('ymdHis');
-            $ret = '
+            $lote = date('Ymd');
 
-<s:envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:body><ns2:enviarresponse xmlns:ns2="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/LoteRps.jws"><enviarreturn><!--?xml version="1.0" encoding="UTF-8"?-->
-<reqenvioloterps xmlns:ns1="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/lote" xmlns:tipos="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/tp" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://sistemas.semfaz.saoluis.ma.gov.br/WsNFe2/xsd/RetornoConsultaLote.xsd ">
-  <Cabecalho xmlns="" Versao="1">
-        <Sucesso>true</Sucesso>
-        <InformacoesLote>
-            <NumeroLote>42686544</NumeroLote>
-            <InscricaoPrestador>39617106</InscricaoPrestador>
-            <CPFCNPJRemetente>
-                <CNPJ>99999998000228</CNPJ>
-            </CPFCNPJRemetente>
-            <DataEnvioLote>2015-01-26T15:42:44</DataEnvioLote>
-            <QtdNotasProcessadas>2</QtdNotasProcessadas>
-            <TempoProcessamento>1</TempoProcessamento>
-            <ValorTotalServicos>201</ValorTotalServicos>
-        </InformacoesLote>
-    </Cabecalho>
-    <ChaveNFeRPS xmlns="">
-        <ChaveNFe>
-            <InscricaoPrestador>39617106</InscricaoPrestador>
-            <NumeroNFe>3</NumeroNFe>
-            <CodigoVerificacao>2QFFXUMK</CodigoVerificacao>
-        </ChaveNFe>
-        <ChaveRPS>
-            <InscricaoPrestador>39617106</InscricaoPrestador>
-            <SerieRPS>BB</SerieRPS>
-            <NumeroRPS>4102</NumeroRPS>
-        </ChaveRPS>
-    </ChaveNFeRPS>
-</reqenvioloterps></enviarreturn></ns2:enviarresponse></s:body></s:envelope>
-'; 
-            $response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
-            //$response = $this->trataRetorno($ret, 'enviarreturn');
-*/
+            //$response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
 
-            $lote = date('ymdHis');
+
             $response = '{"Cabecalho":{"CodCidade":"921","Sucesso":"true","NumeroLote":"248207723","CPFCNPJRemetente":"01469892000137","DataEnvioLote":"2020-02-20T10:40:47","QtdNotasProcessadas":{},"TempoProcessamento":"1","ValorTotalServicos":"6.44","ValorTotalDeducoes":"0","Versao":"1","Assincrono":"N"},"Alertas":{},"Erros":{},"ChavesNFSeRPS":{"ChaveNFSeRPS":{"ChaveNFe":{"InscricaoPrestador":"7048009","NumeroNFe":"20506","CodigoVerificacao":"FE060BD12C428B08A1DCC2B8E54EC018","RazaoSocialPrestador":"BRITO E SOARES LTDA"},"ChaveRPS":{"InscricaoPrestador":"7048009","SerieRPS":"99","NumeroRPS":"3","DataEmissaoRPS":"20\/02\/2020","RazaoSocialPrestador":"BRITO E SOARES LTDA"}}}}' ;
             $response = json_decode($response);
 
+            //salva arquivo
+            $arqNomeEnv = 'nfe_emitidas/'.$lote.'/'.$request->idcliente.'_envio.json';
+            $arqNomeRet = 'nfe_emitidas/'.$lote.'/'.$request->idcliente.'_retorno.json';
+            $dirname = dirname($arqNomeRet);
+            if (!is_dir($dirname))
+                mkdir($dirname, 0755, true);
 
-            $fp = fopen('nfe_emitidas/'.$request->idcliente.'-'.$lote.'.json', 'w');
+            $fp = fopen($arqNomeEnv, 'w');
+            fwrite($fp, json_encode($std));
+            fclose($fp);
+
+            $fp = fopen($arqNomeRet, 'w');
             fwrite($fp, json_encode($response));
             fclose($fp);
 
 
+            $erros = [];
             $retorno = "";
             $retorno = $response->Cabecalho;
             if($retorno->Sucesso == 'N' || $retorno->Sucesso == 'false'){
-                $erros = [];
                 foreach ($retorno->Erros as $erro) {
                   array_push($erros, $erro);
                 }
@@ -308,8 +308,6 @@ class NotaController extends Controller
 
             //salvar nota
             $chave = $response->ChavesNFSeRPS->ChaveNFSeRPS;
-
-
 
             $retornoSalvar = $this->repository->salvaNotaEmitida($request->idcliente,  
               $chave->ChaveNFe->NumeroNFe, 
@@ -321,26 +319,29 @@ class NotaController extends Controller
               $chave->ChaveNFe->CodigoVerificacao, json_encode($response));
 
             if ($retornoSalvar[0] == false){
-                return redirect()->back()->withErrors([$retornoSalvar[1]]);
+
+                array_push($erros, 'A NOTA FOI GERADA - ERRO AO SALVAR NO BANCO DE DADOS.');
+                array_push($erros, 'ANTES DE FAZER NOVA EMISSÃO ENTRE EM CONTATO COM O SUPORTE.');
+                array_push($erros, $retornoSalvar[1]);
+
+                return redirect()->back()->withErrors($erros);
             }
 
             //retorna a página inicial
-            $msgInforma = [];
-
-            array_push($msgInforma, 'Nota emitida com sucesso.');
-            array_push($msgInforma, 'NFSe: '.$chave->ChaveNFe->NumeroNFe.
+            array_push($this->msgInforma, 'Nota emitida com sucesso.');
+            array_push($this->msgInforma, 'NFSe: '.$chave->ChaveNFe->NumeroNFe.
                 ' Código de Verificação:'.$chave->ChaveNFe->CodigoVerificacao);
-            array_push($msgInforma, 'Para imprimir <a href="/nota/imprimirnota/'.$chave->ChaveNFe->NumeroNFe.'/'.$chave->ChaveNFe->CodigoVerificacao.'/" target="_blank">clique aqui</a>');
-
-            dd();
+            array_push($this->msgInforma, 'Para imprimir <a href="/notas/imprimirnfse/'.$chave->ChaveNFe->NumeroNFe.'/'.$chave->ChaveNFe->CodigoVerificacao.'/" target="_blank">clique aqui</a>');
 
         } catch (\Exception $e) {
 
             return redirect()->back()->withErrors([$e->getMessage()]);
         }
 
-        return view('notas.index', 
-                    compact('msgInforma'));
+        return $this->index();
+
+        //view('notas.index', 
+        //            compact('msgInforma'));
 
     }
 
@@ -601,6 +602,8 @@ class NotaController extends Controller
     //concatena o faturamento junto a nota
 
     $pdf->AddPage();
+    // set font
+    $pdf->SetFont('helvetica', '', 10);
 
 
     $dadosNota = $this->repository->buscaDadosNotaNfse($nota->NumeroNota);
@@ -616,76 +619,86 @@ class NotaController extends Controller
 
         $periodo = "Período: ".$dadosNota->DTAINICIAL." - ".$dadosNota->DTAFINAL;
 
-        $html = '
+        $header = '
             <table class="tabela"  cellpadding="10" style="vertical-align: top; 
                font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px;">
                <tr>
                 <td style="padding: 12px; display: inline-block; width:60%;">
                   <p style="margin-bottom: 0.75rem;"><b>'.$dadosFaturamento->FANTASIA.'</b></p>
-                                <p style="margin-top: -0.375rem; margin-bottom: 0;">Razão: '.$dadosFaturamento->NOME.'</p>
-                                <p style="margin-bottom: 10px;">'.$periodo.'</p>
+                      <p style="margin-top: -0.375rem; margin-bottom: 0;">Razão Social: '.$dadosFaturamento->NOME.'</p>
+                      <p style="margin-bottom: 10px;">'.$periodo.'</p>
                                 </td>
                 <td>
-                <img src="/images/logo.gif"></td>
+                <img src="/images/logo.small.png"></td>
                </tr>
             </table>
-              <div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 14px;">
-                        <p style="text-align:center;"><br><b>FATURAMENTO CONSOLIDADO</b></p>
-              </div>
-              <table cellpadding="1px" cellspacing="0px" style="vertical-align: top; border: 1px solid; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px;">
-                  <thead >
-                        <tr style="border: 1px solid;">
-                                <th width="70%">Material</th>
-                          <th width="10%">Unitário</th>
-                          <th width="10%">Qtd</th>
-                          <th width="10%">Valor</th>
-                          </tr>
-                       </thead><tbody>';
+
+            <h2 style="text-align:center">FATURAMENTO CONSOLIDADO</h2>
+              <table border="1" cellspacing="0" cellpadding="4" >
+             
+                        <tr >
+                          <td width="400">Material</td>
+                          <td width="60"  align="center">Unitário</td>
+                          <td width="60"  align="center">Qtd</td>
+                          <td width="120">Valor</td>
+                        </tr>
+                  ';
 
                 $dadosItens = $this->repository->consultaFaturamentoNotaItens(
                                     $dadosNota->DTAINICIAL, 
                                     $dadosNota->DTAFINAL,
                                     $dadosNota->CODCLIENTE);
+                $i = 0;
+                $pg = 1;
+                $html = $header;
                 foreach ($dadosItens as $item) {
                     $html .= '<tr>
-                              <td>&nbsp;'.$item->NOME.'</td>
-                              <td style="text-align: right;">'.$item->VAL_UNITARIO.'</td>
-                              <td style="text-align: center;">'.$item->QTD.'</td>
-                              <td style="text-align: right;">'.$item->TOTAL.'</td>
+                              <td width="400">&nbsp;'.$item->NOME.'</td>
+                              <td width="60" align="center">'.$item->VAL_UNITARIO.'</td>
+                              <td width="60" align="center">'.$item->QTD.'</td>
+                              <td width="120" align="right">'.$item->TOTAL.'</td>
                               </tr>';  
+
+                    $i++;
+                    if ($i> 35){
+                          
+                          $html .= '</table><p>Página '.$pg.'</p>';
+                          $pdf->writeHTML($html, true, false, true, false, '');
+                          $pdf->AddPage();
+                          $html = $header;
+                          $i = 0;
+                          $pg++;
+
+                    }
                 }   
 
               $html .= '
-              </tbody>
+                 
+              </table>
 
-                    <tfoot>
+              <table border="0" cellspacing="0" cellpadding="4">
                       <tr>
                              
-                          <th></th>
-                          <th></th>
-                          <th>Total:</th>
-                          <th style="text-align: right;">'.$dadosFaturamento->TOTAL.'</th>
+                          <td width="400"></td>
+                          <td width="120" align="right">Total:</td>
+                          <td width="120" align="right">'.$dadosFaturamento->TOTAL.'</td>
                       </tr> 
                       <tr>
-                          <th>&nbsp;Recebido por: ____________________________________</th>
-                          <th></th>
-                          <th>Desconto:</th>
-                          <th style="text-align: right;">'.$dadosFaturamento->DESCONTO.'</th>
+                          <td width="400px">&nbsp;Recebido por: ____________________________________</td>
+                          <td width="120" align="right">Desconto:</td>
+                          <td width="120" align="right">'.$dadosFaturamento->DESCONTO.'</td>
                       </tr>
                       <tr>
-                          <th></th>
-                          <th></th>
-                          <th>Transporte:</th>
-                          <th style="text-align: right;">'.$dadosFaturamento->TRANSPORTE.'</th>
+                          <td width="400px"></td>
+                          <td width="120" align="right">Transporte:</td>
+                          <td width="120" align="right">'.$dadosFaturamento->TRANSPORTE.'</td>
                       </tr> 
                       <tr>
-                          <th>&nbsp;Em: _____ / _____ / _______</th>
-                          <th></th>
-                          <th>Total a Pagar:</th>
-                          <th style="text-align: right;">'.$dadosFaturamento->TOTALD.'</th>
-                      </tr> 
-                    </tfoot>
-                  </table> ';
+                          <td width="400px">&nbsp;Em: _____ / _____ / _______</td>
+                          <td width="120" align="right">Total a Pagar:</td>
+                          <td width="120" align="right">'.$dadosFaturamento->TOTALD.'</td>
+                      </tr>
+              </table> <p>Página '.$pg.'</p>';
 
         // output the HTML content
         $pdf->writeHTML($html, true, false, true, false, '');
@@ -782,7 +795,8 @@ class NotaController extends Controller
 
       $valor = str_replace('.', '', $valor);
       $valor = str_replace(',', '.', $valor);
-            
+
+
       return number_format($valor, 2, '.', '');
     } 
 

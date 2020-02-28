@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />    
 
 </head>
-<body>
+<body class>
 
     <div class="wrapper">
       <div class="sidebar" data-color="white">
@@ -245,7 +245,7 @@
     <script src="{{ asset('paper-dashboard/js/plugins/bootstrap-notify.js')}}"></script>
 
     <!-- Control Center for Paper Dashboard: parallax effects, scripts for the example pages etc -->
-    <script src="{{ asset('paper-dashboard/js/paper-dashboard.js?v=2.0.0')}}" type="text/javascript"></script>
+    <script src="{{ asset('paper-dashboard/js/paper-dashboard.min.js')}}" type="text/javascript"></script>
 
 
     @yield('scripts')

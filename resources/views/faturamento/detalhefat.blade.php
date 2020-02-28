@@ -1,7 +1,7 @@
 @extends('layout.app')
  
 @section('titulo')
-Consulta de Faturamento por Período
+Detalhe do Faturamento por Período
 @endsection
 
 @section('content')
@@ -9,24 +9,24 @@ Consulta de Faturamento por Período
 <b>Legenda</b>
 <a class="btn btn-info btn-link btn-icon btn-sm"> <i class="fa fa-send "></i></a> Emitir NFSe
 <a class="btn btn-info btn-link btn-icon btn-sm"><i class="fa fa-print"></i></a> Faturamento
-<a class="btn btn-info btn-link btn-icon btn-sm"><i class="fa fa-bars"></i></a> Detalhar Fat.
 <a class="btn btn-info btn-link btn-icon btn-sm"><i class="fa fa-file"></i></a> Imprimir NFSe
 </div>
 
 <div class="card">
       <div class="card-header">
-        <h4 class="card-title">Faturamento no período - {{$dtIni}} - {{$dtFim}}</h4>
+        <h4 class="card-title">Listas do período - {{$cliente}} - {{$dtIni}} - {{$dtFim}}</h4>
       </div>
       <div class="card-body">
             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>Cliente</th>
+                        <th>Data</th>
                         <th>Itens</th>
                         <th>Valor</th>
                         <th>Transporte</th>
                         <th>Total</th>
-                        <th>Ação</th>
+                        <!--<th>Ação</th>-->
                     </tr>
                 </thead>
                 <tbody>
@@ -34,24 +34,16 @@ Consulta de Faturamento por Período
                             @foreach ($lista as $l)
                             <tr>
                                 <td>{{ $l->FANTASIA }}</td>
+                                <td>{{ $l->DATAESTE }}</td>
                                 <td>{{ $l->QTD }}</td>
                                 <td align="right">{{ $l->TOTAL }}</td>
                                 <td align="right">{{ $l->TRANSPORTE }}</td>
                                 <td align="right">{{ $l->TOT_C_TRANSPORTE }}</td>
-                                <td>
+                                <!--<td>
                                     <form action="" method="POST">
-                                        <a href="/notas/preemitir/{{ $l->CLICOD }}?dtini={{$dtIni }}&dtfim={{$dtFim}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-send"></i></a>
-
-                                        <a href="/faturamento/imprimirfaturamento/{{ $l->CLICOD }}?dtini={{$dtIni}}&dtfim={{$dtFim}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
                                         
-                                        <a href="/faturamento/detalharfaturamento/{{ $l->CLICOD }}?dtini={{$dtIni}}&dtfim={{$dtFim}}&cliente={{$l->FANTASIA}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-bars"></i></a>
-
-                                    @if(isset($l->CAMINHO))
-                                    <form action="" method="POST">
-                                                <a href="/notas/imprimirnfse{{$l->CAMINHO}}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-file"></i></a>
-                                    @endif
                                     </form>
-                                </td>
+                                </td>-->
                             </tr>
                             @endforeach
                         @else

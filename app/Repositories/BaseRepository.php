@@ -41,9 +41,14 @@ class BaseRepository
             trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
         }
 
-         $this->count = oci_fetch_all($this->result, $this->data, null, null, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+        if (strpos(strtoupper($sql), 'INSERT') === false) { 
+            $this->count = oci_fetch_all($this->result, $this->data, null, null, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+            $this->data = json_decode(json_encode($this->data));
+        }
+        else
+            $this->count = oci_num_rows($this->result);
 
-         $this->data = json_decode(json_encode($this->data));
+         
     }
 
     public function __destruct() {
@@ -104,6 +109,49 @@ class BaseRepository
 
 
     }   
+
+
+    public function consultaFaturamento($dtIni, $dtFim, $idCliente){
+        $sql = " SELECT  
+                    c.nome, 
+                    FANTASIA, 
+                    n.cliente as clicod,
+                    to_char(round(sum(TOTALD),2), 'FM999G999G999D90') totald, 
+                    to_char(nvl(round(sum(TOTAL) * (n.DESCONTO/100),2), 0), 'FM999G999G999D90') DESCONTO,
+                    to_char(round(sum(TRANSPORTE),2), 'FM999G999G999D90') transporte,
+                    to_char(round(sum(TOTAL),2), 'FM999G999G999D90') total, 
+                    to_char(round(sum(TOTALDESC),2), 'FM999G999G999D90') TOTALDESC
+                FROM NOTA_TOTAL3 n
+                inner join clientes c on n.cliente = c.codigo 
+                where  DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy') 
+                       AND to_date('".$dtFim."', 'dd/mm/yyyy')
+                and n.cliente = $idCliente
+                group by CLIENTE, FANTASIA, n.cliente, nascimento, n.desconto, nome
+                    order by fantasia";
+
+
+
+        $this->executaSql($sql);
+        return $this->data[0];
+    }
+
+
+    public function consultaFaturamentoItens($dtIni, $dtFim, $idCliente){
+        $sql = " SELECT nome,  
+                to_char(UNITARIO, 'FM999G999G999D90') val_unitario, 
+                sum(QUANTIDADE) qtd, 
+                to_char(sum(TOTAL), 'FM999G999G999D90') total
+                from vie_itens_nota3
+                where DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy')  
+                AND to_date('".$dtFim."', 'dd/mm/yyyy')  
+                and CLIENTE = $idCliente
+                group by 
+                CLIENTE, SERVICO, UNITARIO, UNITARIOD, nome
+                order by nome";
+
+        $this->executaSql($sql);
+        return $this->data;
+    }    
 
 
 }
