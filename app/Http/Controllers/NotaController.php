@@ -43,7 +43,7 @@ class NotaController extends Controller
       //$token = '3579F09B4CC37151D3327197B13F9583';
 
       //1-producao, 2-homologacao
-      $this->ambiente = 2;
+      $this->ambiente = 1;
       //P-producao, H-homologacao
       $this->dadosEmissor = $this->repository->buscaDadosEmissor($this->ambiente);
 
@@ -274,12 +274,6 @@ class NotaController extends Controller
             $arps[] = $rps;    
             $lote = date('Ymd');
 
-            //$response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
-
-
-            $response = '{"Cabecalho":{"CodCidade":"921","Sucesso":"true","NumeroLote":"248207723","CPFCNPJRemetente":"01469892000137","DataEnvioLote":"2020-02-20T10:40:47","QtdNotasProcessadas":{},"TempoProcessamento":"1","ValorTotalServicos":"6.44","ValorTotalDeducoes":"0","Versao":"1","Assincrono":"N"},"Alertas":{},"Erros":{},"ChavesNFSeRPS":{"ChaveNFSeRPS":{"ChaveNFe":{"InscricaoPrestador":"7048009","NumeroNFe":"20506","CodigoVerificacao":"FE060BD12C428B08A1DCC2B8E54EC018","RazaoSocialPrestador":"BRITO E SOARES LTDA"},"ChaveRPS":{"InscricaoPrestador":"7048009","SerieRPS":"99","NumeroRPS":"3","DataEmissaoRPS":"20\/02\/2020","RazaoSocialPrestador":"BRITO E SOARES LTDA"}}}}' ;
-            $response = json_decode($response);
-
             //salva arquivo
             $arqNomeEnv = 'nfe_emitidas/'.$lote.'/'.$request->idcliente.'_envio.json';
             $arqNomeRet = 'nfe_emitidas/'.$lote.'/'.$request->idcliente.'_retorno.json';
@@ -290,6 +284,13 @@ class NotaController extends Controller
             $fp = fopen($arqNomeEnv, 'w');
             fwrite($fp, json_encode($std));
             fclose($fp);
+
+            $response = $this->trataRetorno($tools->enviar($arps, $lote), 'enviarReturn');
+
+            /*$response = '{"Cabecalho":{"CodCidade":"921","Sucesso":"true","NumeroLote":"248207723","CPFCNPJRemetente":"01469892000137","DataEnvioLote":"2020-02-20T10:40:47","QtdNotasProcessadas":{},"TempoProcessamento":"1","ValorTotalServicos":"6.44","ValorTotalDeducoes":"0","Versao":"1","Assincrono":"N"},"Alertas":{},"Erros":{},"ChavesNFSeRPS":{"ChaveNFSeRPS":{"ChaveNFe":{"InscricaoPrestador":"7048009","NumeroNFe":"20506","CodigoVerificacao":"FE060BD12C428B08A1DCC2B8E54EC018","RazaoSocialPrestador":"BRITO E SOARES LTDA"},"ChaveRPS":{"InscricaoPrestador":"7048009","SerieRPS":"99","NumeroRPS":"3","DataEmissaoRPS":"20\/02\/2020","RazaoSocialPrestador":"BRITO E SOARES LTDA"}}}}' ;
+            $response = json_decode($response);*/
+
+            //salva arquivo
 
             $fp = fopen($arqNomeRet, 'w');
             fwrite($fp, json_encode($response));
@@ -334,7 +335,7 @@ class NotaController extends Controller
             array_push($this->msgInforma, 'Para imprimir <a href="/notas/imprimirnfse/'.$chave->ChaveNFe->NumeroNFe.'/'.$chave->ChaveNFe->CodigoVerificacao.'/" target="_blank">clique aqui</a>');
 
         } catch (\Exception $e) {
-
+            dd($e);
             return redirect()->back()->withErrors([$e->getMessage()]);
         }
 
@@ -554,9 +555,11 @@ class NotaController extends Controller
       // Tomador
       //--------------------------------------
      // $p = $tomador;
-      $enderecoTomador = $nota->TipoLogradouroTomador." ". $nota->LogradouroTomador." ".
-                  $nota->NumeroEnderecoTomador." - ".$nota->ComplementoEnderecoTomador." ".
-                  $nota->BairroTomador;
+      $enderecoTomador = $this->trataItemVazio($nota->TipoLogradouroTomador)." ". 
+                         $this->trataItemVazio($nota->LogradouroTomador)." ".
+                         $this->trataItemVazio($nota->NumeroEnderecoTomador)." - ".
+                         $this->trataItemVazio($nota->ComplementoEnderecoTomador)." ".
+                         $this->trataItemVazio($nota->BairroTomador);
       $pdf->SetY($yT+3);
       $pdf->Columns([0 => 11, 5 => 85, 10 => 105, 15 => 165], 
         [
@@ -603,7 +606,7 @@ class NotaController extends Controller
 
     $pdf->AddPage();
     // set font
-    $pdf->SetFont('helvetica', '', 10);
+    $pdf->SetFont('helvetica', '', 8);
 
 
     $dadosNota = $this->repository->buscaDadosNotaNfse($nota->NumeroNota);
@@ -728,7 +731,7 @@ class NotaController extends Controller
     {
 
         $response = html_entity_decode($response);
-        //echo $response;
+        //dd($response);
 
         $dom = new DOMDocument( '1.0', 'utf-8' );
         $dom->preserveWhiteSpace = false;

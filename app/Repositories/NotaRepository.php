@@ -25,12 +25,12 @@ class NotaRepository extends BaseRepository
 	    }
 
 
-		$sql = "select count(t.codcliente) qtd_clientes, 
+		$sql = " select count(t.codcliente) qtd_clientes, 
 					to_char(t.dtanota,'mm/yyyy') mes
 				from tab_notas_emitidas t
 				where t.numero_nfse is not null
 				and to_number(to_char(t.dtanota,'yyyymm')) >= to_number(to_char(SYSDATE, 'yyyymm') )
-				group by to_char(t.dtanota,'mm/yyyy')";
+				group by to_char(t.dtanota,'mm/yyyy') ";
 
 		$this->executaSql($sql);
 		if ($this->count > 0){
@@ -69,14 +69,17 @@ class NotaRepository extends BaseRepository
     				   cnpj CNPJ_TOMADOR, 
     				   uf, 
     				   fantasia FANTASIA_TOMADOR, 
+    				   CLIENTE NOME_TOMADOR, 
     				   clicod, endereco END_TOMADOR, 
 				       municipio, 
 				       bairro BAIRRO_TOMADOR, 
-				       '65000000' CEP_TOMADOR,
+				       nvl(CEP, '65000000') CEP_TOMADOR,
 				       numero NUM_TOMADOR,
 				       nvl(im, '0000000') IM_TOMADOR, 
 				       email EMAIL_TOMADOR,
-				       MSGNF,
+				       'SERVIÇOS DE ESTERILIZAÇÃO DE MATERIAIS MÉDICO - HOSPITALARES CONFORME LISTA ANEXA. CASO NÃO CONSIGA PAGAR ATÉ O VENCIMENTO ENTRAR EM CONTATO COM A EMPRESA, POIS A NOTA ESTÁ COM REGISTRO EM CARTÓRIO.
+PERÍODO: ".$dtIni." a ".$dtFim."
+VENCIMENTO:  ' || to_char(sysdate,'mm/yyyy') MSGNF,
 				       to_char(SUM(TOTAL),'99G999G990D99') AS TOTAL, 
 				       to_char(SUM(TOTALD),'99G999G990D99') AS TOTAL_C_DESC, 
 				       to_char(SUM(TRANSPORTE),'99G999G990D99') TRANSPORTE, 
@@ -99,9 +102,9 @@ class NotaRepository extends BaseRepository
 				WHERE 		DATAESTE >= to_date('".$dtIni."', 'dd/mm/yyyy')
 				AND 		DATAESTE <= to_date('".$dtFim."', 'dd/mm/yyyy')
 				AND 		CLICOD=".$id."
-				group by 	cnpj, uf, fantasia, clicod, endereco, 
+				group by 	cnpj, uf, fantasia, CLIENTE, clicod, endereco, 
 					       	municipio, bairro, numero,
-					       	ie, im, MSGNF, email";
+					       	ie, im, MSGNF, email, cep";
  
 	
     	$this->executaSql($sql);

@@ -122,7 +122,7 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-6">
                                  <div class="fb-text form-group field-razaotomador">
                                 <label for="razaotomador" class="fb-text-label">Razão social do Tomador<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="{{$dadosEmissao->FANTASIA_TOMADOR}}">
+                                <input type="text" class="form-control" name="razaosocialtomador" id="razaosocialtomador" required="required" aria-required="true" value="{{$dadosEmissao->NOME_TOMADOR}}">
                             </div>
                         </div>
                     </div>
@@ -216,6 +216,8 @@ Emissão de nota fiscal de serviço
                                     <select class="form-control" name="cidadetomador" id="cidadetomador">
                                        <option value="0000921" selected="true">São Luis</option>
                                        <option value="00090631">Teresina</option>
+                                       <option value="0427">BELEM</option>
+
                                     </select>
                                 </div>
                         </div>
@@ -395,7 +397,7 @@ Emissão de nota fiscal de serviço
                                 
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkCssl" value="checked"></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkCsll" value="checked"></div>
   </div>
 <input type="text" class="form-control" name="aliquotacsll" value="{{$dadosEmissao->ALQ_CSLL}}" id="aliquotacsll">
 </div>  
@@ -443,7 +445,7 @@ Emissão de nota fiscal de serviço
 
                             <div class="fb-textarea form-group field-descricaorps">
                                 <label for="descricaorps" class="fb-textarea-label">Descrição da Nota<span class="fb-required">*</span></label>
-                                <textarea type="textarea" class="form-control" name="descricaorps" rows="3" id="descricaorps" required="required" aria-required="true" maxlength = "1500">{{$dadosEmissao->MSGNF}}</textarea>
+                                <textarea type="textarea" class="form-control" name="descricaorps" rows="3" id="descricaorps" required="required" aria-required="true" maxlength = "1500" style="max-height: 200px;height: 2000px;">{{$dadosEmissao->MSGNF}}</textarea>
                             </div>
                         </div>
                     </div>

@@ -14,7 +14,7 @@ class BaseRepository
 
     public function __construct()
     {
-    	$this->conn = oci_connect('scott', 'tiger', 'xe', 'AL32UTF8');
+    	$this->conn = oci_connect('scott', 'tiger', env('DB_TNS', ''), 'AL32UTF8');
         if (!$this->conn) {
             $e = oci_error();
             trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
@@ -109,6 +109,22 @@ class BaseRepository
 
 
     }   
+    function consultarMunicipiosCod($uf  = '')
+    {
+        $sql = " select cod_siafi, nome, uf, cod_ibge
+                 from tab_municipio ";
+
+        if($uf  != ''){
+            $sql .= " where UF = '$uf'";
+        }
+
+        $sql .= " order by uf, nome";
+
+        $this->executaSQL($sql);
+        return $this->data;
+
+
+    } 
 
 
     public function consultaFaturamento($dtIni, $dtFim, $idCliente){
