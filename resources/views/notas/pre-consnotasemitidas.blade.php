@@ -38,7 +38,7 @@ Consulta de Notas Emitidas
                                 <select id="cmbCliente" name="cmbCliente" class="form-control">
                                     <option selected value="-1">Selecione ...</option>
                                     @foreach($clientes as $c)
-                                      <option value="{{$c->COD}}">{{ $c->NOME}}</option>
+                                      <option value="{{$c->COD}}">{{ $c->RAZAO}}</option>
                                     @endforeach
                                 </select>
                               

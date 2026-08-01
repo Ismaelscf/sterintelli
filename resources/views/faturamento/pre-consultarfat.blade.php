@@ -5,7 +5,7 @@ Consulta de Faturamento por {{$tipoDesc}}
 @endsection
 
 @section('content')
- <form action="{{ url('faturamento/posconsultarfaturamento/') }}/{{$tipo}}/" method="POST">
+ <form action="{{ url('faturamento/posconsultarfaturamento/'.$tipo.'/') }}" method="POST" id="faturamentoForm">
 
 <input type="hidden" name="tipo">
    @csrf 
@@ -36,11 +36,11 @@ Consulta de Faturamento por {{$tipoDesc}}
                         </div>
                         <div class="col-md-6">
                             <div class="fb-text form-group field-im">
-                                <label for="dtFim" class="fb-text-label">Clientes</label>
+                                <label for="dtFim" class="fb-text-label">Fantasia</label>
                                 <select id="cmbCliente" name="cmbCliente" class="form-control">
                                     <option selected value="-1">Selecione ...</option>
                                     @foreach($clientes as $c)
-                                      <option value="{{$c->COD}}">{{ $c->NOME}}</option>
+                                      <option value="{{$c->COD}}">{{ $c->FANTASIA}}</option>
                                     @endforeach
                                 </select>
                               
@@ -77,11 +77,43 @@ Consulta de Faturamento por {{$tipoDesc}}
                         </div>
 
                     </div>
+                    <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <legend class="col-form-label col-sm-6 fb-text-label">Buscar por:</legend>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="searchOption" id="porFantasia" value="fantasia" checked>
+                                        <label class="form-check-label" for="porFantasia">Por fantasia</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="searchOption" id="porRazaoSocial" value="razaoSocial">
+                                        <label class="form-check-label" for="porRazaoSocial">Por Razão Social</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="searchOption" id="porTipoEsterilizacao" value="tipoEsterilizacao">
+                                        <label class="form-check-label" for="porTipoEsterilizacao">Por tipo de Esterilização</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+
+                                <div class="fb-text form-group field-im">
+                                    <label for="TipoEste" class="fb-text-label">Tipo de Esterilização</label>
+                                    <select id="cmbTipoEste" name="cmbTipoEste" class="form-control">
+                                        <option selected value="0">Selecione ...</option>
+                                            <option value="1">ÓXIDO ETILENO</option>
+                                            <option value="2">VAPOR</option>
+                                    </select>
+                                
+                                </div> 
+                            </div>
+                        </div>
 
                 </div>
                 <div class="card-footer">
-                    <button type="submit" class="btn btn-info btn-round text-right" name="emitir" style="success" id="emitir">Consultar</button>
-                </div>
+                    <button type="submit" class="btn btn-info btn-round text-right" name="emitir" id="emitir">Consultar</button>
+                    <button type="button" class="btn btn-secondary btn-round text-right float-right" id="btnCreateNotaAvulsa" >Criar nota avulsa</button>
+                    </div>
 
             </div>
         </div>
@@ -95,14 +127,32 @@ Consulta de Faturamento por {{$tipoDesc}}
 
 <script type="text/javascript">
 
-$('.datepicker').datepicker({
-    format: 'dd/mm/yyyy'
-});
-
+    $('.datepicker').datepicker({
+        format: 'dd/mm/yyyy'
+    });
+    
     $('#cmbCliente').select2();
     $('#cmbEstado').select2();
     $('#cmbMunicipio').select2();
-  
 
+    $(document).ready(function() {
+            $('#btnCreateNotaAvulsa').click(function() {
+                var clienteSelected = $('#cmbCliente').val();
+                if (clienteSelected === "-1" || clienteSelected === null) {
+                    alert('Por favor, selecione um cliente antes de criar uma nota avulsa.');
+                } else {
+
+                    var isRequired = $(this).val() === "-1";
+                    $('#dtIni, #dtFim').prop('required', isRequired);
+                    
+                    var formAction = clienteSelected !== "-1" ? "{{ url('/notas/preemitir/') }}/" + clienteSelected : "{{ url('faturamento/posconsultarfaturamento/'.$tipo.'/') }}";
+                    $('#faturamentoForm').attr('action', formAction).attr('method', 'GET');
+                    // Submit the form if a client is selected and dates are not required
+                    if (!isRequired) {
+                        $('#faturamentoForm').submit();
+                    }
+                }
+            });
+        });
 </script>  
 @endsection

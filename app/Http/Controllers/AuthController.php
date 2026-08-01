@@ -35,17 +35,15 @@ class AuthController extends Controller
      
     public function postLogin(Request $request)
     {
-        request()->validate([
-        'loginname' => 'required',
-        'senha' => 'required',
-        ]);
-        $credentials = ['loginname' => $request->loginname, 'password' => $request->senha];
+        $loginname = $request->input('loginname');
+        $senha = $request->input('senha');
 
-        $ret = Auth::attempt($credentials);
-        //dd($ret);
-        if ($ret) {
+        $user = User::where('loginname', $loginname)->where('senha', $senha)->first();
+        if ($user) {
+            Session::put('user', $user->codigo);
             return redirect()->to('/notas');
         }
+
         return redirect()->back()->withErrors(['Usuário ou senha invalidos']);
     }
  

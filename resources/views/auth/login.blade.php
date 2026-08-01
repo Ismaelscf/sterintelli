@@ -5,6 +5,8 @@ Consulta de Notas Emitidas
 @endsection
 
 @section('content')
+
+
           <div class="col-lg-4 col-md-6 ml-auto mr-auto">
             <form class="form" method="POST" action="{{url('post-login')}}">
               {{ csrf_field() }}

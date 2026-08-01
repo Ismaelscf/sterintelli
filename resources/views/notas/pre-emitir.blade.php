@@ -45,8 +45,8 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-3">
 
                             <div class="fb-text form-group field-im">
-                                <label for="im" class="fb-text-label">Inscrição municpal<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="inscricaomunicipalprestador" id="iinscricaomunicipalprestadorm" required="required" aria-required="true" value="{{ $dadosEmissor->IM }}">
+                                <label for="im" class="fb-text-label">Inscrição municipal<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="inscricaomunicipalprestador" id="inscricaomunicipalprestador" minLength="6" required="required" aria-required="true" value="{{ $dadosEmissor->IM }}">
                             </div>                            
                         </div>
 
@@ -80,19 +80,24 @@ Emissão de nota fiscal de serviço
                                 <input type="text" class="form-control" name="serieprestacao" id="serieprestacao" required="required" aria-required="true" value="99" readonly>
                             </div>
                         </div>                        
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="dataemissaorps" class="fb-text-label">Data nota<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="{{$dataNota}}" style="background: white">
-                                <script>
-                                $('#dataemissaorps').datepicker({locale:'pt-br', format:'dd/mm/yyyy'});
-                              </script>
+                                <input type="text" class="form-control" name="dataemissaorps" id="dataemissaorps" required="required" aria-required="true" value="{{$dadosEmissao->DTANOTA}}" style="background: white">
+
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-token">
                                 <label for="horaemissaorps" class="fb-text-label">Hora nota<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="horaemissaorps" id="horaemissaorps" required="required" aria-required="true" value="{{$horaNota}}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="fb-text form-group field-token">
+                                <label for="datavencimento" class="fb-text-label">Dt Vencimento<span class="fb-required">*</span></label>
+                                <input type="text" class="form-control" name="datavencimento" id="datavencimento" required="required" aria-required="true" value="{{$dadosEmissao->DTAVENCIMENTO}}" style="background: white">
+                                
                             </div>
                         </div>
                     </div>
@@ -116,7 +121,7 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-3">
                                 <div class="fb-text form-group field-inscricaomunicipaltomador">
                                     <label for="inscricaomunicipaltomador" class="fb-text-label">Inscrição municipal do tomador<span class="fb-required">*</span></label>
-                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" required="required" aria-required="true" value="{{$dadosEmissao->IM_TOMADOR}}">
+                                    <input type="text" class="form-control" name="inscricaomunicipaltomador" id="inscricaomunicipaltomador" minlength="6" required="true" aria-required="true" value="{{$dadosEmissao->IM_TOMADOR}}">
                                 </div>
                         </div>
                         <div class="col-md-6">
@@ -203,20 +208,39 @@ Emissão de nota fiscal de serviço
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <div class="fb-text form-group field-ceptomador">
                                 <label for="ceptomador" class="fb-text-label">CEP<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="ceptomador" id="ceptomador" required="required" aria-required="true" value="{{$dadosEmissao->CEP_TOMADOR}}">
                             </div>
                         </div>
-
+                        <div class="col-md-2">
+                                <div class="fb-select form-group">
+                                    <label for="estadotomador" class="fb-select-label">Estado</label>
+                                    <select id="cmbEstadoTomador" name="cmbEstadoTomador" class="form-control">
+                                        <option selected value="-1">Selecione ...</option>
+                                        @foreach($estados as $e)
+                                          <option value="{{$e->UF}}"
+                                            @if ($dadosEmissao->UF == $e->UF)
+                                                selected
+                                            @endif
+                                            >{{ $e->UF}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>                            
+                        </div>
                         <div class="col-md-4">
                                 <div class="fb-select form-group field-cidadetomador">
                                     <label for="cidadetomador" class="fb-select-label">Cidade do tomador</label>
                                     <select class="form-control" name="cidadetomador" id="cidadetomador">
-                                       <option value="0000921" selected="true">São Luis</option>
-                                       <option value="00090631">Teresina</option>
-                                       <option value="0427">BELEM</option>
+                                       @foreach($municipios as $m)
+                                          <option value="{{$m->COD_SIAFI}}"
+                                            @if ($dadosEmissao->MUNICIPIO_ID == $m->COD_IBGE)
+                                                selected
+                                            @endif
+
+                                            >{{ $m->NOME}}</option>
+                                        @endforeach
 
                                     </select>
                                 </div>
@@ -269,7 +293,7 @@ Emissão de nota fiscal de serviço
                                 <label for="municipioprestacao" class="fb-select-label">Municipio de prestacao<span class="fb-required">*</span></label>
                                 <select class="form-control" name="municipioprestacao" id="municipioprestacao" required="required" aria-required="true">
                                     <option value="0000921" selected="true">São Luis</option>
-                                    <option value="00090631" >Teresina</option>
+                                    <option value="0090631" >Teresina</option>
                                 </select>
                             </div>
                         </div>
@@ -277,8 +301,9 @@ Emissão de nota fiscal de serviço
                             <div class="fb-select form-group field-tiporecolhimento">
                                         <label for="tiporecolhimento" class="fb-select-label">Tipo de recolhimento<span class="fb-required">*</span></label>
                                         <select class="form-control" name="tiporecolhimento" id="tiporecolhimento" required="required" aria-required="true">
-                                            <option value="A" selected="true">A Receber</option>
-                                            <option value="R">Retido na Fonte</option>
+                                            
+                                            <option value="A" @if ($dadosEmissao->TIPO_RECOLHIMENTO == 'A') selected  @endif>A Receber</option>
+                                            <option value="R" @if ($dadosEmissao->TIPO_RECOLHIMENTO == 'R') selected  @endif>Retido na Fonte</option>
                                         </select>
                                     </div>
                         </div>
@@ -328,7 +353,7 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-3">
                             <div class="fb-text form-group field-valorpis">
                                 <label for="valorpis" class="fb-text-label">Valor PIS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="valorpis" value="{{$dadosEmissao->VAL_PIS}}" id="valorpis" required="required" aria-required="true">
+                                <input type="text" class="form-control" name="valorpis" value="{{trim($dadosEmissao->VAL_PIS)}}" id="valorpis" required="required" aria-required="true">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -375,7 +400,7 @@ Emissão de nota fiscal de serviço
                                         <label for="aliquotair" class="fb-text-label">Aliquota IR (%)<span class="fb-required">*</span></label>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkIr" checked></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkIr"></div>
   </div>
 <input type="text" class="form-control" name="aliquotair" value="{{$dadosEmissao->ALQ_IR}}" id="aliquotair" required="required" aria-required="true">
 </div>                                         
@@ -418,7 +443,7 @@ Emissão de nota fiscal de serviço
                         <div class="col-md-3">
                             <div class="fb-text form-group field-aliquotaatividade">
                                 <label for="aliquotaatividade" class="fb-text-label">Aliquota da atividade (%)<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="aliquotaatividade" id="aliquotaatividade" required="required" aria-required="true" value="{{$dadosEmissao->ALQ_ISS}}">
+                                <input type="text" class="form-control" name="aliquotaatividade" id="aliquotaatividade" readonly required="required" aria-required="true" value="{{$dadosEmissao->ALQ_ISS}}">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -517,4 +542,17 @@ Emissão de nota fiscal de serviço
     </div>
 </div>
 </form>
+@endsection
+
+
+@section('scripts')
+
+<script type="text/javascript">
+
+$('.dataemissaorps').datepicker({locale:'pt-br', format: 'dd/mm/yyyy'});
+$('#datavencimento').datepicker({locale:'pt-br', format:'dd/mm/yyyy'});
+$('#cidadetomador').select2();
+  
+
+</script>  
 @endsection

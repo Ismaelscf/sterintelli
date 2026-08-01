@@ -20,20 +20,34 @@ Consulta de NFSe Emitidas
                 </tr>
                 </thead>
                 <tbody>
-                @foreach ($notas as $nota)
-                
-                <tr>
-                    <td>{{ $nota->NumeroNota }}<br><small>{{ $nota->CodigoVerificao }}</small></td>
-                    <td>{{ $nota->RazaoSocialTomador }}</td>
-                    <td>{{ date('d/m/Y H:i', strtotime($nota->DataProcessamento)) }}</td>
-                    <td>
-                        <form action="" method="POST">
-           
-                            <a href="/notas/imprimirnfse/{{ $nota->NumeroNota }}/{{ $nota->CodigoVerificao }}/" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
+                @if(isset($notas->NumeroNota))
+                    <tr>
+                        <td>{{ $notas->NumeroNota }}<br><small>{{ $notas->CodigoVerificao }}</small></td>
+                        <td>{{ $notas->RazaoSocialTomador }}</td>
+                        <td>{{ date('d/m/Y H:i', strtotime($notas->DataProcessamento)) }}</td>
+                        <td>
+                            <form action="" method="POST">
+                                <a href="{{ url('notas/imprimirnfse/'.$notas->NumeroNota.'/'.$notas->CodigoVerificao.'/') }}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
+                                <a href="{{ url('notas/imprimirnfse/'.$notas->NumeroNota.'/'.$notas->CodigoVerificao.'/?$email=S') }}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"  title="Enviar por email"><i class="fa fa-envelope"></i></a>
+                            </form>
+                        </td>
+                    </tr> 
+
+                @else
+                    @foreach ($notas as $nota)
+                    <tr>
+                        <td>{{ $nota->NumeroNota }}<br><small>{{ $nota->CodigoVerificao }}</small></td>
+                        <td>{{ $nota->RazaoSocialTomador }}</td>
+                        <td>{{ date('d/m/Y H:i', strtotime($nota->DataProcessamento)) }}</td>
+                        <td>
+                            <form action="" method="POST">
+                                <a href="{{ url('notas/imprimirnfse/'.$nota->NumeroNota.'/'.$nota->CodigoVerificao.'/') }}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-print"></i></a>
+                                <a href="{{ url('notas/imprimirnfse/'.$nota->NumeroNota.'/'.$nota->CodigoVerificao.'/?email=S') }}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank" title="Enviar por email"><i class="fa fa-envelope"></i></a>
+                            </form>
+                        </td>
+                    </tr> 
+                    @endforeach
+                @endif
                 </tbody>
             </table>
     </div>

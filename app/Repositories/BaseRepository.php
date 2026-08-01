@@ -6,7 +6,7 @@ use stdClass;
 
 class BaseRepository
 {
-	private $conn;
+	protected $conn;
 	private $result;
     public $data;
     public $count;
@@ -14,6 +14,7 @@ class BaseRepository
 
     public function __construct()
     {
+
     	$this->conn = oci_connect('scott', 'tiger', env('DB_TNS', ''), 'AL32UTF8');
         if (!$this->conn) {
             $e = oci_error();
@@ -24,8 +25,8 @@ class BaseRepository
 
     }
 
-    public function executaSql($sql){
 
+    public function executaSql($sql){
 
         //echo '<br>'.$sql;
         $this->result = oci_parse($this->conn, $sql);
@@ -35,13 +36,14 @@ class BaseRepository
         }
 
         // Perform the logic of the query
-        $test = oci_execute($this->result);
-        if (!$test) {
+        $std = oci_execute($this->result);
+        if (!$std) {
             $e = oci_error($this->result);
             trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
         }
 
-        if (strpos(strtoupper($sql), 'INSERT') === false) { 
+        $sql = strtoupper($sql);
+        if (strpos($sql, 'INSERT') === false && strpos($sql, 'UPDATE') === false && strpos($sql, 'DELETE') === false) { 
             $this->count = oci_fetch_all($this->result, $this->data, null, null, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
             $this->data = json_decode(json_encode($this->data));
         }
@@ -64,7 +66,7 @@ class BaseRepository
 
     function consultarClientesCompleto($uf = '')
     {
-        $sql = "select codigo cod, UPPER(REPLACE(fantasia,'''', ' ' )) nome, 
+        $sql = "select codigo cod, UPPER(REPLACE(fantasia,'''', ' ' )) fantasia, 
                         UPPER(REPLACE(nome,'''', ' ')) razao
                 from clientes 
                 where nome is not null ";
@@ -111,7 +113,8 @@ class BaseRepository
     }   
     function consultarMunicipiosCod($uf  = '')
     {
-        $sql = " select cod_siafi, nome, uf, cod_ibge
+        $sql = " select to_char(cod_siafi, '000000') cod_siafi, 
+                 nome, uf, cod_ibge
                  from tab_municipio ";
 
         if($uf  != ''){
@@ -126,48 +129,137 @@ class BaseRepository
 
     } 
 
+    function consultarEstadosCod($uf  = '')
+    {
+        $sql = " select distinct uf
+                 from tab_municipio 
+                 order by uf";
 
-    public function consultaFaturamento($dtIni, $dtFim, $idCliente){
-        $sql = " SELECT  
-                    c.nome, 
-                    FANTASIA, 
-                    n.cliente as clicod,
-                    to_char(round(sum(TOTALD),2), 'FM999G999G999D90') totald, 
-                    to_char(nvl(round(sum(TOTAL) * (n.DESCONTO/100),2), 0), 'FM999G999G999D90') DESCONTO,
-                    to_char(round(sum(TRANSPORTE),2), 'FM999G999G999D90') transporte,
-                    to_char(round(sum(TOTAL),2), 'FM999G999G999D90') total, 
-                    to_char(round(sum(TOTALDESC),2), 'FM999G999G999D90') TOTALDESC
+        $this->executaSQL($sql);
+        return $this->data;
+
+
+    }     
+
+
+    public function consultaFaturamento($dtIni, $dtFim, $idCliente, $searchOption, $tipoEste= 0){
+
+
+        $sqlJoin = "";
+        $sqlGroup = " GROUP BY n.desconto, ";
+        $sqlOrder = " ORDER BY ";
+
+        switch ($searchOption) {
+            case 'fantasia':
+                $fields = " c.nome, FANTASIA, n.cliente as clicod, ";
+
+                $sqlWhere = " and   n.cliente = $idCliente";
+
+                $sqlGroup .= " c.nome, c.fantasia, n.cliente";
+                $sqlOrder .= " c.fantasia";
+                break;
+
+            case 'razaoSocial':
+                $fields = " c.nome, '' FANTASIA, c.CNPJ as clicod,";
+                            
+                $sqlWhere = " and   c.CNPJ = '$idCliente'";
+                $sqlGroup .= " c.nome, c.CNPJ";
+                $sqlOrder .= " c.nome";
+                break;
+
+            case 'tipoEsterilizacao':
+                $fields = " c.nome, c.fantasia, ";
+
+                $sqlWhere = " and   n.cliente = $idCliente";
+                if($tipoEste > 0)
+                    $sqlWhere .= " and  n.TIPO_EST = $tipoEste";
+
+                $sqlGroup .= " c.nome, c.fantasia, n.cliente";
+                $sqlOrder .= " c.fantasia";
+                break;
+            }
+
+
+
+        $sql = " SELECT $fields
+                        to_char(round(sum(TOTALD),2), 'FM999G999G999D90') totald, 
+                        to_char(nvl(round(sum(TOTAL) * (n.DESCONTO/100),2), 0), 'FM999G999G999D90') DESCONTO,
+                        to_char(round(sum(TRANSPORTE),2), 'FM999G999G999D90') transporte,
+                        to_char(round(sum(TOTAL),2), 'FM999G999G999D90') total, 
+                        to_char(round(sum(TOTALDESC),2), 'FM999G999G999D90') TOTALDESC
                 FROM NOTA_TOTAL3 n
                 inner join clientes c on n.cliente = c.codigo 
+                $sqlJoin 
                 where  DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy') 
                        AND to_date('".$dtFim."', 'dd/mm/yyyy')
-                and n.cliente = $idCliente
-                group by CLIENTE, FANTASIA, n.cliente, nascimento, n.desconto, nome
-                    order by fantasia";
+                $sqlWhere
+                $sqlGroup
+                $sqlOrder ";
 
 
-
-        $this->executaSql($sql);
+        //print($sql);die;
+;       $this->executaSql($sql);
         return $this->data[0];
     }
 
 
-    public function consultaFaturamentoItens($dtIni, $dtFim, $idCliente){
-        $sql = " SELECT nome,  
+    public function consultaFaturamentoItens($dtIni, $dtFim, $idCliente, $searchOption, $tipoEste= 0){
+
+
+
+        $sqlJoin = "";
+        $sqlGroup = " GROUP BY n.desconto, ";
+        $sqlOrder = " ORDER BY ";
+
+        switch ($searchOption) {
+            case 'fantasia':
+                
+                $sqlWhere = " and  cliente = $idCliente";
+
+                $sqlGroup .= " c.nome, c.fantasia, n.cliente";
+                $sqlOrder .= " c.fantasia";
+                break;
+
+            case 'razaoSocial':
+                $sqlWhere = " and   c.CNPJ = '$idCliente'";
+
+                $sqlGroup .= " c.nome, c.CNPJ";
+                $sqlOrder .= " c.nome";
+                break;
+
+            case 'tipoEsterilizacao':
+                $fields = " c.nome, c.fantasia ";
+
+                $sqlWhere = " and   cliente = $idCliente";
+                /*if($tipoEste > 0)
+                    $sqlWhere = " and  n.TIPO_ESTE = $tipoEste";
+
+                $sqlGroup .= " c.nome, c.fantasia, n.cliente";*/
+                $sqlOrder .= " c.fantasia";
+                break;
+            }
+
+
+
+        $sql = " SELECT vn.nome,  
                 to_char(UNITARIO, 'FM999G999G999D90') val_unitario, 
                 sum(QUANTIDADE) qtd, 
                 to_char(sum(TOTAL), 'FM999G999G999D90') total
-                from vie_itens_nota3
+                from vie_itens_nota3 vn
+                inner join clientes c on cliente = c.codigo
                 where DATAESTE BETWEEN to_date('".$dtIni."', 'dd/mm/yyyy')  
                 AND to_date('".$dtFim."', 'dd/mm/yyyy')  
-                and CLIENTE = $idCliente
+                $sqlWhere
                 group by 
-                CLIENTE, SERVICO, UNITARIO, UNITARIOD, nome
+                UNITARIO, UNITARIOD, vn.nome
                 order by nome";
 
+        //print($sql);die;
         $this->executaSql($sql);
         return $this->data;
-    }    
+    }  
+
+
 
 
 }

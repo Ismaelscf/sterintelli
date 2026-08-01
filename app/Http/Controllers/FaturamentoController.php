@@ -7,8 +7,8 @@ use App\Repositories\FaturamentoRepository;
 use Illuminate\Http\Request;
 
 
-use App\Report;
-use App\Config;
+use App\Model\Report;
+use App\Model\Config;
 use stdClass;
 
 
@@ -21,9 +21,8 @@ class FaturamentoController extends Controller
 
 
     public function index()
-    {
-        //$notas = $this->repository->buscaNotas();   
-        return view('faturamento.index');//, compact('notas'));
+    {  
+        return view('faturamento.index');
 
     }
 
@@ -47,19 +46,27 @@ class FaturamentoController extends Controller
 
     public function posConsultarFaturamento($tipo, Request $request)
     {
+        
+        $dtIni = $request->dtIni ? $request->dtIni : null;
+        $dtFim = $request->dtFim ?  $request->dtFim : null;
 
-        $dtIni = $request->dtIni;
-        $dtFim = $request->dtFim;
+        $searchOption = $request->searchOption ? $request->searchOption : null;
+        $tipoEste = $request->cmbTipoEste ? $request->cmbTipoEste : null;
+
+        $cliente = $request->cmbCliente ? $request->cmbCliente : null;
 
         //periodo
         if($tipo == 'P')
             $lista = $this->repository->consultarFatPeriodo($request->dtIni, 
-                $request->dtFim, $request->cmbCliente, $request->cmbEstado, $request->cmbMunicipio);
+                $request->dtFim, $cliente, $request->cmbEstado, $request->cmbMunicipio,
+                $request->searchOption, $request->cmbTipoEste
+
+            );
         else
             //cliente
             $lista = '';
         
-        return view('faturamento.pos-consultarfat', compact('lista','dtIni', 'dtFim'));
+        return view('faturamento.pos-consultarfat', compact('lista','dtIni', 'dtFim', 'searchOption', 'tipoEste'));
     }
 
     public function detalharFaturamento($idCliente, Request $request)
@@ -68,11 +75,13 @@ class FaturamentoController extends Controller
         $dtIni = $request->dtini;
         $dtFim = $request->dtfim;
         $cliente = $request->cliente;
+        $searchOption = $request->searchOption;
+        $tipoEste = $request->tipoEste;
 
         $lista = $this->repository->consultarDetFatPeriodo($dtIni, 
-                $dtFim, $idCliente);
+                $dtFim, $idCliente, $searchOption, $tipoEste);
         
-        return view('faturamento.detalhefat', compact('lista', 'dtIni', 'dtFim', 'cliente'));
+        return view('faturamento.detalhefat', compact('lista', 'dtIni', 'dtFim', 'cliente', 'searchOption', 'tipoEste'));
     }    
 
     public function imprimirFaturamento($idCliente, Request $request){
@@ -93,7 +102,10 @@ class FaturamentoController extends Controller
         $dadosFaturamento = $this->repository->consultaFaturamento( 
                                     $request->dtini, 
                                     $request->dtfim,
-                                    $idCliente);
+                                    $idCliente,
+                                    $request->searchOption,
+                                    $request->tipoEste
+                                );
 
         $periodo = "Período: ".$request->dtini." - ".$request->dtfim;
 
@@ -125,7 +137,9 @@ class FaturamentoController extends Controller
                 $dadosItens = $this->repository->consultaFaturamentoItens(
                                     $request->dtini, 
                                     $request->dtfim,
-                                    $idCliente);
+                                    $idCliente,
+                                    $request->searchOption,
+                                    $request->tipoEste);
                 $i = 0;
                 $pg = 1;
                 $html = $header;

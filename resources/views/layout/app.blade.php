@@ -44,7 +44,9 @@
 
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />  
+    
+    @stack('bootstrapCss')
 
 </head>
 <body class>
@@ -78,7 +80,7 @@
                   <div class="collapse" id="mn_faturamento">
                       <ul class="nav">
                           <li>
-                              <a href="/faturamento/preconsultarfaturamento/P/">
+                              <a href="{{ url('faturamento/preconsultarfaturamento/P/')}}">
                                   <span class="sidebar-mini-icon">FP</span>
                                   <span class="sidebar-normal">Por período</span>
                               </a>
@@ -103,17 +105,59 @@
                   <div class="collapse" id="mn_notas">
                       <ul class="nav">
                           <li>
-                              <a href="/notas/preconsultarnfse">
+                              <a href="{{ url('notas/preconsultarnfse')}}">
                                   <span class="sidebar-mini-icon">NE</span>
                                   <span class="sidebar-normal">NFSe Emitidas</span>
                               </a>
                           </li>
                           <li>
-                              <a href="/notas/preconsnotasemitidas">
+                              <a href="{{ url('notas/preconsnotasemitidas')}}">
                                   <span class="sidebar-mini-icon">NC</span>
                                   <span class="sidebar-normal">Notas Cadastradas</span>
                               </a>
                           </li>
+
+                      </ul>
+                  </div>
+              </li>
+              <li>
+                  <a data-toggle="collapse" href="#mn_cadastros" class="collapsed" aria-expanded="false">
+                      <i class="nc-icon nc-single-copy-04"></i>
+                      <p>Cadastros
+                         <b class="caret"></b>
+                      </p>
+                  </a>
+
+                  <div class="collapse" id="mn_cadastros">
+                      <ul class="nav">
+                          <li>
+                              <a href="{{ url('clientes')}}">
+                                  <span class="sidebar-mini-icon">C</span>
+                                  <span class="sidebar-normal">Clientes</span>
+                              </a>
+                          </li>
+                        
+
+                      </ul>
+                  </div>
+              </li>
+              <li>
+                  <a data-toggle="collapse" href="#mn_cobranca" class="collapsed" aria-expanded="false">
+                      <i class="nc-icon nc-single-copy-04"></i>
+                      <p>Emails de Cobranças
+                         <b class="caret"></b>
+                      </p>
+                  </a>
+
+                  <div class="collapse" id="mn_cobranca">
+                      <ul class="nav">
+                          <li>
+                              <a href="{{ url('cobranca')}}">
+                                  <span class="sidebar-mini-icon">C</span>
+                                  <span class="sidebar-normal">Emails</span>
+                              </a>
+                          </li>
+                        
 
                       </ul>
                   </div>
@@ -143,15 +187,43 @@
           </button>
           <div class="collapse navbar-collapse justify-content-end" id="navigation">
             <ul class="navbar-nav">
-              
+
               <li class="nav-item">
-                <a class="nav-link btn-rotate" href="/logout">
+                <a class="nav-link btn-rotate" href="{{ url('faturamento/preconsultarfaturamento/P/')}}">
+                  <i class="nc-icon nc-app"></i>
+                  <p>
+                    <span class="d-lg-none d-md-block">Faturamento por Periodo</span>
+                  </p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link btn-rotate" href="{{ url('notas/preconsultarnfse')}}">
+                  <i class="nc-icon nc-single-copy-04"></i>
+                  <p>
+                    <span class="d-lg-none d-md-block">NFSe Emitidas</span>
+                  </p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link btn-rotate" href="{{ url('notas/preconsnotasemitidas')}}">
+                  <i class="nc-icon nc-single-copy-04"></i>
+                  <p>
+                    <span class="d-lg-none d-md-block">Notas Cadastradas</span>
+                  </p>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link btn-rotate" href="{{ url('logout')}}">
                   <i class="nc-icon nc-user-run"></i>
                   <p>
                     <span class="d-lg-none d-md-block">Sair</span>
                   </p>
                 </a>
               </li>
+
             </ul>
           </div>
         </div>
@@ -247,7 +319,15 @@
     <!-- Control Center for Paper Dashboard: parallax effects, scripts for the example pages etc -->
     <script src="{{ asset('paper-dashboard/js/paper-dashboard.min.js')}}" type="text/javascript"></script>
 
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.flash.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
 
     @yield('scripts')
+    @stack('bootstrapJS')
 </body>
 </html>

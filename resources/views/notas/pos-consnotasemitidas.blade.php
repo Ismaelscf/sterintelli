@@ -30,13 +30,16 @@ Consulta de Notas Emitidas
                 
                 <tr>
                     <td>{{ $nota->NOME }}</td>
-                    <td>{{ $nota->NUMERONOTA }}<br><small>{{ date('d/m/Y', strtotime($nota->DTANOTA)) }}</small></td>
-                    <td>{{ $nota->VALPAGO }}</td>
-                    <td>{{ date('d/m/Y', strtotime($nota->DTAINICIAL)) }} - {{ date('d/m/Y', strtotime($nota->DTAFINAL)) }}</td>
-                    <td>{{ $nota->VALPAGO }}<br><small>{{ date('d/m/Y', strtotime($nota->DTAPAGO)) }}</small></td>
+                    <td>{{ $nota->NUMERONOTA }}<br><small>{{ $nota->DTANOTA }}</small></td>
+                    <td>{{ $nota->VALORNOTA }}</td>
+                    <td>{{ $nota->DTAINICIAL }} - {{ $nota->DTAFINAL }}</td>
+                    <td>{{ $nota->VALPAGO }}
+                        @if(isset($nota->DTAPAGO))
+                            <br><small>{{ $nota->DTAPAGO }}</small>
+                        @endif</td>
                     <td>
                         <form action="" method="POST">
-           
+                             <a href="{{ url('notas/preeditarnota/'.$nota->CODCLIENTE.'/'.$nota->NUMERONOTA.'/') }}" class="btn btn-info btn-link btn-icon btn-sm print" target="_blank"><i class="fa fa-edit"></i></a>
 
                         </form>
                     </td>

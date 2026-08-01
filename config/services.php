@@ -30,4 +30,26 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'itau' => [
+        'client_id' => env('ITAU_CLIENT_ID'),
+        'client_secret' => env('ITAU_CLIENT_SECRET'),
+        'account_key' => env('ITAU_ACCOUNT_KEY'),
+        'api_url' => env('ITAU_API_URL'),
+    ],
+
+    'focusnfe' => [
+        'token' => env('FOCUS_NFE_TOKEN'),
+        'ambiente' => env('FOCUS_NFE_AMBIENTE', 'homologacao'), // homologacao | producao
+        'url_homologacao' => 'https://homologacao.focusnfe.com.br/v2',
+        'url_producao' => 'https://api.focusnfe.com.br/v2',
+        // Codigo de tributacao nacional (NFSe Nacional, 6 digitos) do servico prestado.
+        // Validado contra a Focus NFe homologacao para "Esterilizacao, desinfeccao,
+        // desinsetizacao, imunizacao, higienizacao, limpeza e congeneres" (LC 116 item 4.14).
+        // Confirmar com o contador antes de emitir em producao.
+        'codigo_servico_nacional' => env('FOCUS_NFE_CODIGO_SERVICO', '041401'),
+        // Codigo IBGE (7 digitos) do municipio do prestador/emissor (Sao Luis - MA).
+        // Fixo pois a empresa so emite nesse municipio.
+        'codigo_municipio_prestador' => env('FOCUS_NFE_CODIGO_MUNICIPIO_PRESTADOR', '2111300'),
+    ],
+
 ];
