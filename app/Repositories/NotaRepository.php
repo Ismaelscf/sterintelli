@@ -429,26 +429,6 @@ class NotaRepository extends BaseRepository
 		return $this->data;
 	}
 
-	public function buscaNotasRecentes($limite = 10)
-	{
-		//ROWID como desempate porque DTANOTA e so data (sem hora), entao varias notas do
-		//mesmo dia empatam; ROWID DESC aproxima da ordem de insercao mais recente
-		$sql = "select * from (
-					select t.codcliente, c.nome cliente, c.fantasia, t.numeronota,
-						   to_char(t.valornota, 'fm999G999G990D00') valornota,
-						   to_char(t.dtanota, 'dd/mm/yyyy') dtanota,
-						   t.numero_nfse, t.status_focus
-					from tab_notas_emitidas t
-					inner join clientes c on c.codigo = t.codcliente
-					order by t.dtanota desc, t.rowid desc
-				)
-				where rownum <= " . (int) $limite;
-
-		$this->executaSql($sql);
-		return $this->data;
-	}
-
-
 	public function buscaDetalheNota($idCliente, $idNota)
 	{
 

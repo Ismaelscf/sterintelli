@@ -50,7 +50,6 @@ class NotaController extends Controller
     public function index()
     {
         $dados = json_decode(json_encode($this->repository->buscaDadosIniciais()));
-        $notasRecentes = $this->repository->buscaNotasRecentes(10);
 
         // if (env('APP_ENV') == 'production') {
         //     $atrasos =  $this->repository->consultar_notas_vencidas();
@@ -60,8 +59,11 @@ class NotaController extends Controller
         // }
 
 
-        $msgInforma = $this->msgInforma;
-        return view('notas.index', compact('dados', 'msgInforma', 'notasRecentes'));
+        //mensagens vindas de um redirect (ex: apos emitir nota) somam com as do proprio
+        //request atual; a sessao flash so dura ate o proximo request, entao um F5 nessa
+        //tela nao reexibe a mensagem nem reenvia nada (ja e um GET simples)
+        $msgInforma = array_merge($this->msgInforma, session('msgInforma', []));
+        return view('notas.index', compact('dados', 'msgInforma'));
 
     }
 
@@ -553,7 +555,10 @@ class NotaController extends Controller
             return redirect()->back()->withErrors([$e->getMessage()]);
         }
 
-        return $this->index();
+        //redirect (Post/Redirect/Get) em vez de renderizar a index() direto: assim a URL do
+        //navegador vira um GET (/notas), e um F5 na tela de sucesso so recarrega a pagina em
+        //vez de reenviar o POST de emissao (o que geraria uma NFSe duplicada na Focus NFe)
+        return redirect()->route('notas.index')->with('msgInforma', $this->msgInforma);
 
     }
 

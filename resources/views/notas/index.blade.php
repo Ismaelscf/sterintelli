@@ -174,56 +174,6 @@ Sistema de Gestão de Esterilização
           </div>
         </div>
 
-        <div class="row">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header">Últimas notas emitidas</div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Cliente</th>
-                        <th>Número</th>
-                        <th>Data</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @forelse($notasRecentes as $n)
-                        <tr>
-                          <td>{{ $n->FANTASIA ?: $n->CLIENTE }}</td>
-                          <td>{{ $n->NUMERONOTA }}</td>
-                          <td>{{ $n->DTANOTA }}</td>
-                          <td>{{ $n->VALORNOTA }}</td>
-                          <td>
-                            @if($n->STATUS_FOCUS == 'autorizado')
-                              <span class="badge badge-success">Autorizado</span>
-                            @elseif($n->STATUS_FOCUS == 'processando_autorizacao')
-                              <span class="badge badge-warning">Processando</span>
-                            @elseif($n->STATUS_FOCUS == 'erro_autorizacao')
-                              <span class="badge badge-danger">Erro</span>
-                            @else
-                              <span class="badge badge-secondary">{{ $n->STATUS_FOCUS ?: '—' }}</span>
-                            @endif
-                          </td>
-                          <td>
-                            <a href="{{ url('notas/imprimirnfse/' . $n->NUMERONOTA . '/0/') }}" class="btn btn-info btn-link btn-icon btn-sm" target="_blank" title="Imprimir NFSe"><i class="fa fa-file"></i></a>
-                          </td>
-                        </tr>
-                      @empty
-                        <tr><td colspan="6">Nenhuma nota emitida ainda.</td></tr>
-                      @endforelse
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
 @endsection
 
 @section('scripts')
