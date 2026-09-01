@@ -5,8 +5,13 @@ Emissão de nota fiscal de serviço
 @endsection
 
 @section('content')
+ @php
+   //valor total da nota (formato "1.234,56") convertido pra numero, usado so pra
+   //decidir se os checkboxes de imposto ja vem marcados por padrao
+   $valorNotaNum = (float) str_replace(',', '.', str_replace('.', '', $dadosEmissao->TOTAL_C_DESC ?? '0'));
+ @endphp
  <form action="{{ url('notas/posemitir') }}" method="POST">
-   @csrf 
+   @csrf
 
  <input type="hidden"   id="tiporps" name="tiporps"  value= "RPS">
  <input type="hidden"   id="situacaorps" name="situacaorps"  value= "N">
@@ -298,14 +303,12 @@ Emissão de nota fiscal de serviço
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="fb-select form-group field-tiporecolhimento">
-                                        <label for="tiporecolhimento" class="fb-select-label">Tipo de recolhimento<span class="fb-required">*</span></label>
-                                        <select class="form-control" name="tiporecolhimento" id="tiporecolhimento" required="required" aria-required="true">
-                                            
-                                            <option value="A" @if ($dadosEmissao->TIPO_RECOLHIMENTO == 'A') selected  @endif>A Receber</option>
-                                            <option value="R" @if ($dadosEmissao->TIPO_RECOLHIMENTO == 'R') selected  @endif>Retido na Fonte</option>
-                                        </select>
-                                    </div>
+                            <div class="fb-checkbox form-group field-chkIss">
+                                <label for="chkIss" class="fb-checkbox-label">
+                                    <input type="checkbox" name="chkIss" id="chkIss" @if ($dadosEmissao->TIPO_RECOLHIMENTO == 'R') checked @endif>
+                                    Reter ISSQN
+                                </label>
+                            </div>
                         </div>
                         <div class="col-md-3">
                             <div class="fb-select form-group field-tributacao">
@@ -343,7 +346,7 @@ Emissão de nota fiscal de serviço
                                 <label for="aliquotapis" class="fb-text-label">Aliquota PIS (%)<span class="fb-required">*</span></label>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkPis"></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkPis" @if($valorNotaNum >= 5000) checked @endif></div>
   </div>
   <input type="text" class="form-control" name="aliquotapis" value="{{$dadosEmissao->ALQ_PIS}}" id="aliquotapis" required="required" aria-required="true">
 </div>                                
@@ -361,7 +364,7 @@ Emissão de nota fiscal de serviço
                                 <label for="aliquotacofins" class="fb-text-label">Aliquota COFINS (%)<span class="fb-required">*</span></label>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkCofins"></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkCofins" @if($valorNotaNum >= 5000) checked @endif></div>
   </div>
 <input type="text" class="form-control" name="aliquotacofins" value="{{$dadosEmissao->ALQ_CONFINS}}" id="aliquotacofins" required="required" aria-required="true">
 </div>                                        
@@ -382,7 +385,7 @@ Emissão de nota fiscal de serviço
                                 <label for="aliquotainss" class="fb-text-label">Aliquota INSS (%)<span class="fb-required">*</span></label>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkInss"></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkInss" @if($valorNotaNum >= 5000) checked @endif></div>
   </div>
 <input type="text" class="form-control" name="aliquotainss" value="{{$dadosEmissao->ALQ_INSS}}" id="aliquotainss" required="required" aria-required="true">
 </div>     
@@ -400,7 +403,7 @@ Emissão de nota fiscal de serviço
                                         <label for="aliquotair" class="fb-text-label">Aliquota IR (%)<span class="fb-required">*</span></label>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkIr"></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkIr" @if($valorNotaNum >= 1000) checked @endif></div>
   </div>
 <input type="text" class="form-control" name="aliquotair" value="{{$dadosEmissao->ALQ_IR}}" id="aliquotair" required="required" aria-required="true">
 </div>                                         
@@ -422,7 +425,7 @@ Emissão de nota fiscal de serviço
                                 
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <div class="input-group-text"> <input type="checkbox" name="chkCsll" value="checked"></div>
+    <div class="input-group-text"> <input type="checkbox" name="chkCsll" value="checked" @if($valorNotaNum >= 5000) checked @endif></div>
   </div>
 <input type="text" class="form-control" name="aliquotacsll" value="{{$dadosEmissao->ALQ_CSLL}}" id="aliquotacsll">
 </div>  

@@ -356,7 +356,10 @@ class NotaController extends Controller
             //prefeitura (codigoservico "0709", codigoatividade "812900000") nao sao compativeis
             //com a lista nacional e NAO devem ser reutilizados aqui.
             $codigoTributacaoNacional = config('services.focusnfe.codigo_servico_nacional', '070901');
-            $codigoNbs = config('services.focusnfe.codigo_nbs', '123011900');
+            $codigoNbs = config('services.focusnfe.codigo_nbs', '123019900');
+            $codigoIndicadorOperacao = config('services.focusnfe.codigo_indicador_operacao', '030101');
+            $ibsCbsSituacaoTributaria = config('services.focusnfe.ibs_cbs_situacao_tributaria', '200');
+            $ibsCbsClassificacaoTributaria = config('services.focusnfe.ibs_cbs_classificacao_tributaria', '200029');
 
             //numero_dps precisa ser unico por prestador+serie (equivalente ao antigo numero de RPS,
             //que antes vinha da prefeitura via consultarSequencialRps). A Focus NFe nao gera isso
@@ -384,11 +387,22 @@ class NotaController extends Controller
                 'cep_tomador' => preg_replace('/\D/', '', $request->has('ceptomador') ? $request->ceptomador : ''),
                 'codigo_municipio_prestacao' => $codIbgePrestador,
                 'codigo_tributacao_nacional_iss' => $codigoTributacaoNacional,
+                //finalidade da emissao (tag finNFSe), obrigatoria no schema (xsd) antes do
+                //bloco de codigo_indicador_operacao; 0 = NFS-e regular
+                'finalidade_emissao' => 0,
                 'codigo_nbs' => $codigoNbs,
+                'codigo_indicador_operacao' => $codigoIndicadorOperacao,
+                //indicador do destinatario (tag indDest), obrigatorio no schema; 0 = o
+                //destinatario e o proprio tomador identificado na NFS-e (sempre o nosso caso,
+                //nao ha destinatario separado do tomador)
+                'indicador_destinatario' => 0,
                 'descricao_servico' => $descricaoRPS,
                 'valor_servico' => $vTotServ,
-                'tributacao_iss' => 1, //1 = Operacao tributavel
-                'tipo_retencao_iss' => $request->tiporecolhimento == 'R' ? 2 : 1, //1 = Nao retido, 2 = Retido pelo tomador
+                'tributacao_iss' => 1, //1 = Operacao tributavel (nao e imunidade/exportacao/nao incidencia)
+                'tipo_retencao_iss' => $request->chkIss == true ? 2 : 1, //1 = Nao retido, 2 = Retido pelo tomador
+                //CST/cClassTrib do IBS/CBS, obrigatorios pelo schema da Reforma Tributaria
+                'ibs_cbs_situacao_tributaria' => $ibsCbsSituacaoTributaria,
+                'ibs_cbs_classificacao_tributaria' => $ibsCbsClassificacaoTributaria,
                 //CST do PIS/COFINS: obrigatorio pelo schema (xsd) sempre que o bloco de
                 //tributacao federal e enviado (mesmo com tipo_retencao_pis_cofins = 0);
                 //01 = Operacao Tributavel com Aliquota Basica, cenario padrao da empresa
