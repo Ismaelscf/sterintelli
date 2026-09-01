@@ -543,7 +543,7 @@ class NotaController extends Controller
                 array_push($this->msgInforma, 'Nota emitida com sucesso.');
                 array_push($this->msgInforma, 'NFSe: ' . $corpo['numero'] .
                     ' Código de Verificação:' . $corpo['codigo_verificacao']);
-                array_push($this->msgInforma, 'Para imprimir <a href="/sterintelli/public/notas/imprimirnfse/' . $numeroNota . '/' . $corpo['codigo_verificacao'] . '/" target="_blank">clique aqui</a>');
+                array_push($this->msgInforma, 'Para imprimir <a href="' . url('notas/imprimirnfse/' . $numeroNota . '/' . $corpo['codigo_verificacao'] . '/') . '" target="_blank" class="text-danger"><b>clique aqui</b></a>');
             } else {
                 array_push($this->msgInforma, 'Nota enviada e está em processamento na prefeitura (referência: ' . $ref . '). Consulte novamente em instantes.');
             }
