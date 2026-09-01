@@ -297,26 +297,40 @@ class NotaController extends Controller
             $vTotServ = $this->formataValor($request->has('vTotServ') ? $request->vTotServ : 0.00);
             $vTotDeduc = $this->formataValor($request->has('vTotDeduc') ? $request->vTotDeduc : 0.00);
 
-            $valorpis = 0;
-            $valorcofins = 0;
-            $valorinss = 0;
-            $valorir = 0;
-            $valorcsll = 0;
+            //cada imposto so e calculado/enviado se o respectivo checkbox do formulario
+            //estiver marcado; desmarcado = nao envia o campo para a Focus NFe
+            $chkPis = $request->chkPis == true;
+            $chkCofins = $request->chkCofins == true;
+            $chkInss = $request->chkInss == true;
+            $chkIr = $request->chkIr == true;
+            $chkCsll = $request->chkCsll == true;
 
-            if ($request->chkPis == true)
-                $valorpis = $this->formataValor($request->valorpis);
+            $valorpis = $chkPis ? $this->formataValor($request->valorpis) : 0;
+            $valorcofins = $chkCofins ? $this->formataValor($request->valorcofins) : 0;
+            $valorinss = $chkInss ? $this->formataValor($request->valorinss) : 0;
+            $valorir = $chkIr ? $this->formataValor($request->valorir) : 0;
+            $valorcsll = $chkCsll ? $this->formataValor($request->valorcsll) : 0;
 
-            if ($request->chkCofins == true)
-                $valorcofins = $this->formataValor($request->valorcofins);
-
-            if ($request->chkInss == true)
-                $valorinss = $this->formataValor($request->valorinss);
-
-            if ($request->chkIr == true)
-                $valorir = $this->formataValor($request->valorir);
-
-            if ($request->chkCsll == true)
-                $valorcsll = $this->formataValor($request->valorcsll);
+            //a NFSe Nacional agrupa a retencao de PIS/COFINS/CSLL num unico campo (vRetCSLL) e
+            //exige um codigo indicando qual combinacao dos tres esta retida; mapeamento conforme
+            //doc da Focus NFe (campos.focusnfe.com.br/nfse_nacional) para tipo_retencao_pis_cofins
+            if ($chkPis && $chkCofins && $chkCsll) {
+                $tipoRetencaoPisCofins = 3;
+            } elseif ($chkCofins && $chkCsll) {
+                $tipoRetencaoPisCofins = 7;
+            } elseif ($chkPis && $chkCsll) {
+                $tipoRetencaoPisCofins = 9;
+            } elseif ($chkPis && $chkCofins) {
+                $tipoRetencaoPisCofins = 4;
+            } elseif ($chkCsll) {
+                $tipoRetencaoPisCofins = 8;
+            } elseif ($chkCofins) {
+                $tipoRetencaoPisCofins = 6;
+            } elseif ($chkPis) {
+                $tipoRetencaoPisCofins = 5;
+            } else {
+                $tipoRetencaoPisCofins = 0; //PIS/COFINS/CSLL nao retidos
+            }
 
             $aliquotaAtividade = $this->formataValor($request->has('aliquotaatividade') ? $request->aliquotaatividade : 0.00);
 
@@ -341,7 +355,8 @@ class NotaController extends Controller
             //Validado contra a Focus NFe homologacao (endpoint /v2/nfsen); os codigos antigos da
             //prefeitura (codigoservico "0709", codigoatividade "812900000") nao sao compativeis
             //com a lista nacional e NAO devem ser reutilizados aqui.
-            $codigoTributacaoNacional = config('services.focusnfe.codigo_servico_nacional', '041401');
+            $codigoTributacaoNacional = config('services.focusnfe.codigo_servico_nacional', '070901');
+            $codigoNbs = config('services.focusnfe.codigo_nbs', '123011900');
 
             //numero_dps precisa ser unico por prestador+serie (equivalente ao antigo numero de RPS,
             //que antes vinha da prefeitura via consultarSequencialRps). A Focus NFe nao gera isso
@@ -369,10 +384,16 @@ class NotaController extends Controller
                 'cep_tomador' => preg_replace('/\D/', '', $request->has('ceptomador') ? $request->ceptomador : ''),
                 'codigo_municipio_prestacao' => $codIbgePrestador,
                 'codigo_tributacao_nacional_iss' => $codigoTributacaoNacional,
+                'codigo_nbs' => $codigoNbs,
                 'descricao_servico' => $descricaoRPS,
                 'valor_servico' => $vTotServ,
                 'tributacao_iss' => 1, //1 = Operacao tributavel
                 'tipo_retencao_iss' => $request->tiporecolhimento == 'R' ? 2 : 1, //1 = Nao retido, 2 = Retido pelo tomador
+                //CST do PIS/COFINS: obrigatorio pelo schema (xsd) sempre que o bloco de
+                //tributacao federal e enviado (mesmo com tipo_retencao_pis_cofins = 0);
+                //01 = Operacao Tributavel com Aliquota Basica, cenario padrao da empresa
+                'situacao_tributaria_pis_cofins' => '01',
+                'tipo_retencao_pis_cofins' => $tipoRetencaoPisCofins,
                 //Lei da Transparencia Fiscal (12.741/2012): tributos aproximados embutidos no preco
                 'valor_total_tributos_federais' => $valorpis + $valorcofins + $valorinss + $valorir + $valorcsll,
                 'valor_total_tributos_estaduais' => 0,
@@ -383,6 +404,33 @@ class NotaController extends Controller
                 $payload['cnpj_tomador'] = $cpfCnpjTomador;
             } elseif (strlen($cpfCnpjTomador) > 0) {
                 $payload['cpf_tomador'] = $cpfCnpjTomador;
+            }
+
+            //campos discriminados de tributacao federal, cada um so enviado se o respectivo
+            //checkbox do formulario estiver marcado
+
+            //debito de apuracao propria do PIS/COFINS (campos "PIS/COFINS - Debito Apuracao
+            //Propria" na NFS-e); distinto do valor_csll abaixo, que e a retencao agrupada
+            //PIS+COFINS+CSLL feita pelo tomador
+            if ($chkPis) {
+                $payload['valor_pis'] = $valorpis;
+            }
+
+            if ($chkCofins) {
+                $payload['valor_cofins'] = $valorcofins;
+            }
+
+            if ($chkPis || $chkCofins || $chkCsll) {
+                //PIS, COFINS e CSLL retidos sao unificados na tag vRetCSLL (campo valor_csll)
+                $payload['valor_csll'] = $valorpis + $valorcofins + $valorcsll;
+            }
+
+            if ($chkIr) {
+                $payload['valor_irrf'] = $valorir;
+            }
+
+            if ($chkInss) {
+                $payload['valor_cp'] = $valorinss;
             }
 
             $ref = 'STE' . $request->idcliente . '-' . now()->format('YmdHis');
@@ -431,7 +479,10 @@ class NotaController extends Controller
                 return redirect()->back()->withErrors($erros);
             }
 
-            $numeroNota = $corpo['status'] == 'autorizado' ? $corpo['numero'] : $ref;
+            //prefixo "NAC" evita colisao com a PK_NOTAS: a numeracao da NFSe Nacional
+            //reinicia do 1 por prestador, e provavelmente ja existe numeronota "1", "2"...
+            //nos registros antigos emitidos via prefeitura (DSF)
+            $numeroNota = $corpo['status'] == 'autorizado' ? 'NAC' . $corpo['numero'] : $ref;
 
             $dadosNota = array(
                 'idcliente' => $request->idcliente,
@@ -478,7 +529,7 @@ class NotaController extends Controller
                 array_push($this->msgInforma, 'Nota emitida com sucesso.');
                 array_push($this->msgInforma, 'NFSe: ' . $corpo['numero'] .
                     ' Código de Verificação:' . $corpo['codigo_verificacao']);
-                array_push($this->msgInforma, 'Para imprimir <a href="/sterintelli/public/notas/imprimirnfse/' . $corpo['numero'] . '/' . $corpo['codigo_verificacao'] . '/" target="_blank">clique aqui</a>');
+                array_push($this->msgInforma, 'Para imprimir <a href="/sterintelli/public/notas/imprimirnfse/' . $numeroNota . '/' . $corpo['codigo_verificacao'] . '/" target="_blank">clique aqui</a>');
             } else {
                 array_push($this->msgInforma, 'Nota enviada e está em processamento na prefeitura (referência: ' . $ref . '). Consulte novamente em instantes.');
             }
@@ -511,7 +562,7 @@ class NotaController extends Controller
         $notas = [];
         foreach ($registros as $registro) {
             $nota = new \stdClass();
-            $nota->NumeroNota = $registro->NUMERO_NFSE;
+            $nota->NumeroNota = $registro->NUMERONOTA;
             $nota->CodigoVerificao = $registro->CODIGOVERIFICACAO;
             $nota->RazaoSocialTomador = $registro->NOME;
             $partesData = explode('/', $registro->DTANOTA);
@@ -525,7 +576,9 @@ class NotaController extends Controller
     public function imprimirNfse($numnota, $codigo, Request $request)
     {
 
-        $dadosNota = $this->repository->buscaDadosNotaNfse($numnota);
+        //busca pela chave unica (numeronota), nao por numero_nfse: a numeracao da
+        //Focus NFe reinicia por prestador e pode colidir com registros antigos da prefeitura
+        $dadosNota = $this->repository->buscaNotaEmitidaPorNota($numnota);
 
         if (is_null($dadosNota)) {
             return redirect()->back()->withErrors(['Nota não encontrada no banco de dados.']);
@@ -550,9 +603,9 @@ class NotaController extends Controller
 
         $enviaremail = $request->has('email') ? $request->email : 'N';
 
-        if ($enviaremail == 'S' && $this->trataItemVazio($dadosNota->email) != '') {
+        if ($enviaremail == 'S' && $this->trataItemVazio($dadosNota->EMAIL_CLIENTE) != '') {
             $pdfConteudo = file_get_contents($urlDanfse);
-            Mail::to($this->trataItemVazio($dadosNota->email))->send(new SendMailUser($pdfConteudo));
+            Mail::to($this->trataItemVazio($dadosNota->EMAIL_CLIENTE))->send(new SendMailUser($pdfConteudo));
         }
 
         return redirect($urlDanfse);
@@ -560,7 +613,7 @@ class NotaController extends Controller
 
     public function cancelarNota($numnota, $codigo, Request $request)
     {
-        $dadosNota = $this->repository->buscaDadosNotaNfse($numnota);
+        $dadosNota = $this->repository->buscaNotaEmitidaPorNota($numnota);
 
         if (is_null($dadosNota) || empty($dadosNota->REF_FOCUS)) {
             return redirect()->back()->withErrors(['Nota não encontrada.']);
