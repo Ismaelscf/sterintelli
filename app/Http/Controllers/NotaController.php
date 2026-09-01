@@ -49,7 +49,8 @@ class NotaController extends Controller
      */
     public function index()
     {
-        $dados = json_decode(json_encode($this->repository->buscaDadosIniciais())); 
+        $dados = json_decode(json_encode($this->repository->buscaDadosIniciais()));
+        $notasRecentes = $this->repository->buscaNotasRecentes(10);
 
         // if (env('APP_ENV') == 'production') {
         //     $atrasos =  $this->repository->consultar_notas_vencidas();
@@ -57,10 +58,10 @@ class NotaController extends Controller
         //         $envio = $this->rotina_email_cobranca($atrasos);
         //     }
         // }
-        
-               
+
+
         $msgInforma = $this->msgInforma;
-        return view('notas.index', compact('dados', 'msgInforma'));
+        return view('notas.index', compact('dados', 'msgInforma', 'notasRecentes'));
 
     }
 

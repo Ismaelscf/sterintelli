@@ -55,34 +55,20 @@ class ItauBoletoController extends Controller
     public function gerarBoleto(Request $request)
     {
         $cliente = Cliente::where('CNPJ', $request->cnpjPagador)->first();
-        // dd($request->all(), $cliente);
 
-        if($cliente->bol_remover_impostos_nf == 'S'){
-            // $valorBoleto = $this->converterValor($request->valorBoleto);
-            $descontos = $request->pis + $request->cofins + $request->inss + $request->ir + $request->cll;
-            if(isset($request->buttomIss)){
-                $descontos = $descontos + $request->iss;
-            }
-
-            // dd($request->valorBoleto - $descontos);
-            $novoValor = $request->valorBoleto - $descontos;
-            $valorBoleto = $valorBoleto = $this->converterValor($novoValor);
-            $valorDescontos = $this->converterValor(0);
-        } else {
-            $valorBoleto = $this->converterValor($request->valorBoleto);
-            $descontos = $request->pis + $request->cofins + $request->inss + $request->ir + $request->cll;
-            if(isset($request->buttomIss)){
-                $descontos = $descontos + $request->iss;
-            }
-            $valorDescontos = $this->converterValor($descontos);
+        //boleto sempre sai pelo valor liquido (bruto - impostos retidos), sem abatimento
+        //visivel no titulo; antes isso so acontecia quando bol_remover_impostos_nf = 'S'
+        //no cliente, agora e o comportamento padrao pra todos
+        $descontos = $request->pis + $request->cofins + $request->inss + $request->ir + $request->cll;
+        if (isset($request->buttomIss)) {
+            $descontos = $descontos + $request->iss;
         }
+
+        $novoValor = $request->valorBoleto - $descontos;
+        $valorBoleto = $this->converterValor($novoValor);
+        $valorDescontos = $this->converterValor(0);
+
         $dados = $request->all();
-        // $valorBoleto = $this->converterValor($request->valorBoleto);
-        // $descontos = $request->pis + $request->cofins + $request->inss + $request->ir + $request->cll;
-        // if(isset($request->buttomIss)){
-        //     $descontos = $descontos + $request->iss;
-        // }
-        // $valorDescontos = $this->converterValor($descontos);
 
         $emissao = date('Y-m-d');
         $dt_multa = date('Y-m-d', strtotime($request->dt_vencimento . ' +1 day'));

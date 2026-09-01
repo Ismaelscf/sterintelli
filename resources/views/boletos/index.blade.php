@@ -231,14 +231,20 @@ Emitir Boleto
                         </div>
                         <div class="col-md-3">
                             <div class="fb-text form-group field-razao">
-                                <label for="razao" class="fb-text-label">Valor do Boleto<span class="fb-required">*</span></label>
+                                <label for="razao" class="fb-text-label">Valor Bruto da Nota</label>
                                 <input type="text" class="form-control" name="valorBoleto" id="valorBoleto" required="required" aria-required="true" value="{{$dadosNota->valornota}}" readonly>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="fb-text form-group field-razao">
-                                <label for="razao" class="fb-text-label">Descontos<span class="fb-required">*</span></label>
+                                <label for="razao" class="fb-text-label">Impostos Retidos (deduzidos do boleto)<span class="fb-required">*</span></label>
                                 <input type="text" class="form-control" name="descontos" id="descontos" required="required" aria-required="true" value="{{$dadosNota->valorpis + $dadosNota->valorcofins +$dadosNota->valorinss + $dadosNota->valorir + $dadosNota->valorcsll}}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fb-text form-group field-razao">
+                                <label for="valorLiquidoBoleto" class="fb-text-label"><b>Valor Líquido do Boleto</b></label>
+                                <input type="text" class="form-control" id="valorLiquidoBoleto" value="{{ number_format($dadosNota->valornota - ($dadosNota->valorpis + $dadosNota->valorcofins + $dadosNota->valorinss + $dadosNota->valorir + $dadosNota->valorcsll), 2, ',', '.') }}" readonly>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -301,51 +307,15 @@ Emitir Boleto
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">Descontos Aplicados</div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-cnpj">
-                                <label for="pis" class="fb-text-label">PIS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="pis" id="pis" required="required" aria-required="true" value="{{$dadosNota->valorpis}}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-razao">
-                                <label for="cofins" class="fb-text-label">COFINS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="cofins" id="cofins" required="required" aria-required="true" value="{{$dadosNota->valorcofins}}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-razao">
-                                <label for="inss" class="fb-text-label">INSS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="inss" id="inss" required="required" aria-required="true" value="{{$dadosNota->valorinss}}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-razao">
-                                <label for="ir" class="fb-text-label">IR<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="ir" id="ir" required="required" aria-required="true" value="{{$dadosNota->valorir}}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-razao">
-                                <label for="cll" class="fb-text-label">CSLL<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="cll" id="cll" required="required" aria-required="true" value="{{$dadosNota->valorcsll}}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="fb-text form-group field-razao">
-                                <input class="form-check-input" type="checkbox" value="1" id="buttomIss" name="buttomIss">
-                                <label for="buttomIss" class="fb-text-label" data-toggle="tooltip" title="Adicionar Desconto do ISS">ISS<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="iss" id="iss" required="required" aria-required="true" value="{{ number_format($dadosNota->valornota * ($dadosNota->perc_iss / 100), 2, '.', '') }}" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {{-- impostos usados pra calcular o valor liquido do boleto (ver "Valor Liquido do
+            Boleto" acima); campos ocultos, nao aparecem mais na tela a pedido, mas o
+            controller (ItauBoletoController::gerarBoleto) ainda le esses valores do form --}}
+            <input type="hidden" name="pis" value="{{$dadosNota->valorpis}}">
+            <input type="hidden" name="cofins" value="{{$dadosNota->valorcofins}}">
+            <input type="hidden" name="inss" value="{{$dadosNota->valorinss}}">
+            <input type="hidden" name="ir" value="{{$dadosNota->valorir}}">
+            <input type="hidden" name="cll" value="{{$dadosNota->valorcsll}}">
+            <input type="hidden" name="iss" value="{{ number_format($dadosNota->valornota * ($dadosNota->perc_iss / 100), 2, '.', '') }}">
 
             <div class="col-xs-12 col-sm-12 col-md-12 text-center">
                 <button type="submit" class="btn btn-primary">Gerar Boleto</button>
