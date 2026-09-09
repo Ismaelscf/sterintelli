@@ -470,6 +470,40 @@ class NotaRepository extends BaseRepository
 		}
 	}
 
+	//busca leve por numeronota, usada na conferencia do arquivo de retorno (baixa em
+	//lote); traz so o necessario pra exibir/confirmar, sem os joins pesados de
+	//buscaNotaEmitidaPorNota
+	public function buscaNotaSimplesPorNumero($numeroNota)
+	{
+		$sql = "select codcliente, numeronota,
+						to_char(valornota, 'fm999g999g990d00') valornota,
+						to_char(dtapago, 'dd/mm/yyyy') dtapago,
+						to_char(valpago, 'fm999g999g990d00') valpago
+				from tab_notas_emitidas
+				where numeronota = '" . $numeroNota . "'";
+
+		$this->executaSql($sql);
+		if ($this->count > 0)
+			return $this->data[0];
+
+		return null;
+	}
+
+	//grava a baixa por pagamento (usado pelo upload de arquivo de retorno CNAB); mesma
+	//logica de salvaDetalheNotaEmitida, so que localizando so por numeronota (a tela de
+	//retorno do banco nao traz o codcliente diretamente)
+	public function darBaixaPagamento($numeroNota, $dataPagamento, $valorPago)
+	{
+		$sql = "update 	tab_notas_emitidas
+				set 	dtapago = to_date('" . $dataPagamento . "', 'dd/mm/yyyy'),
+						valpago = " . $valorPago . "
+				where 	numeronota = '" . $numeroNota . "'";
+
+		$this->executaSql($sql);
+
+		return $this->count > 0;
+	}
+
 	public function consultaFaturamentoNota($dtIni, $dtFim, $idCliente)
 	{
 

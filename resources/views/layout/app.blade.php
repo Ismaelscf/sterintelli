@@ -116,6 +116,12 @@
                                   <span class="sidebar-normal">Notas Cadastradas</span>
                               </a>
                           </li>
+                          <li>
+                              <a href="{{ url('notas/prebaixa')}}">
+                                  <span class="sidebar-mini-icon">BX</span>
+                                  <span class="sidebar-normal">Baixa</span>
+                              </a>
+                          </li>
 
                       </ul>
                   </div>

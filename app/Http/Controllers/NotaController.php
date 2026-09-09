@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 use App\Services\FocusNfeService;
+use App\Services\CnabRetornoParser;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -591,6 +592,101 @@ class NotaController extends Controller
         }
 
         return view('notas.pos-consultarnfse', compact('notas'));
+    }
+
+    public function preBaixaRetorno()
+    {
+        return view('notas.pre-baixa');
+    }
+
+    //recebe um ou mais arquivos .RET (CNAB 400), parseia e mostra uma tela de
+    //conferencia antes de gravar qualquer coisa no banco; nada e alterado aqui
+    public function posBaixaRetorno(Request $request)
+    {
+        if (!$request->hasFile('arquivos')) {
+            return redirect()->back()->withErrors(['Selecione ao menos um arquivo .RET.']);
+        }
+
+        $parser = new CnabRetornoParser();
+        $linhas = [];
+
+        foreach ($request->file('arquivos') as $arquivo) {
+            $conteudo = file_get_contents($arquivo->getRealPath());
+            $registros = $parser->parse($conteudo, $arquivo->getClientOriginalName());
+
+            foreach ($registros as $registro) {
+                $notaAtual = $this->repository->buscaNotaSimplesPorNumero($registro['numeronota']);
+
+                $registro['encontrado'] = !is_null($notaAtual);
+                $registro['ja_tinha_pagamento'] = $registro['encontrado'] && !empty($notaAtual->DTAPAGO);
+                $registro['dtapago_atual'] = $registro['encontrado'] ? $notaAtual->DTAPAGO : null;
+                $registro['valpago_atual'] = $registro['encontrado'] ? $notaAtual->VALPAGO : null;
+
+                $linhas[] = $registro;
+            }
+        }
+
+        if (empty($linhas)) {
+            return redirect()->back()->withErrors(['Nenhum registro de detalhe (tipo 1) foi encontrado nos arquivos enviados. Confira se são realmente arquivos de retorno CNAB 400.']);
+        }
+
+        return view('notas.pos-baixa', compact('linhas'));
+    }
+
+    //aplica de fato a baixa (DTAPAGO/VALPAGO) nas notas selecionadas na tela de
+    //conferencia; so mexe nas linhas marcadas como pagamento (codigo 06/15/17) E
+    //encontradas no banco E que o usuario deixou marcadas no checkbox
+    public function confirmarBaixaRetorno(Request $request)
+    {
+        $selecionadas = json_decode($request->input('linhas_selecionadas', '[]'), true);
+
+        if (empty($selecionadas)) {
+            return redirect()->back()->withErrors(['Nenhuma linha selecionada para baixa.']);
+        }
+
+        $sucesso = [];
+        $falha = [];
+        $invalida = [];
+
+        //os dados de "linhas_selecionadas" vem de um campo oculto preenchido no passo
+        //anterior e ecoado de volta pelo navegador (o usuario pode alterar via devtools
+        //antes de enviar); valida o formato de cada campo antes de usar em SQL
+        foreach ($selecionadas as $linha) {
+            $numeroNota = isset($linha['numeronota']) ? (string) $linha['numeronota'] : '';
+            $dataPagamento = isset($linha['data_pagamento']) ? (string) $linha['data_pagamento'] : '';
+            $valorPago = $linha['valor_pago'] ?? null;
+
+            $numeroNotaValido = preg_match('/^[A-Za-z0-9\-]{1,30}$/', $numeroNota);
+            $dataValida = preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $dataPagamento);
+            $valorValido = is_numeric($valorPago) && $valorPago >= 0 && $valorPago < 100000000;
+
+            if (!$numeroNotaValido || !$dataValida || !$valorValido) {
+                $invalida[] = $numeroNota !== '' ? $numeroNota : '(sem número)';
+                continue;
+            }
+
+            $ok = $this->repository->darBaixaPagamento($numeroNota, $dataPagamento, (float) $valorPago);
+
+            if ($ok) {
+                $sucesso[] = $numeroNota;
+            } else {
+                $falha[] = $numeroNota;
+            }
+        }
+
+        if (!empty($sucesso)) {
+            array_push($this->msgInforma, count($sucesso) . ' nota(s) baixada(s) com sucesso: ' . implode(', ', $sucesso));
+        }
+
+        if (!empty($falha)) {
+            array_push($this->msgInforma, count($falha) . ' nota(s) não encontrada(s) ao gravar (podem ter sido alteradas entre a conferência e a confirmação): ' . implode(', ', $falha));
+        }
+
+        if (!empty($invalida)) {
+            array_push($this->msgInforma, count($invalida) . ' nota(s) ignorada(s) por dado inválido: ' . implode(', ', $invalida));
+        }
+
+        return redirect()->route('notas.index')->with('msgInforma', $this->msgInforma);
     }
 
     public function imprimirNfse($numnota, $codigo, Request $request)
