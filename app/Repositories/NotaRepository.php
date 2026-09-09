@@ -472,21 +472,37 @@ class NotaRepository extends BaseRepository
 
 	//busca leve por numeronota, usada na conferencia do arquivo de retorno (baixa em
 	//lote); traz so o necessario pra exibir/confirmar, sem os joins pesados de
-	//buscaNotaEmitidaPorNota
-	public function buscaNotaSimplesPorNumero($numeroNota)
+	//buscaNotaEmitidaPorNota.
+	//
+	//o campo "numero do documento" do CNAB 400 tem largura fixa de 10 caracteres, mas
+	//o $ref gerado em posEmitir() pra notas que ficam "processando_autorizacao" e bem
+	//mais longo (ex "STE1869403-20260901152433"), entao chega truncado no arquivo do
+	//banco (ex "STE1869403"). Por isso: tenta igualdade primeiro; so cai pra prefixo
+	//(LIKE) quando o valor recebido tem exatamente 10 caracteres (o maximo do campo) E
+	//a igualdade nao achou nada - um valor mais curto que 10 ja veio completo (formatos
+	//como "NAC2478" ou "NF20262447" nao sao truncados) e nao deve ser tratado como
+	//prefixo. Retorna sempre um array (pode ter 0, 1 ou mais linhas - mais de uma linha
+	//= prefixo ambiguo, quem chama decide o que fazer).
+	public function buscaNotasPorNumeroOuPrefixo($numeroNota)
 	{
-		$sql = "select codcliente, numeronota,
+		$sqlBase = "select codcliente, numeronota,
 						to_char(valornota, 'fm999g999g990d00') valornota,
 						to_char(dtapago, 'dd/mm/yyyy') dtapago,
 						to_char(valpago, 'fm999g999g990d00') valpago
-				from tab_notas_emitidas
-				where numeronota = '" . $numeroNota . "'";
+					from tab_notas_emitidas
+					where numeronota %s";
 
-		$this->executaSql($sql);
+		$this->executaSql(sprintf($sqlBase, "= '" . $numeroNota . "'"));
 		if ($this->count > 0)
-			return $this->data[0];
+			return $this->data;
 
-		return null;
+		if (strlen($numeroNota) == 10) {
+			$this->executaSql(sprintf($sqlBase, "like '" . $numeroNota . "%'"));
+			if ($this->count > 0)
+				return $this->data;
+		}
+
+		return [];
 	}
 
 	//grava a baixa por pagamento (usado pelo upload de arquivo de retorno CNAB); mesma

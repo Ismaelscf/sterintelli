@@ -615,12 +615,32 @@ class NotaController extends Controller
             $registros = $parser->parse($conteudo, $arquivo->getClientOriginalName());
 
             foreach ($registros as $registro) {
-                $notaAtual = $this->repository->buscaNotaSimplesPorNumero($registro['numeronota']);
+                $candidatos = $this->repository->buscaNotasPorNumeroOuPrefixo($registro['numeronota']);
 
-                $registro['encontrado'] = !is_null($notaAtual);
-                $registro['ja_tinha_pagamento'] = $registro['encontrado'] && !empty($notaAtual->DTAPAGO);
-                $registro['dtapago_atual'] = $registro['encontrado'] ? $notaAtual->DTAPAGO : null;
-                $registro['valpago_atual'] = $registro['encontrado'] ? $notaAtual->VALPAGO : null;
+                $registro['encontrado'] = count($candidatos) === 1;
+                $registro['ambiguo'] = count($candidatos) > 1;
+
+                if ($registro['encontrado']) {
+                    $notaAtual = $candidatos[0];
+                    //numeronota real do banco, que pode ser mais longo que o campo
+                    //truncado de 10 posicoes vindo do CNAB (ver buscaNotasPorNumeroOuPrefixo);
+                    //e essa versao completa que deve ser usada pra gravar a baixa
+                    $registro['numeronota_real'] = $notaAtual->NUMERONOTA;
+                    $registro['truncado'] = $notaAtual->NUMERONOTA !== $registro['numeronota'];
+                    $registro['ja_tinha_pagamento'] = !empty($notaAtual->DTAPAGO);
+                    $registro['dtapago_atual'] = $notaAtual->DTAPAGO;
+                    $registro['valpago_atual'] = $notaAtual->VALPAGO;
+                } else {
+                    $registro['numeronota_real'] = null;
+                    $registro['truncado'] = false;
+                    $registro['ja_tinha_pagamento'] = false;
+                    $registro['dtapago_atual'] = null;
+                    $registro['valpago_atual'] = null;
+                    //lista os numeronota candidatos quando ambiguo, so pra informar na tela
+                    $registro['candidatos'] = array_map(function ($c) {
+                        return $c->NUMERONOTA;
+                    }, $candidatos);
+                }
 
                 $linhas[] = $registro;
             }

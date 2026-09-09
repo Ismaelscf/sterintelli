@@ -8,8 +8,11 @@ Conferência da Baixa
     $qtdPagamento = 0;
     $qtdInformativo = 0;
     $qtdNaoEncontrado = 0;
+    $qtdAmbiguo = 0;
     foreach ($linhas as $l) {
-        if (!$l['encontrado']) {
+        if (!empty($l['ambiguo'])) {
+            $qtdAmbiguo++;
+        } elseif (!$l['encontrado']) {
             $qtdNaoEncontrado++;
         } elseif ($l['eh_pagamento']) {
             $qtdPagamento++;
@@ -31,6 +34,9 @@ Conferência da Baixa
                     <span class="badge badge-success">{{ $qtdPagamento }} com pagamento (código 06/15/17), encontradas e prontas pra baixar</span>
                     <span class="badge badge-secondary">{{ $qtdInformativo }} só informativas (não alteram nada)</span>
                     <span class="badge badge-danger">{{ $qtdNaoEncontrado }} não encontradas no sistema</span>
+                    @if($qtdAmbiguo > 0)
+                        <span class="badge badge-warning">{{ $qtdAmbiguo }} ambígua(s) - mais de uma nota bate com o número truncado, verifique manualmente</span>
+                    @endif
                 </div>
             </div>
 
@@ -62,14 +68,24 @@ Conferência da Baixa
                                                 @if($l['encontrado'] && $l['eh_pagamento'])
                                                     <input type="checkbox" class="chk-linha"
                                                         checked
-                                                        data-numeronota="{{ $l['numeronota'] }}"
+                                                        data-numeronota="{{ $l['numeronota_real'] }}"
                                                         data-data-pagamento="{{ $l['data_pagamento'] }}"
                                                         data-valor-pago="{{ $l['valor_pago'] }}">
                                                 @endif
                                             </td>
-                                            <td>{{ $l['numeronota'] }}</td>
                                             <td>
-                                                @if(!$l['encontrado'])
+                                                {{ $l['numeronota'] }}
+                                                @if(!empty($l['truncado']))
+                                                    <br><small class="text-muted">número no banco: {{ $l['numeronota_real'] }}</small>
+                                                @endif
+                                                @if(!empty($l['ambiguo']))
+                                                    <br><small class="text-muted">candidatos: {{ implode(', ', $l['candidatos']) }}</small>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(!empty($l['ambiguo']))
+                                                    <span class="badge badge-warning">Ambíguo</span>
+                                                @elseif(!$l['encontrado'])
                                                     <span class="badge badge-danger">Não encontrada</span>
                                                 @elseif($l['eh_pagamento'])
                                                     <span class="badge badge-success">Pagamento</span>
