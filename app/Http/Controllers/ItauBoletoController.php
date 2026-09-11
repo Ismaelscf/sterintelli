@@ -68,6 +68,12 @@ class ItauBoletoController extends Controller
         $valorBoleto = $this->converterValor($novoValor);
         $valorDescontos = $this->converterValor(0);
 
+        //"seu numero" curto (STER000001) em vez do numeronota inteiro - o numeronota
+        //pode passar de 20 caracteres e o arquivo de retorno do banco (CNAB 400) so tem
+        //10 posicoes pra esse campo, cortando o numero e dificultando localizar a nota
+        //depois na tela de Baixa
+        $seuNumero = $this->notaRepository->proximoSeuNumeroBoleto();
+
         $dados = $request->all();
 
         $emissao = date('Y-m-d');
@@ -168,7 +174,7 @@ class ItauBoletoController extends Controller
                         "numero_nosso_numero"=> "$request->nosso_numero",
                         "data_vencimento" => "$request->dt_vencimento",
                         "valor_titulo" => "$valorBoleto",
-                        "texto_seu_numero" => "$request->nf"
+                        "texto_seu_numero" => "$seuNumero"
                     ]
                 ],
                 "multa" => [
@@ -205,8 +211,8 @@ class ItauBoletoController extends Controller
 
             
             $save = $this->itauBoletoService->salvarDadosBoleto($request->id_beneficiario, $request->nosso_numero, $request->numeronota);
+            $this->notaRepository->salvarSeuNumeroBoleto($request->numeronota, $seuNumero);
 
- 
             return redirect()->back()->with('message', 'Dados do boleto salvos com sucesso.');
 
         } catch (\Exception $e) {

@@ -43,8 +43,9 @@ return [
         'url_homologacao' => 'https://homologacao.focusnfe.com.br/v2',
         'url_producao' => 'https://api.focusnfe.com.br/v2',
         // Codigo de tributacao nacional (NFSe Nacional, 6 digitos) do servico prestado.
-        // 070901 = Varricao, coleta e remocao de lixo, rejeitos e outros residuos quaisquer.
-        'codigo_servico_nacional' => env('FOCUS_NFE_CODIGO_SERVICO', '070901'),
+        // 071301 = Dedetizacao, desinfeccao, desinsetizacao, imunizacao, higienizacao,
+        // desratizacao, pulverizacao e congeneres.
+        'codigo_servico_nacional' => env('FOCUS_NFE_CODIGO_SERVICO', '071301'),
         // Codigo NBS (Nomenclatura Brasileira de Servicos) correspondente ao servico prestado.
         // 123019900 = Outros servicos de saude humana nao classificados em subposicoes anteriores.
         'codigo_nbs' => env('FOCUS_NFE_CODIGO_NBS', '123019900'),
