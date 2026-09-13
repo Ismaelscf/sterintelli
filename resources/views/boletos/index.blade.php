@@ -106,6 +106,7 @@ Emitir Boleto
 
                 <div class="card-body">
                     <input type="hidden" value="{{$dadosNota->numeronota}}" id="numeronota" name="numeronota">
+                    <input type="hidden" value="{{$dadosNota->seu_numero_boleto}}" id="seu_numero_boleto" name="seu_numero_boleto">
                     <input type="hidden" value="908400080952" id="id_beneficiario" name="id_beneficiario">
                     <div class="row">
                         <div class="col-md-3">
@@ -250,7 +251,7 @@ Emitir Boleto
                         <div class="col-md-3">
                             <div class="fb-text form-group field-razao">
                                 <label for="razao" class="fb-text-label">Nosso  número<span class="fb-required">*</span></label>
-                                <input type="text" class="form-control" name="nosso_numero" id="nosso_numero" required="required" aria-required="true" value="{{ is_null($nossoNumero) ? 10000006 : ($nossoNumero->nosso_numero + 1) }}" readonly>
+                                <input type="text" class="form-control" name="nosso_numero" id="nosso_numero" required="required" aria-required="true" value="{{ $proximoNumero }}" readonly>
                             </div>
                         </div>
                     </div>

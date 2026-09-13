@@ -53,7 +53,7 @@ Route::middleware([CheckAuthentication::class])->group(function () {
     Route::get('/notas/preeditarnota/{idcliente}/{idnota}/', [NotaController::class, 'preEditarNota'])->name('notas.preeditarnota');
     Route::post('/notas/poseditarnota', [NotaController::class, 'posEditarNota'])->name('notas.poseditarnota');
 
-    Route::get('/notas/cancelarnota', [NotaController::class, 'cancelarNota'])->name('notas.cancelarnota');
+    Route::post('/notas/cancelarnota', [NotaController::class, 'posCancelarNota'])->name('notas.cancelarnota');
 
     //baixa em lote via arquivo de retorno do banco (CNAB 400)
     Route::get('/notas/prebaixa', [NotaController::class, 'preBaixaRetorno'])->name('notas.prebaixa');

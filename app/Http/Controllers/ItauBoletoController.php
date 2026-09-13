@@ -22,14 +22,23 @@ class ItauBoletoController extends Controller
         $this->notaRepository = $notaRepository;
     }
 
+    //piso minimo do nosso_numero: o ultimo numero realmente usado no banco Itau ficou
+    //a frente do que a nossa tabela local tinha registrado, entao a numeracao local
+    //(getLastNumero) nao e mais confiavel sozinha pra decidir o proximo numero
+    const NOSSO_NUMERO_PISO = 11000001;
+
     public function index ($numnota, $codcliente){
         $dadosNota = $this->notaRepository->buscarNF($numnota);
         $boletos = $this->itauBoletoService->consultarBoletosporNF($numnota);
-        $nossoNumero = $this->itauBoletoService->getLastNumero();
+        $ultimoNumero = $this->itauBoletoService->getLastNumero();
+
+        $proximoNumero = is_null($ultimoNumero)
+            ? self::NOSSO_NUMERO_PISO
+            : max((int) $ultimoNumero->nosso_numero + 1, self::NOSSO_NUMERO_PISO);
 
         // dd($boletos);
-        
-        return view('boletos.index', compact('numnota','dadosNota', 'boletos', 'nossoNumero'));
+
+        return view('boletos.index', compact('numnota','dadosNota', 'boletos', 'proximoNumero'));
     }
 
     function converterValor($valor) {
@@ -68,11 +77,15 @@ class ItauBoletoController extends Controller
         $valorBoleto = $this->converterValor($novoValor);
         $valorDescontos = $this->converterValor(0);
 
-        //"seu numero" curto (STER000001) em vez do numeronota inteiro - o numeronota
-        //pode passar de 20 caracteres e o arquivo de retorno do banco (CNAB 400) so tem
-        //10 posicoes pra esse campo, cortando o numero e dificultando localizar a nota
-        //depois na tela de Baixa
-        $seuNumero = $this->notaRepository->proximoSeuNumeroBoleto();
+        //"seu numero" curto (STER000001), o mesmo vinculo ja gravado na nota desde a
+        //emissao (NotaController::posEmitir); reaproveita em vez de gerar outro, pra o
+        //boleto e a nota ficarem com o mesmo codigo. So gera um novo (e grava) se a
+        //nota for de antes dessa mudanca e ainda nao tiver um vinculo salvo.
+        $seuNumero = $request->seu_numero_boleto;
+        if (empty($seuNumero)) {
+            $seuNumero = $this->notaRepository->proximoSeuNumeroBoleto();
+            $this->notaRepository->salvarSeuNumeroBoleto($request->numeronota, $seuNumero);
+        }
 
         $dados = $request->all();
 
@@ -211,7 +224,6 @@ class ItauBoletoController extends Controller
 
             
             $save = $this->itauBoletoService->salvarDadosBoleto($request->id_beneficiario, $request->nosso_numero, $request->numeronota);
-            $this->notaRepository->salvarSeuNumeroBoleto($request->numeronota, $seuNumero);
 
             return redirect()->back()->with('message', 'Dados do boleto salvos com sucesso.');
 

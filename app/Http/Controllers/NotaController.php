@@ -451,7 +451,13 @@ class NotaController extends Controller
                 $payload['valor_cp'] = $valorinss;
             }
 
-            $ref = 'STE' . $request->idcliente . '-' . now()->format('YmdHis');
+            //codigo curto (STER000001) que vincula a nota ao(s) boleto(s) dela: enviado
+            //como ref a Focus NFe, usado como NUMERONOTA enquanto a nota fica
+            //"processando_autorizacao", e reaproveitado como "seu numero" na geracao do
+            //boleto (ItauBoletoController::gerarBoleto) - substitui o antigo
+            //'STE'.idcliente.'-'.timestamp, que passava de 20 caracteres e vinha cortado
+            //no arquivo de retorno do banco (CNAB 400 so tem 10 posicoes pra esse campo)
+            $ref = $this->repository->proximoCodigoVinculo();
             $lote = date('Ymd');
 
             //salva arquivo de log para depuracao
@@ -573,22 +579,13 @@ class NotaController extends Controller
     {
 
         //a Focus NFe so permite consultar por referencia (nao por periodo),
-        //entao a busca por periodo usa os registros ja gravados localmente
-        $registros = $this->repository->consultarNotasEmitidas($request->dtIni, $request->dtFim, 0);
+        //entao a busca por periodo usa os registros ja gravados localmente. Traz todos
+        //os campos uteis de uma vez (consultarNotasEmitidas), sem filtrar nada aqui -
+        //a view e que decide o que mostrar
+        $notas = $this->repository->consultarNotasEmitidas($request->dtIni, $request->dtFim, 0);
 
-        if (empty($registros)) {
+        if (empty($notas)) {
             return redirect()->back()->withErrors(['Não foram encontradas NFSes no período.']);
-        }
-
-        $notas = [];
-        foreach ($registros as $registro) {
-            $nota = new \stdClass();
-            $nota->NumeroNota = $registro->NUMERONOTA;
-            $nota->CodigoVerificao = $registro->CODIGOVERIFICACAO;
-            $nota->RazaoSocialTomador = $registro->NOME;
-            $partesData = explode('/', $registro->DTANOTA);
-            $nota->DataProcessamento = $partesData[2] . '-' . $partesData[1] . '-' . $partesData[0];
-            $notas[] = $nota;
         }
 
         return view('notas.pos-consultarnfse', compact('notas'));
@@ -747,24 +744,49 @@ class NotaController extends Controller
         return redirect($urlDanfse);
     }
 
-    public function cancelarNota($numnota, $codigo, Request $request)
+    //cancelamento via modal na tela de consulta de NFSe (POST, nao GET - cancelar e uma
+    //acao que muda estado, nao deveria nunca ser um link simples). Redireciona de volta
+    //pra tela de consulta (Post/Redirect/Get) em vez de renderizar uma view propria,
+    //pelo mesmo motivo do ajuste feito em posEmitir(): evita reenviar o cancelamento se
+    //o usuario der F5 na resposta
+    public function posCancelarNota(Request $request)
     {
-        $dadosNota = $this->repository->buscaNotaEmitidaPorNota($numnota);
-
-        if (is_null($dadosNota) || empty($dadosNota->REF_FOCUS)) {
-            return redirect()->back()->withErrors(['Nota não encontrada.']);
+        //nao usa redirect()->back() aqui: a tela de onde o modal e aberto
+        //(posConsultarNfse) e resultado de um POST, entao "voltar" pra ela vira um GET
+        //numa rota que so aceita POST e quebra ("GET method not supported"). Sempre
+        //redireciona pra notas.index (GET), com a mensagem/erro via sessao
+        if (empty(trim($request->numeronota))) {
+            return redirect()->route('notas.index')->withErrors(['Número da nota não veio no formulário de cancelamento (numeronota vazio).']);
         }
 
-        $motivo = $request->motivo;
+        $dadosNota = $this->repository->buscaNotaEmitidaPorNota($request->numeronota);
 
-        $resposta = $this->focusNfe->cancelar($dadosNota->REF_FOCUS, $motivo);
+        if (is_null($dadosNota)) {
+            return redirect()->route('notas.index')->withErrors(['Nota "' . $request->numeronota . '" não encontrada no banco de dados.']);
+        }
+
+        if (empty($dadosNota->REF_FOCUS)) {
+            return redirect()->route('notas.index')->withErrors(['Nota "' . $request->numeronota . '" encontrada, mas sem referência da Focus NFe (REF_FOCUS) salva — não é possível cancelar.']);
+        }
+
+        if (empty(trim($request->motivo))) {
+            return redirect()->route('notas.index')->withErrors(['Informe o motivo do cancelamento.']);
+        }
+
+        $resposta = $this->focusNfe->cancelar($dadosNota->REF_FOCUS, $request->motivo);
 
         if (!in_array($resposta['http_status'], [200, 202])) {
             $erro = $resposta['body']['mensagem'] ?? json_encode($resposta['body']);
-            return redirect()->back()->withErrors(['Erro ao cancelar NFSe: ' . $erro]);
+            return redirect()->route('notas.index')->withErrors(['Erro ao cancelar NFSe ' . $request->numeronota . ': ' . $erro]);
         }
 
-        return view('notas.cancelar');
+        //mantem STATUS_FOCUS local coerente com o que a Focus NFe confirmou, sem
+        //precisar de uma nova consulta pra refletir o cancelamento na tela
+        $this->repository->atualizaStatusFocus($request->numeronota, 'cancelado', $dadosNota->URL_DANFSE, $dadosNota->CAMINHO_XML);
+
+        array_push($this->msgInforma, 'NFSe ' . $request->numeronota . ' cancelada com sucesso.');
+
+        return redirect()->route('notas.index')->with('msgInforma', $this->msgInforma);
     }
 
 

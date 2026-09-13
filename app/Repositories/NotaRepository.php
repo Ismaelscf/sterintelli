@@ -347,7 +347,7 @@ class NotaRepository extends BaseRepository
 					CHAVE_NFSE, DESCRICAONOTA, DTAVENCIMENTO,
 					VALORPIS, VALORCOFINS, VALORINSS, VALORIR, VALORCSLL,
 					UF_TOMADOR, MUNICIPIO_ID_TOMADOR, PER_IR,
-					REF_FOCUS, STATUS_FOCUS, URL_DANFSE, CAMINHO_XML
+					REF_FOCUS, STATUS_FOCUS, URL_DANFSE, CAMINHO_XML, SEU_NUMERO_BOLETO
 					)
 					values
 					(" . $dados->idcliente . ",
@@ -372,7 +372,8 @@ class NotaRepository extends BaseRepository
 					'" . $dados->refFocus . "',
 					'" . $dados->statusFocus . "',
 					'" . str_replace("'", "", $dados->urlDanfse) . "',
-					'" . str_replace("'", "", $dados->caminhoXml) . "'
+					'" . str_replace("'", "", $dados->caminhoXml) . "',
+					'" . $dados->refFocus . "'
 				)";
 
 			$this->executaSql($sql);
@@ -382,6 +383,23 @@ class NotaRepository extends BaseRepository
 
 			return [false, $e->getMessage()];
 		}
+	}
+
+	//gera o codigo curto (STER000001) que passa a ser o VINCULO entre a nota e o boleto:
+	//e usado como $ref enviado a Focus NFe na emissao (NotaController::posEmitir), fica
+	//gravado em SEU_NUMERO_BOLETO desde a criacao da nota, e quando um boleto e gerado
+	//pra essa nota (ItauBoletoController::gerarBoleto) o MESMO codigo e reaproveitado
+	//como "seu numero" - nao gera um codigo novo por nota E outro por boleto
+	public function proximoCodigoVinculo()
+	{
+		$sql = "select nvl(max(to_number(substr(seu_numero_boleto, 5))), 0) + 1 proximo
+				from tab_notas_emitidas
+				where seu_numero_boleto like 'STER%'";
+
+		$this->executaSql($sql);
+		$proximo = (int) $this->data[0]->PROXIMO;
+
+		return 'STER' . str_pad($proximo, 6, '0', STR_PAD_LEFT);
 	}
 
 	public function atualizaStatusFocus($numeroNota, $statusFocus, $urlDanfse, $caminhoXml)
@@ -406,7 +424,10 @@ class NotaRepository extends BaseRepository
 	public function consultarNotasEmitidas($dtIni, $dtFim, $idCliente)
 	{
 
-		$sql = "select t.codcliente, cnpj, nome, t.numeronota, valornota,
+		//TB_BOLETO_ITAU e onde os boletos realmente ficam gravados (salvarDadosBoleto);
+		//uma nota pode ter mais de um boleto la (reemissao), entao pega so o mais
+		//recente por nota (row_number) pra nao duplicar linha na listagem
+		$sql = "select t.codcliente, cnpj, nome, c.fantasia, t.numeronota, valornota,
 				       to_char(t.dtaInicial, 'dd/mm/yyyy') dtaInicial,
 				       to_char(t.dtafinal, 'dd/mm/yyyy') dtafinal,
 				       to_char(t.dtanota, 'dd/mm/yyyy') dtanota,
@@ -414,15 +435,23 @@ class NotaRepository extends BaseRepository
 				       t.valpago,
 				       to_char(t.dtavencimento, 'dd/mm/yyyy') dtavencimento,
 					   t.numero_nfse, t.codigoverificacao,
-					   to_char(b.dtaemissao, 'dd/mm/yyyy') dtaboleto
+					   b.nosso_numero, to_char(b.data_inclusao, 'dd/mm/yyyy') dtaboleto,
+					   t.status_focus, t.ref_focus, t.url_danfse,
+					   t.perc_iss, t.descricaonota
 				from tab_notas_emitidas t
 				inner join clientes c on t.codcliente = c.codigo
-				left join  tab_boletos_emitidos b on t.codcliente = b.codcliente and t.numeronota = b.numeronota
+				left join (
+					select notafiscal, nosso_numero, data_inclusao,
+					       row_number() over (partition by notafiscal order by data_inclusao desc) rn
+					from TB_BOLETO_ITAU
+				) b on b.notafiscal = t.numeronota and b.rn = 1
 				where t.dtanota between to_date('" . $dtIni . "', 'dd/mm/yyyy')
 				and to_date('" . $dtFim . "', 'dd/mm/yyyy')";
 
 		if ($idCliente > 0)
 			$sql .= " and t.codcliente = " . $idCliente . " ";
+
+		$sql .= " order by t.dtanota desc, t.numeronota desc";
 
 		//dd($sql);
 		$this->executaSql($sql);
