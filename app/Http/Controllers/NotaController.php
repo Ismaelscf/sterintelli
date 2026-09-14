@@ -575,6 +575,9 @@ class NotaController extends Controller
     }
 
 
+    //aceita GET (redirect apos cancelar, com dtIni/dtFim na query string) e POST
+    //(submissao normal do formulario de busca) - ver rota. $request->dtIni le dos dois
+    //formatos igual, entao o resto do metodo nao precisa distinguir
     public function posConsultarNfse(Request $request)
     {
 
@@ -582,13 +585,20 @@ class NotaController extends Controller
         //entao a busca por periodo usa os registros ja gravados localmente. Traz todos
         //os campos uteis de uma vez (consultarNotasEmitidas), sem filtrar nada aqui -
         //a view e que decide o que mostrar
-        $notas = $this->repository->consultarNotasEmitidas($request->dtIni, $request->dtFim, 0);
+        $dtIni = $request->dtIni;
+        $dtFim = $request->dtFim;
+
+        $notas = $this->repository->consultarNotasEmitidas($dtIni, $dtFim, 0);
 
         if (empty($notas)) {
             return redirect()->back()->withErrors(['Não foram encontradas NFSes no período.']);
         }
 
-        return view('notas.pos-consultarnfse', compact('notas'));
+        //mensagens vindas de um redirect (ex: apos cancelar notas) somam com as do
+        //proprio request atual, mesmo padrao usado em index()
+        $msgInforma = array_merge($this->msgInforma, session('msgInforma', []));
+
+        return view('notas.pos-consultarnfse', compact('notas', 'dtIni', 'dtFim', 'msgInforma'));
     }
 
     public function preBaixaRetorno()
@@ -745,48 +755,68 @@ class NotaController extends Controller
     }
 
     //cancelamento via modal na tela de consulta de NFSe (POST, nao GET - cancelar e uma
-    //acao que muda estado, nao deveria nunca ser um link simples). Redireciona de volta
-    //pra tela de consulta (Post/Redirect/Get) em vez de renderizar uma view propria,
-    //pelo mesmo motivo do ajuste feito em posEmitir(): evita reenviar o cancelamento se
-    //o usuario der F5 na resposta
+    //acao que muda estado, nao deveria nunca ser um link simples). Aceita uma ou varias
+    //notas de uma vez (numeronotas[]), com um motivo compartilhado - o botao de cancelar
+    //de uma linha so e o caso de uma nota so nesse mesmo array.
+    //
+    //Redireciona de volta pra MESMA listagem (nao pra notas.index), via GET com
+    //dtIni/dtFim na query string: a tela de onde o modal e aberto (posConsultarNfse) e
+    //resultado de POST, entao um redirect()->back() cairia numa rota que so aceita POST
+    //e quebraria ("GET method not supported"). Por isso posconsultarnfse agora aceita
+    //GET tambem (ver rota) - e por ser GET, um F5 na resposta e seguro, sem reenviar o
+    //cancelamento (mesmo motivo do ajuste em posEmitir()).
     public function posCancelarNota(Request $request)
     {
-        //nao usa redirect()->back() aqui: a tela de onde o modal e aberto
-        //(posConsultarNfse) e resultado de um POST, entao "voltar" pra ela vira um GET
-        //numa rota que so aceita POST e quebra ("GET method not supported"). Sempre
-        //redireciona pra notas.index (GET), com a mensagem/erro via sessao
-        if (empty(trim($request->numeronota))) {
-            return redirect()->route('notas.index')->withErrors(['Número da nota não veio no formulário de cancelamento (numeronota vazio).']);
-        }
+        $numeronotas = array_filter((array) $request->numeronotas, function ($n) {
+            return trim($n) !== '';
+        });
 
-        $dadosNota = $this->repository->buscaNotaEmitidaPorNota($request->numeronota);
+        $redirectParams = ['dtIni' => $request->dtIni, 'dtFim' => $request->dtFim];
 
-        if (is_null($dadosNota)) {
-            return redirect()->route('notas.index')->withErrors(['Nota "' . $request->numeronota . '" não encontrada no banco de dados.']);
-        }
-
-        if (empty($dadosNota->REF_FOCUS)) {
-            return redirect()->route('notas.index')->withErrors(['Nota "' . $request->numeronota . '" encontrada, mas sem referência da Focus NFe (REF_FOCUS) salva — não é possível cancelar.']);
+        if (empty($numeronotas)) {
+            return redirect()->route('notas.posconsultarnfse', $redirectParams)->withErrors(['Nenhuma nota selecionada para cancelamento.']);
         }
 
         if (empty(trim($request->motivo))) {
-            return redirect()->route('notas.index')->withErrors(['Informe o motivo do cancelamento.']);
+            return redirect()->route('notas.posconsultarnfse', $redirectParams)->withErrors(['Informe o motivo do cancelamento.']);
         }
 
-        $resposta = $this->focusNfe->cancelar($dadosNota->REF_FOCUS, $request->motivo);
+        $sucesso = [];
+        $falha = [];
 
-        if (!in_array($resposta['http_status'], [200, 202])) {
-            $erro = $resposta['body']['mensagem'] ?? json_encode($resposta['body']);
-            return redirect()->route('notas.index')->withErrors(['Erro ao cancelar NFSe ' . $request->numeronota . ': ' . $erro]);
+        foreach ($numeronotas as $numeronota) {
+            $dadosNota = $this->repository->buscaNotaEmitidaPorNota($numeronota);
+
+            if (is_null($dadosNota) || empty($dadosNota->REF_FOCUS)) {
+                $falha[] = $numeronota . ' (nota não encontrada ou sem referência da Focus NFe)';
+                continue;
+            }
+
+            $resposta = $this->focusNfe->cancelar($dadosNota->REF_FOCUS, $request->motivo);
+
+            if (!in_array($resposta['http_status'], [200, 202])) {
+                $erro = $resposta['body']['mensagem'] ?? json_encode($resposta['body']);
+                $falha[] = $numeronota . ' (' . $erro . ')';
+                continue;
+            }
+
+            //mantem STATUS_FOCUS local coerente com o que a Focus NFe confirmou, sem
+            //precisar de uma nova consulta pra refletir o cancelamento na tela
+            $this->repository->atualizaStatusFocus($numeronota, 'cancelado', $dadosNota->URL_DANFSE, $dadosNota->CAMINHO_XML);
+            $sucesso[] = $numeronota;
         }
 
-        //mantem STATUS_FOCUS local coerente com o que a Focus NFe confirmou, sem
-        //precisar de uma nova consulta pra refletir o cancelamento na tela
-        $this->repository->atualizaStatusFocus($request->numeronota, 'cancelado', $dadosNota->URL_DANFSE, $dadosNota->CAMINHO_XML);
+        if (!empty($sucesso)) {
+            array_push($this->msgInforma, count($sucesso) . ' NFSe(s) cancelada(s) com sucesso: ' . implode(', ', $sucesso));
+        }
 
-        array_push($this->msgInforma, 'NFSe ' . $request->numeronota . ' cancelada com sucesso.');
+        if (!empty($falha)) {
+            return redirect()->route('notas.posconsultarnfse', $redirectParams)
+                ->with('msgInforma', $this->msgInforma)
+                ->withErrors(['Falha ao cancelar ' . count($falha) . ' nota(s): ' . implode('; ', $falha)]);
+        }
 
-        return redirect()->route('notas.index')->with('msgInforma', $this->msgInforma);
+        return redirect()->route('notas.posconsultarnfse', $redirectParams)->with('msgInforma', $this->msgInforma);
     }
 
 

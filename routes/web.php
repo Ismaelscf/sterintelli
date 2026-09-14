@@ -44,7 +44,9 @@ Route::middleware([CheckAuthentication::class])->group(function () {
 
     //consulta de notas emitidas e aprovadas
     Route::get('/notas/preconsultarnfse', [NotaController::class, 'preConsultarNfse'])->name('notas.preconsultarnfse');
-    Route::post('/notas/posconsultarnfse', [NotaController::class, 'posConsultarNfse'])->name('notas.posconsultarnfse');
+    //GET tambem, alem do POST do formulario de busca: usado no redirect apos cancelar
+    //nota(s), pra voltar na mesma listagem sem cair no erro de metodo nao suportado
+    Route::match(['get', 'post'], '/notas/posconsultarnfse', [NotaController::class, 'posConsultarNfse'])->name('notas.posconsultarnfse');
     Route::get('/notas/imprimirnfse/{numnota}/{codigo}/', [NotaController::class, 'imprimirNfse'])->name('notas.imprimirNfse');
 
     Route::get('/notas/preconsnotasemitidas', [NotaController::class, 'preConsultarNotasEmitidas'])->name('notas.preconsnotasemitidas');
