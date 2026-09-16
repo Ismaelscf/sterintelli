@@ -390,16 +390,19 @@ class NotaRepository extends BaseRepository
 	//gravado em SEU_NUMERO_BOLETO desde a criacao da nota, e quando um boleto e gerado
 	//pra essa nota (ItauBoletoController::gerarBoleto) o MESMO codigo e reaproveitado
 	//como "seu numero" - nao gera um codigo novo por nota E outro por boleto
+	//usa a sequence SEQ_CODIGO_VINCULO (Oracle) em vez de MAX(...)+1: MAX+1 tem uma
+	//race condition real (duas emissoes quase simultaneas podem ler o mesmo "maior
+	//numero atual" antes de qualquer uma salvar, e as duas calculam o MESMO proximo
+	//codigo - foi exatamente isso que causou erro de "codigo ja utilizado" na Focus
+	//NFe). NEXTVAL de sequence e atomico de verdade, garantido pelo proprio Oracle.
+	//Ha tambem uma trigger (TRG_SEU_NUMERO_BOLETO) e uma constraint UNIQUE em
+	//SEU_NUMERO_BOLETO como redes de seguranca extras, caso algum outro caminho de
+	//codigo insira uma nota sem passar por aqui.
 	public function proximoCodigoVinculo()
 	{
-		$sql = "select nvl(max(to_number(substr(seu_numero_boleto, 5))), 0) + 1 proximo
-				from tab_notas_emitidas
-				where seu_numero_boleto like 'STER%'";
+		$this->executaSql("select 'STER' || lpad(SEQ_CODIGO_VINCULO.nextval, 6, '0') codigo from dual");
 
-		$this->executaSql($sql);
-		$proximo = (int) $this->data[0]->PROXIMO;
-
-		return 'STER' . str_pad($proximo, 6, '0', STR_PAD_LEFT);
+		return $this->data[0]->CODIGO;
 	}
 
 	public function atualizaStatusFocus($numeroNota, $statusFocus, $urlDanfse, $caminhoXml)
