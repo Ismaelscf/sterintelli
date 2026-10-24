@@ -93,6 +93,26 @@ class CnabRetornoParser
         return $registros;
     }
 
+    /**
+     * Retorna a data de geracao do arquivo (posicoes 95-100 do header, tipo 0),
+     * ou null se o header nao for encontrado.
+     *
+     * @param string $conteudo
+     * @return string|null
+     */
+    public function dataArquivo($conteudo)
+    {
+        $linhas = preg_split('/\r\n|\r|\n/', $conteudo);
+
+        foreach ($linhas as $linha) {
+            if (strlen($linha) >= 100 && substr($linha, 0, 1) === '0') {
+                return $this->formataData(substr($linha, 94, 6));
+            }
+        }
+
+        return null;
+    }
+
     private function formataData($ddmmaa)
     {
         $ddmmaa = trim($ddmmaa);

@@ -616,10 +616,16 @@ class NotaController extends Controller
 
         $parser = new CnabRetornoParser();
         $linhas = [];
+        $arquivos = [];
 
         foreach ($request->file('arquivos') as $arquivo) {
             $conteudo = file_get_contents($arquivo->getRealPath());
             $registros = $parser->parse($conteudo, $arquivo->getClientOriginalName());
+
+            $arquivos[] = [
+                'nome' => $arquivo->getClientOriginalName(),
+                'data' => $parser->dataArquivo($conteudo),
+            ];
 
             foreach ($registros as $registro) {
                 $candidatos = $this->repository->buscaNotasPorNumeroOuPrefixo($registro['numeronota']);
@@ -657,7 +663,7 @@ class NotaController extends Controller
             return redirect()->back()->withErrors(['Nenhum registro de detalhe (tipo 1) foi encontrado nos arquivos enviados. Confira se são realmente arquivos de retorno CNAB 400.']);
         }
 
-        return view('notas.pos-baixa', compact('linhas'));
+        return view('notas.pos-baixa', compact('linhas', 'arquivos'));
     }
 
     //aplica de fato a baixa (DTAPAGO/VALPAGO) nas notas selecionadas na tela de

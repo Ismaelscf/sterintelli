@@ -31,6 +31,12 @@ Conferência da Baixa
                     <h4 class="card-title">Resumo</h4>
                 </div>
                 <div class="card-body">
+                    @foreach($arquivos as $arq)
+                        <p class="mb-1">
+                            <b>Arquivo:</b> {{ $arq['nome'] }}
+                            &nbsp;&nbsp;<b>Data do arquivo:</b> {{ $arq['data'] ?? 'não identificada' }}
+                        </p>
+                    @endforeach
                     <span class="badge badge-success">{{ $qtdPagamento }} com pagamento (código 06/15/17), encontradas e prontas pra baixar</span>
                     <span class="badge badge-secondary">{{ $qtdInformativo }} só informativas (não alteram nada)</span>
                     <span class="badge badge-danger">{{ $qtdNaoEncontrado }} não encontradas no sistema</span>
@@ -48,7 +54,7 @@ Conferência da Baixa
                     <div class="card-header">Conferência linha a linha</div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped" id="datatable">
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -122,9 +128,16 @@ Conferência da Baixa
 
 @section('scripts')
 <script type="text/javascript">
+var tabela = $('#datatable').DataTable({
+    "order": [],
+    "columnDefs": [{ "orderable": false, "targets": 0 }]
+});
+
 document.getElementById('formConfirmar').addEventListener('submit', function (e) {
     var linhas = [];
-    document.querySelectorAll('.chk-linha:checked').forEach(function (chk) {
+    //busca pela API do DataTable: com paginacao/filtro as linhas fora da pagina
+    //atual nao ficam no DOM e seriam ignoradas por um querySelectorAll
+    tabela.$('.chk-linha:checked').each(function (i, chk) {
         linhas.push({
             numeronota: chk.getAttribute('data-numeronota'),
             data_pagamento: chk.getAttribute('data-data-pagamento'),
